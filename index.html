@@ -1,0 +1,3517 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>AI 動畫生成與排版系統</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&family=Noto+Serif+TC:wght@400;700;900&family=LXGW+WenKai+TC:wght@400;700&family=Huninn&family=Montserrat:wght@400;800&family=Playfair+Display:wght@400;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/fabric@5.3.0/dist/fabric.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<style>
+  :root { --bg:#0f1117; --card:#1a1d27; --line:#2c3040; --text:#e8eaf0; --muted:#9aa0b4; --accent:#5865f2; --accent2:#00a8fc; --btn:#242838; --btnh:#33384d; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html, body { margin:0; height:100%; user-select:none; background:var(--bg); color:var(--text); font-family:"Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif; overflow:hidden; }
+  header { display:flex; align-items:center; gap:10px; padding:0 14px; border-bottom:1px solid var(--line); height:50px; background:var(--card); z-index:20; }
+  header h1 { margin:0; font-size:16px; color:var(--text); white-space:nowrap; }
+  .tabs { display:flex; gap:4px; flex-shrink:0; }
+  .tab { background:transparent; color:var(--muted); padding:6px 12px; font-size:13px; border-radius:6px; white-space:nowrap; }
+  .tab.active { background:var(--accent); color:#fff; font-weight:bold; }
+  .cloud-bar { margin-left:auto; display:flex; align-items:center; gap:5px; flex-shrink:0; }
+  .cloud-bar input { width:90px; padding:5px 7px; font-size:12px; background:#11131b; color:var(--text); border:1px solid var(--line); border-radius:6px; }
+  .cloud-bar button { padding:5px 9px; font-size:12px; white-space:nowrap; }
+  button { cursor:pointer; border:none; border-radius:6px; font-family:inherit; color:var(--text); background:var(--btn); transition:background .15s; }
+  button:hover { background:var(--btnh); }
+  button:disabled { opacity:.45; cursor:not-allowed; }
+  label { display:block; font-size:12px; color:var(--muted); margin:9px 0 4px; }
+  textarea, select, input[type=number], input[type=text] { width:100%; background:#11131b; color:var(--text); border:1px solid var(--line); border-radius:6px; padding:7px 9px; font-size:13px; font-family:inherit; user-select:text; }
+  textarea { min-height:64px; resize:vertical; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:14px; }
+  .row { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .check { display:flex; align-items:center; gap:7px; margin-top:7px; font-size:12px; color:var(--text); cursor:pointer; }
+  .primary { width:100%; margin-top:10px; padding:12px; font-size:15px; font-weight:bold; color:#fff; background:linear-gradient(90deg,#5865f2,#00a8fc); }
+  .primary:hover { filter:brightness(1.08); }
+  .act-btn { background:#2b3252; color:#fff; font-weight:bold; }
+  .act-btn:hover { background:#3a4470; }
+  .chips { display:flex; flex-wrap:wrap; gap:5px; margin-top:6px; }
+  .chip { padding:4px 9px; font-size:11px; border-radius:99px; }
+  .status { margin-top:8px; font-size:12px; color:var(--muted); min-height:18px; word-break:break-word; }
+  .hidden { display:none !important; }
+
+  /* ---------- 動畫生圖頁 ---------- */
+  #tab-gen { height:calc(100vh - 50px); overflow-y:auto; }
+  #tab-gen main { max-width:1260px; margin:0 auto; padding:14px; display:grid; grid-template-columns:405px 1fr; gap:16px; }
+  .drop { border:2px dashed var(--line); border-radius:8px; padding:11px; text-align:center; color:var(--muted); font-size:12px; cursor:pointer; }
+  .refbox { display:flex; gap:10px; align-items:flex-start; margin-top:8px; }
+  .refbox img { width:76px; height:76px; object-fit:cover; border-radius:6px; border:1px solid var(--line); }
+  .refbox .refinfo { flex:1; font-size:12px; color:var(--muted); }
+  .progress { height:5px; background:#11131b; border-radius:99px; overflow:hidden; margin-top:6px; }
+  .progress div { height:100%; width:0; background:var(--accent2); transition:width .2s; }
+  .sub-box { background:#11131b; border:1px solid var(--line); border-radius:8px; padding:9px; margin-top:8px; }
+  .gpt-box { background:#121726; border:1px solid #334168; border-radius:8px; padding:9px 10px; margin-top:8px; }
+  .entity-tags { display:flex; flex-wrap:wrap; gap:4px; margin:4px 0 6px; }
+  .e-tag { font-size:11px; padding:2px 7px; border-radius:4px; background:#1e293b; color:#38bdf8; border:1px solid #0284c7; }
+  details.fav-drawer { background:#11131b; border:1px solid var(--line); border-radius:8px; padding:8px 10px; margin-top:8px; }
+  details.fav-drawer summary { cursor:pointer; font-size:12px; font-weight:bold; color:var(--text); list-style:none; display:flex; justify-content:space-between; align-items:center; }
+  .gallery { display:grid; grid-template-columns:repeat(auto-fill,minmax(225px,1fr)); gap:12px; }
+  .item { background:#11131b; border:1px solid var(--line); border-radius:8px; overflow:hidden; display:flex; flex-direction:column; }
+  .item .imgwrap { position:relative; display:flex; align-items:center; justify-content:center; background:#0b0d13; overflow:hidden; }
+  .item canvas.anim-player { width:100%; height:100%; object-fit:contain; display:block; cursor:pointer; }
+  .item .anim-badge { position:absolute; top:7px; left:7px; background:rgba(0,0,0,.72); color:#38bdf8; font-size:10px; font-weight:bold; padding:2px 7px; border-radius:99px; border:1px solid #0284c7; pointer-events:none; }
+  .item .meta { padding:6px 8px; font-size:11px; color:var(--muted); line-height:1.4; max-height:42px; overflow:hidden; }
+  .item .actions { display:grid; grid-template-columns:repeat(3,1fr); gap:4px; padding:0 8px 8px; }
+  .item .actions button { padding:6px 3px; font-size:11px; }
+  .item .actions .span3 { grid-column:span 3; }
+  .spinner { width:32px; height:32px; border:3px solid #2c3040; border-top-color:var(--accent2); border-radius:50%; animation:spin 1s linear infinite; position:absolute; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .wait { position:absolute; bottom:8px; left:0; right:0; text-align:center; font-size:11px; color:var(--muted); padding:0 6px; }
+  .err { color:#ff7a7a; font-size:12px; padding:10px; text-align:center; }
+  .empty { color:var(--muted); text-align:center; padding:50px 10px; font-size:13px; }
+  .section-title { display:flex; justify-content:space-between; align-items:center; margin:0 0 10px; }
+  .section-title h2 { font-size:16px; margin:0; }
+
+  /* ---------- 動畫排版編輯器（電腦版 3 欄佈局） ---------- */
+  #tab-editor { height:calc(100vh - 50px); display:grid; grid-template-columns:295px 1fr 275px; position:relative; }
+  .side { background:var(--card); border-right:1px solid var(--line); overflow-y:auto; padding:12px; }
+  .side.right { border-right:none; border-left:1px solid var(--line); }
+  .side h3 { font-size:12px; margin:12px 0 6px; color:var(--muted); display:flex; justify-content:space-between; align-items:center; }
+  .side h3:first-child { margin-top:0; }
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:5px; }
+  .grid3 { display:grid; grid-template-columns:repeat(3,1fr); gap:5px; }
+  .grid4 { display:grid; grid-template-columns:repeat(4,1fr); gap:5px; }
+  .side button { padding:7px 6px; font-size:12px; }
+  .side button.on { background:var(--accent); color:#fff; }
+  .txtbtn { text-align:left; padding:8px 10px !important; width:100%; margin-bottom:5px; }
+  .thumbs { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+  .thumbs img { width:100%; aspect-ratio:1/1; object-fit:cover; border-radius:6px; cursor:pointer; border:2px solid transparent; background:#0b0d13; }
+  .thumbs img:hover { border-color:var(--accent2); }
+  .center { display:flex; flex-direction:column; min-width:0; height:100%; overflow:hidden; }
+  .topbar { display:flex; flex-wrap:nowrap; gap:5px; align-items:center; padding:6px 10px; border-bottom:1px solid var(--line); background:var(--card); overflow-x:auto; }
+  .topbar select, .topbar input { width:auto; padding:5px 6px; font-size:12px; flex:none; }
+  .topbar input[type=number] { width:60px; }
+  .topbar button { padding:5px 8px; font-size:12px; flex:none; }
+  .topbar .sp { flex:1; }
+  .topbar .export { background:linear-gradient(90deg,#5865f2,#00a8fc); color:#fff; font-weight:bold; }
+  .play-btn { background:#10b981 !important; color:#fff !important; font-weight:bold; }
+  .play-btn.playing { background:#f59e0b !important; }
+  #stage { flex:1; overflow:auto; display:flex; align-items:center; justify-content:center; background:#090a0f; padding:20px; position:relative; }
+  #stage.panning { cursor:grab !important; }
+  #stage.eyedrop { cursor:crosshair !important; }
+  #stage .canvas-container { box-shadow:0 4px 24px #000a; }
+  .prop-row { display:flex; gap:6px; align-items:center; margin-bottom:6px; font-size:12px; color:var(--muted); }
+  .prop-row > span { width:58px; flex:none; }
+  .prop-row input[type=color] { width:32px; height:26px; border:none; background:none; padding:0; cursor:pointer; }
+  .prop-row input[type=range] { flex:1; }
+  .prop-row select, .prop-row input[type=number], .prop-row input[type=text] { flex:1; padding:5px; }
+  .tip { font-size:11px; color:var(--muted); line-height:1.45; }
+  kbd { background:#11131b; border:1px solid var(--line); border-radius:4px; padding:1px 4px; font-size:10px; }
+  .stabs { display:grid; grid-template-columns:repeat(4,1fr); gap:4px; margin:-12px -12px 10px; padding:8px 10px; position:sticky; top:-12px; background:var(--card); z-index:3; border-bottom:1px solid var(--line); }
+  .stabs button { padding:6px 2px !important; font-size:12px !important; }
+  .stabs button.on { background:var(--accent); color:#fff; font-weight:bold; }
+  .tplgrid { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+  .tpl { cursor:pointer; border-radius:6px; overflow:hidden; background:#0b0d13; border:1px solid var(--line); }
+  .tpl img { width:100%; aspect-ratio:1/1; object-fit:contain; display:block; background:#222533; }
+  .tpl div { font-size:11px; padding:4px 6px; color:var(--muted); }
+  .layer { display:flex; align-items:center; gap:2px; padding:5px 6px; border-radius:6px; background:var(--btn); margin-bottom:4px; cursor:pointer; font-size:12px; }
+  .layer.on { outline:2px solid var(--accent); }
+  .layer.hid .lname { opacity:.45; }
+  .layer .lname { flex:1; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+  .layer button { padding:2px 4px !important; background:transparent; }
+  #pagebar { display:flex; gap:6px; align-items:center; padding:6px 10px; border-top:1px solid var(--line); background:var(--card); overflow-x:auto; }
+  #pagebar button { padding:5px 8px; font-size:12px; flex:none; }
+  #pageList { display:flex; gap:6px; }
+  .pg { flex:none; height:44px; min-width:26px; position:relative; border:2px solid var(--line); border-radius:4px; cursor:pointer; background:#fff; overflow:hidden; }
+  .pg.on { border-color:var(--accent2); }
+  .pg img { width:100%; height:100%; display:block; object-fit:contain; }
+  .pg span { position:absolute; left:2px; bottom:1px; font-size:9px; background:#000a; color:#fff; padding:0 3px; border-radius:3px; }
+  #pgInfo { color:var(--muted); font-size:11px; flex:none; }
+  .box-group { background:#131622; border:1px solid var(--line); border-radius:8px; padding:10px; margin-bottom:8px; }
+  .box-group h4 { margin:0 0 6px; font-size:12px; color:var(--text); }
+  #ctxMenu { position:fixed; background:var(--card); border:1px solid var(--line); border-radius:8px; padding:5px; width:180px; box-shadow:0 8px 24px #000a; z-index:99; display:none; }
+  #ctxMenu button { width:100%; text-align:left; padding:6px 8px; font-size:12px; background:transparent; border-radius:4px; display:flex; justify-content:space-between; }
+  #ctxMenu button:hover { background:var(--btn); }
+  #ctxMenu hr { border:none; border-top:1px solid var(--line); margin:4px 0; }
+  #lightbox, #eraserModal, #cloudModal { position:fixed; inset:0; background:rgba(0,0,0,.88); display:none; align-items:center; justify-content:center; z-index:100; }
+  #lightbox img { max-width:94vw; max-height:90vh; border-radius:6px; }
+  .modal-box { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:14px; display:flex; flex-direction:column; gap:10px; max-width:92vw; max-height:90vh; width:420px; }
+  .eraser-canvas-wrap { position:relative; overflow:auto; max-width:85vw; max-height:65vh; border:1px solid var(--line); border-radius:6px; background:#000; }
+
+  #mobileNav { display:none; }
+  .drawer-close-bar { display:none; }
+
+  /* ---------- 手機版響應式介面（螢幕寬度 <= 860px 自動切換） ---------- */
+  @media (max-width: 860px) {
+    header { padding:0 8px; gap:6px; height:46px; overflow-x:auto; flex-wrap:nowrap; }
+    header h1 { display:none; }
+    .tab { padding:5px 10px; font-size:12px; }
+    .cloud-bar input { width:68px; font-size:11px; padding:4px 5px; }
+    .cloud-bar button { padding:4px 7px; font-size:11px; }
+    #tab-gen { height:calc(100vh - 46px); }
+    #tab-gen main { grid-template-columns:1fr; padding:10px; gap:12px; }
+    .gallery { grid-template-columns:1fr; gap:10px; }
+
+    #tab-editor { display:flex; flex-direction:column; height:calc(100vh - 46px); }
+    .center { flex:1; height:calc(100% - 50px); }
+    #stage { padding:10px; }
+    .topbar { padding:5px 8px; gap:4px; }
+    #pagebar { padding:4px 8px; }
+    .pg { height:36px; }
+
+    .side {
+      position:fixed; left:0; right:0; bottom:50px; height:58vh;
+      border-right:none; border-left:none; border-top:2px solid var(--accent);
+      border-radius:14px 14px 0 0; z-index:45; box-shadow:0 -8px 30px #000c;
+      transform:translateY(110%); transition:transform .22s ease-out;
+    }
+    .side.mobile-open { transform:translateY(0); }
+    .side .stabs { display:none; }
+    .drawer-close-bar {
+      display:flex; justify-content:space-between; align-items:center;
+      padding:0 0 8px; margin-bottom:8px; border-bottom:1px solid var(--line);
+      font-size:13px; font-weight:bold; color:var(--accent2);
+    }
+    #mobileNav {
+      display:grid; grid-template-columns:repeat(6,1fr); height:50px;
+      background:var(--card); border-top:1px solid var(--line); z-index:50; flex:none;
+    }
+    #mobileNav button {
+      border-radius:0; background:transparent; font-size:11px; padding:2px 0;
+      display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; color:var(--muted);
+    }
+    #mobileNav button.on { color:#fff; background:var(--btn); border-top:2px solid var(--accent2); font-weight:bold; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>AI 動畫生成與排版</h1>
+  <div class="tabs">
+    <button class="tab active" data-tab="gen">🎬 AI 生成動畫</button>
+    <button class="tab" data-tab="editor">📐 動畫排版編輯</button>
+  </div>
+  <div class="cloud-bar">
+    <input type="text" id="cloudProjId" placeholder="專案代號" value="card01">
+    <button id="cloudSaveBtn" class="act-btn">☁️ 存雲端</button>
+    <button id="cloudLoadBtn">📥 讀雲端</button>
+    <button id="cloudCfgBtn" style="padding:5px 6px">⚙️</button>
+  </div>
+</header>
+
+<!-- ======================= Tab 1：AI 生成動畫 ======================= -->
+<div id="tab-gen">
+<main>
+  <section class="card">
+    <label style="margin-top:0">參考圖片（選填：可把靜態圖直接轉成動畫，或提取原圖文字疊加到新動畫）</label>
+    <div class="drop" id="refDrop">點擊選擇圖片，或拖曳圖片至此（支援「圖片轉動畫」）</div>
+    <input type="file" id="refFile" accept="image/*" hidden>
+    <div id="refPanel" class="hidden">
+      <div class="refbox">
+        <img id="refImg" alt="">
+        <div class="refinfo">
+          <div id="refStatus">分析中…</div>
+          <div class="progress"><div id="refProgress"></div></div>
+          <div style="display:flex;gap:5px;margin-top:6px">
+            <button id="refAnimateDirectBtn" class="act-btn" style="padding:4px 8px;font-size:11px">🎬 直接把這張圖變成動畫</button>
+            <button id="refRemove" style="padding:4px 8px;font-size:11px">移除</button>
+          </div>
+        </div>
+      </div>
+      <div class="sub-box">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+          <span style="font-size:12px;font-weight:bold;color:var(--accent2)">辨識出的圖片文字（可直接修改）</span>
+          <span id="ocrCountBadge" style="font-size:11px;color:var(--muted)">分析中</span>
+        </div>
+        <textarea id="refOcrText" style="min-height:46px;font-size:12px"></textarea>
+        <label class="check">
+          <input type="checkbox" id="refCloneLayoutChk" checked> 動畫生成時，依原圖座標同步疊加動態文字
+        </label>
+        <button id="refCloneToEditor" class="act-btn" style="width:100%;margin-top:6px;padding:8px;font-size:12px">
+          將此圖與文字轉入「動畫排版編輯器」做動態卡牌 →
+        </button>
+      </div>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin:10px 0 4px">
+      <label for="prompt" style="margin:0">動畫指令描述（輸入想看的動作、人物與場景）</label>
+      <select id="brainMode" style="width:auto;padding:3px 6px;font-size:11px;background:#1f2942;color:#7dd3fc;border-color:#334168">
+        <option value="gpt" selected>🧠 深度視覺與動態拆解</option>
+        <option value="literal">🎯 純字面翻譯</option>
+      </select>
+    </div>
+    <textarea id="prompt" placeholder="例如：我在飛機上做飛翔動作 / 羅馬宣教，在雅典 / 一隻狗狂叫 / 櫻花樹下彈吉他的少年"></textarea>
+    <div class="chips" id="examples"></div>
+
+    <!-- 視覺與動態拆解預覽盒 + 連續對話改動畫 -->
+    <div class="gpt-box">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">
+        <span style="font-size:11px;font-weight:bold;color:#7dd3fc">🎬 AI 動畫導演拆解（必現物件 ＋ 自動運鏡與特效）</span>
+        <button id="previewScriptBtn" style="padding:2px 7px;font-size:11px;background:#2b3252;color:#fff">預覽分鏡</button>
+      </div>
+      <div id="entityTagBox" class="entity-tags"></div>
+      <textarea id="enPromptPreview" style="min-height:48px;font-size:11px;color:#cbd5e1;padding:6px" placeholder="按下「開始生成動畫」時，系統會自動鎖定【主體＋必現載具＋運鏡動作＋物理粒子】…"></textarea>
+
+      <div style="display:flex;gap:5px;margin-top:6px">
+        <input type="text" id="chatRefineInput" placeholder="💬 對話改動畫（例：改成暴風雨閃電、鏡頭劇烈震動、換成夜晚）" style="flex:1;font-size:12px;padding:6px 8px">
+        <button id="chatRefineBtn" class="act-btn" style="padding:6px 10px;font-size:12px;white-space:nowrap">對話修改</button>
+      </div>
+    </div>
+
+    <div class="row">
+      <div>
+        <label for="camMotion">🎥 攝影機運鏡動作</label>
+        <select id="camMotion">
+          <option value="auto" selected>自動（依指令智慧運鏡）</option>
+          <option value="flight">✈️ 高空飛行搖擺＋推進（適合飛機/空中）</option>
+          <option value="zoomIn">🔍 電影慢速推進（聚焦主角與細節）</option>
+          <option value="zoomOut">🌍 史詩全景拉遠（展現壯闊場景）</option>
+          <option value="panLR">↔️ 水平環景搖鏡（左右巡視場景）</option>
+          <option value="shake">💥 爆發震動抓拍（適合狂叫/戰鬥/吼叫）</option>
+          <option value="float">🌊 柔和呼吸懸浮（適合日常/唯美）</option>
+        </select>
+      </div>
+      <div>
+        <label for="vfxType">✨ 環境動態物理特效</label>
+        <select id="vfxType">
+          <option value="auto" selected>自動（依場景配對粒子）</option>
+          <option value="clouds">☁️ 高速雲海氣流＋飛行風線</option>
+          <option value="godrays">☀️ 流動丁達爾光束＋神聖金塵</option>
+          <option value="sakura">🌸 隨風飄落櫻花瓣</option>
+          <option value="rain">🌧️ 傾盆大雨＋隨機閃電光影</option>
+          <option value="fire">🔥 飛舞烈焰火星＋熱浪光暈</option>
+          <option value="snow">❄️ 漫天飄雪粒子</option>
+          <option value="none">無額外特效（純運鏡）</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row">
+      <div>
+        <label for="animMode">🎞️ 動畫生成模式</label>
+        <select id="animMode">
+          <option value="live60" selected>⚡ 60FPS 即時運鏡動畫（秒出片）</option>
+          <option value="story2">🎞️ 雙分鏡連續動作演繹（前後兩幕補間）</option>
+        </select>
+      </div>
+      <div>
+        <label for="style">🎨 動畫美術風格</label>
+        <select id="style">
+          <option value="">自動（依描述決定）</option>
+          <option value="Makoto Shinkai anime film style, vibrant clouds and sky, emotional cinematic lighting, detailed anime art">日系劇場版動漫 (新海誠風)</option>
+          <option value="cinematic movie still, shot on ARRI Alexa 65, natural volumetric lighting, realistic textures, 8k">電影級寫實影片</option>
+          <option value="Studio Ghibli hand-painted animation style, lush watercolor background, warm sunlight">吉卜力手繪動畫風</option>
+          <option value="3D Pixar and Disney animation movie style, expressive character, Octane render, volumetric lighting">3D 皮克斯動畫電影</option>
+          <option value="Unreal Engine 5 photorealistic 3D cinematic animation render, ray tracing, 8k VFX">UE5 次世代 3D 動畫</option>
+          <option value="modern cel-shaded webtoon animation, clean ink line art, vibrant coloring">韓系動態網漫風</option>
+          <option value="Spider-Verse comic animation style, dynamic action lines, halftone dots, bold ink">美漫潮流新宇宙風</option>
+          <option value="vintage copperplate etching engraving illustration, fine crosshatching ink lines, antique cream paper">復古銅版線畫動畫</option>
+          <option value="medieval illuminated manuscript style, aged parchment texture, ornate gold leaf accents">羊皮紙手抄本古風</option>
+          <option value="epic digital concept art, heavy brushwork, dynamic rim lighting, rich environment">奇幻厚塗概念動畫</option>
+          <option value="traditional ink wash animation, expressive zen brush strokes, textured xuan paper">東方水墨流動動畫</option>
+          <option value="cyberpunk aesthetic, neon lights, futuristic metropolis, rainy reflections">賽博龐克霓虹動畫</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row">
+      <div>
+        <label for="size">影片尺寸比例</label>
+        <select id="size">
+          <option value="768x1024" selected>3:4 直式動態卡牌 (768×1024)</option>
+          <option value="1024x768">4:3 橫式動態卡牌 (1024×768)</option>
+          <option value="1280x720">16:9 橫式動畫短片 (1280×720)</option>
+          <option value="720x1280">9:16 手機直式短片 (720×1280)</option>
+          <option value="1024x1024">1:1 方形動畫 (1024×1024)</option>
+        </select>
+      </div>
+      <div>
+        <label for="duration">影片秒數與一次生成數</label>
+        <div class="row" style="gap:5px">
+          <select id="duration" title="匯出影片秒數">
+            <option value="4">4 秒</option>
+            <option value="6" selected>6 秒</option>
+            <option value="8">8 秒</option>
+            <option value="10">10 秒</option>
+          </select>
+          <select id="count" title="同時生成幾部動畫">
+            <option value="1" selected>1 部</option>
+            <option value="2">2 部</option>
+            <option value="3">3 部</option>
+            <option value="4">4 部</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <label for="seed">種子碼 Seed（留空隨機）</label>
+    <div style="display:flex;gap:4px">
+      <input type="number" id="seed" placeholder="隨機" min="0" style="flex:1">
+      <button id="addCurrSeedFavBtn" style="padding:0 10px;font-size:11px">收藏</button>
+      <button id="randomClearSeedBtn" style="padding:0 10px;font-size:11px">清除</button>
+    </div>
+
+    <details class="fav-drawer" id="favDrawer">
+      <summary><span>常用 Seed 收藏清單</span><span id="favCountSpan" style="color:var(--muted);font-weight:normal">0 組 ▼</span></summary>
+      <div style="margin-top:8px">
+        <select id="favCatFilter" style="margin-bottom:6px;padding:5px;font-size:12px"></select>
+        <div id="favSeedList" style="max-height:130px;overflow-y:auto"></div>
+      </div>
+    </details>
+
+    <button id="generate" class="primary">🎬 開始生成動畫（無時間限制）</button>
+    <div id="status" class="status"></div>
+  </section>
+
+  <section class="card">
+    <div class="section-title"><h2>動畫生成結果（即時 60FPS 預覽 · 可直接下載 .webm 影片）</h2><button id="clear" style="padding:5px 10px;font-size:12px">清除全部</button></div>
+    <div class="gallery" id="gallery"></div>
+    <div class="empty" id="empty">尚無動畫，輸入指令後點擊「🎬 開始生成動畫」。</div>
+  </section>
+</main>
+</div>
+
+<!-- ======================= Tab 2：動畫排版編輯器 ======================= -->
+<div id="tab-editor" class="hidden">
+  <aside class="side" id="leftSideDrawer">
+    <div class="drawer-close-bar">
+      <span id="leftDrawerTitle">動畫與排版工具</span>
+      <button id="closeLeftDrawerBtn" style="padding:3px 8px;font-size:12px">✕ 收起</button>
+    </div>
+    <div class="stabs">
+      <button data-panel="anim" class="on">🎬 動畫</button>
+      <button data-panel="pro">🔍 抓字</button>
+      <button data-panel="card">📐 元件</button>
+      <button data-panel="layers">📑 圖層</button>
+    </div>
+
+    <!-- 分頁 1：畫布運鏡、環境粒子與物件獨立動畫 -->
+    <div class="spanel" data-panel="anim">
+      <div class="box-group" style="border-color:#00a8fc">
+        <h4>🎥 畫布背景運鏡與物理特效</h4>
+        <div class="prop-row"><span>背景運鏡</span>
+          <select id="edCamMotion">
+            <option value="flight">✈️ 高空飛行搖擺＋推進</option>
+            <option value="zoomIn" selected>🔍 電影慢速推進</option>
+            <option value="zoomOut">🌍 史詩全景拉遠</option>
+            <option value="panLR">↔️ 水平環景搖鏡</option>
+            <option value="shake">💥 爆發震動抓拍</option>
+            <option value="float">🌊 柔和呼吸懸浮</option>
+            <option value="none">⏹️ 固定不動</option>
+          </select>
+        </div>
+        <div class="prop-row"><span>環境粒子</span>
+          <select id="edVfxType">
+            <option value="clouds">☁️ 高速雲海氣流＋風線</option>
+            <option value="godrays" selected>☀️ 流動丁達爾光束＋金塵</option>
+            <option value="sakura">🌸 隨風飄落櫻花瓣</option>
+            <option value="rain">🌧️ 傾盆大雨＋閃電</option>
+            <option value="fire">🔥 飛舞烈焰火星</option>
+            <option value="snow">❄️ 漫天飄雪粒子</option>
+            <option value="none">無環境粒子</option>
+          </select>
+        </div>
+        <div class="prop-row"><span>影片秒數</span>
+          <select id="edDuration">
+            <option value="4">4 秒動畫</option>
+            <option value="6" selected>6 秒動畫</option>
+            <option value="8">8 秒動畫</option>
+            <option value="10">10 秒動畫</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="box-group">
+        <h4>✨ 選取物件獨立動畫（點選文字/貼圖/主角層）</h4>
+        <div class="tip" style="margin-bottom:6px">點選畫布上的任何文字或圖片，為它加上專屬動態效果：</div>
+        <div class="grid2" style="margin-bottom:6px">
+          <button data-objanim="none">⏹️ 固定無動畫</button>
+          <button data-objanim="float">🎈 上下懸浮飛行</button>
+          <button data-objanim="pulse">💓 呼吸放大脈衝</button>
+          <button data-objanim="typewriter">⌨️ 打字機逐字出現</button>
+          <button data-objanim="slideUp">⬆️ 由下往上滑入</button>
+          <button data-objanim="shake">⚡ 狂暴震動搖晃</button>
+        </div>
+        <button id="exportVideoQuickBtn" class="primary" style="margin-top:4px;padding:9px;font-size:13px">⬇ 錄製並下載完整動畫影片 (.webm)</button>
+      </div>
+
+      <div class="box-group">
+        <h4>新增圖片或已生成動畫底圖</h4>
+        <button id="edUpload" class="act-btn" style="width:100%;padding:7px;margin-bottom:6px">📁 上傳電腦/手機圖片</button>
+        <input type="file" id="edFile" accept="image/*" multiple hidden>
+        <div class="grid2" style="margin-bottom:8px">
+          <button id="proRemoveBgQuick">✂️ 圖片去背</button>
+          <button id="proMagicGrab">🕺 主角背景分離</button>
+        </div>
+        <div class="thumbs" id="aiThumbs"></div>
+        <div class="tip" id="aiThumbsEmpty">尚無生成作品。</div>
+      </div>
+    </div>
+
+    <!-- 分頁 2：圖片文字擷取與清單 -->
+    <div class="spanel hidden" data-panel="pro">
+      <div class="box-group">
+        <h4>圖片文字擷取與動態卡牌轉換</h4>
+        <button id="proCloneImgBtn" class="act-btn" style="width:100%;padding:8px;margin-bottom:6px">上傳卡牌/海報 → 自動轉為動態文字層</button>
+        <input type="file" id="proCloneFile" accept="image/*" hidden>
+        <div class="grid2" style="margin-bottom:6px">
+          <button id="proGrabSelectedBtn">擷取選取圖文字</button>
+          <button id="proBoxGrabBtn" style="color:var(--accent2);font-weight:bold">框選區域轉文字</button>
+        </div>
+        <div class="prop-row" style="margin-top:6px;background:#1a1d27;padding:5px 7px;border-radius:6px">
+          <span style="width:68px">原圖對照</span>
+          <input type="range" id="onionSkinSlider" min="0" max="0.9" step="0.05" value="0">
+          <button id="onionUploadBtn" style="padding:3px 6px;font-size:11px">換圖</button>
+          <input type="file" id="onionFile" accept="image/*" hidden>
+        </div>
+        <div id="proOcrStatus" class="tip" style="margin-top:5px;color:var(--accent2)"></div>
+      </div>
+
+      <div class="box-group">
+        <h4>本頁文字清單（打字即時連動）</h4>
+        <div id="quickTextList" style="display:flex;flex-direction:column;gap:5px;max-height:240px;overflow-y:auto"></div>
+      </div>
+    </div>
+
+    <!-- 分頁 3：版面元件与範本 -->
+    <div class="spanel hidden" data-panel="card">
+      <h3>新增文字框</h3>
+      <button class="txtbtn" data-text="title" style="font-size:15px;font-weight:900">＋ 新增標題</button>
+      <button class="txtbtn" data-text="subtitle" style="font-size:13px;font-weight:700">＋ 新增副標題</button>
+      <button class="txtbtn" data-text="body" style="font-size:12px">＋ 新增內文</button>
+
+      <h3>預設標籤組（圖示＋文字）</h3>
+      <div class="grid2" style="margin-bottom:8px">
+        <button data-smarttag="person">人物標籤組</button>
+        <button data-smarttag="element">元素標籤組</button>
+        <button data-smarttag="bible">經文標籤框</button>
+        <button data-smarttag="score">分數圓章組</button>
+      </div>
+
+      <h3>邊框、標題橫幅與紙張底紋</h3>
+      <div class="grid2" style="margin-bottom:8px">
+        <button data-ornate="vintageBorder">雙線外框</button>
+        <button data-ornate="scrollBanner">標題捲軸橫幅</button>
+        <button data-ornate="darkBadge">左上角深色標籤</button>
+        <button data-tex="parchment">羊皮紙紋理開關</button>
+      </div>
+
+      <h3>基本幾何形狀</h3>
+      <div class="grid4" style="margin-bottom:8px">
+        <button data-shape="rect">矩形</button><button data-shape="round">圓角框</button>
+        <button data-shape="circle">圓形</button><button data-shape="line">直線</button>
+      </div>
+
+      <h3>版面範本</h3>
+      <div class="tplgrid" id="tplGrid"></div>
+    </div>
+
+    <!-- 分頁 4：圖層與列印 -->
+    <div class="spanel hidden" data-panel="layers">
+      <div class="box-group">
+        <h4>A4 拼版列印匯出（含十字裁切線）</h4>
+        <select id="printGridMode" style="margin-bottom:6px">
+          <option value="3x3">A4 九宮格（卡牌 63×88mm）</option>
+          <option value="2x4">A4 八格（大卡牌 / 明信片）</option>
+          <option value="2x5">A4 十格（一般名片）</option>
+        </select>
+        <button id="exportA4SheetBtn" class="act-btn" style="width:100%;padding:8px">匯出 A4 列印用 PDF</button>
+      </div>
+
+      <h3>圖層順序（👁顯示/隱藏 · 🔒鎖定/解鎖）</h3>
+      <div id="layerList"></div>
+      <div class="tip" id="layerEmpty">目前無圖層。</div>
+    </div>
+  </aside>
+
+  <div class="center">
+    <div class="topbar">
+      <button id="edPlayToggleBtn" class="play-btn playing">⏸️ 動畫播放中</button>
+      <button id="mobilePanToggleBtn" title="手機單指拖曳平移畫布模式">🖐️ 移畫布</button>
+      <select id="edPreset">
+        <option value="744x1039">卡牌直式 (744×1039)</option>
+        <option value="1039x744">卡牌橫式 (1039×744)</option>
+        <option value="1080x1080" selected>方形 (1080×1080)</option>
+        <option value="1280x720">橫式短片 16:9 (1280×720)</option>
+        <option value="720x1280">直式短片 9:16 (720×1280)</option>
+        <option value="custom">自訂尺寸</option>
+      </select>
+      <input type="number" id="edW" min="50" max="5000"><span style="color:var(--muted)">×</span><input type="number" id="edH" min="50" max="5000">
+      <label class="check" style="margin:0 3px;font-size:11px;white-space:nowrap"><input type="checkbox" id="magicResizeChk" checked> 等比縮放</label>
+      <button id="edUndo" title="復原">↶</button>
+      <button id="edRedo" title="重做">↷</button>
+      <button id="edZoomOut">－</button><span id="edZoom" style="font-size:11px;color:var(--muted);min-width:34px;text-align:center">100%</span><button id="edZoomIn">＋</button><button id="edFit">適應</button>
+      <button id="edEyedropBtn" title="點擊畫布吸取顏色">吸色</button>
+      <span class="sp"></span>
+      <button id="edNew">清空</button>
+      <button id="edOpen">讀檔</button><input type="file" id="edOpenFile" accept=".json,application/json" hidden>
+      <button id="edSave">存檔</button>
+      <select id="edFormat">
+        <option value="webm" selected>🎬 動畫影片 (.webm)</option>
+        <option value="png">PNG 靜態圖</option>
+        <option value="jpeg">JPG 靜態圖</option>
+        <option value="pdf">PDF 文件</option>
+      </select>
+      <button id="edExport" class="export">⬇ 匯出下載</button>
+    </div>
+    <div id="stage"><canvas id="c"></canvas></div>
+    <div id="pagebar">
+      <div id="pageList"></div>
+      <button id="pgAdd">＋ 新增分鏡頁</button><button id="pgDup">複製頁</button><button id="pgDel">刪除頁</button>
+      <button id="pgLeft">◀</button><button id="pgRight">▶</button><span id="pgInfo"></span>
+    </div>
+  </div>
+
+  <aside class="side right" id="props">
+    <div class="drawer-close-bar">
+      <span>屬性設定</span>
+      <button id="closeRightDrawerBtn" style="padding:3px 8px;font-size:12px">✕ 收起</button>
+    </div>
+    <div id="pCanvas">
+      <h3>畫布背景</h3>
+      <div class="prop-row"><span>背景色</span><input type="color" id="pBg" value="#ffffff"></div>
+      <div class="tip" style="margin-top:8px">
+        🎬 <b>動畫編輯說明：</b><br>
+        • 舞台預設即時播放 60FPS 運鏡與環境粒子<br>
+        • 當你點選畫布上的物件拖曳或打字時，會自動暫停回正方便對位；放開後可點上方「▶️ 播放」預覽動態，並匯出 `.webm` 影片！
+      </div>
+    </div>
+
+    <div id="pText" class="hidden">
+      <h3>文字設定</h3>
+      <div class="prop-row"><span>字型</span>
+        <select id="pFont">
+          <option value="Noto Sans TC">思源黑體</option>
+          <option value="Noto Serif TC">思源宋體</option>
+          <option value="LXGW WenKai TC">霞鶩文楷</option>
+          <option value="Huninn">粉圓體</option>
+          <option value="Microsoft JhengHei">微軟正黑體</option>
+          <option value="Montserrat">Montserrat</option>
+          <option value="Playfair Display">Playfair</option>
+          <option value="Bebas Neue">Bebas Neue</option>
+        </select>
+      </div>
+      <div class="prop-row"><span>字級</span><input type="number" id="pFontSize" min="6" max="1000"></div>
+      <div class="prop-row"><span>顏色</span><input type="color" id="pTextColor"></div>
+      <div class="grid3" style="margin-bottom:6px">
+        <button id="pBold" style="font-weight:900">粗體</button>
+        <button id="pItalic" style="font-style:italic">斜體</button>
+        <button id="pAlign">對齊</button>
+      </div>
+      <div class="prop-row"><span>行距</span><input type="range" id="pLine" min="0.7" max="2.5" step="0.05"></div>
+      <div class="prop-row"><span>字距</span><input type="range" id="pSpacing" min="-100" max="800" step="10"></div>
+      <div class="prop-row"><span>外框</span><input type="color" id="pTextStroke"><input type="range" id="pTextStrokeW" min="0" max="16" step="0.5"></div>
+      <div class="prop-row"><span>底色</span><input type="color" id="pTextBg"><button id="pTextBgClear" style="padding:4px 8px">清除</button></div>
+      <h3>文字樣式</h3>
+      <div class="grid4">
+        <button data-fx="none">無</button>
+        <button data-fx="shadow">陰影</button>
+        <button data-fx="outline">白框</button>
+        <button data-fx="gold">深框金字</button>
+      </div>
+    </div>
+
+    <div id="pShape" class="hidden">
+      <h3>形狀設定</h3>
+      <div class="prop-row"><span>填色</span><input type="color" id="pFill"><button id="pFillClear" style="padding:4px 8px">透明</button></div>
+      <div class="prop-row" id="pStrokeRow"><span>邊框</span><input type="color" id="pStroke"><input type="range" id="pStrokeW" min="0" max="40" step="1"></div>
+      <div class="prop-row" id="pRadiusRow"><span>圓角</span><input type="range" id="pRadius" min="0" max="200" step="1"></div>
+    </div>
+
+    <div id="pImage" class="hidden">
+      <h3>圖片與去背</h3>
+      <button id="pGrabTextBtn" class="act-btn" style="width:100%;margin-bottom:6px;padding:8px">擷取圖中文字轉為動態文字層</button>
+      <div class="grid2" style="margin-bottom:6px">
+        <button id="pCover">設為動畫底圖</button>
+        <button id="pRemoveBg">圖片去背</button>
+        <button id="proMagicEraser">局部塗抹消除</button>
+        <button id="pFeatherImgBtn">邊緣漸層羽化</button>
+      </div>
+      <div class="prop-row"><span>圓角</span><input type="range" id="pImgRadius" min="0" max="50" step="1"></div>
+      <div class="prop-row"><span>亮度</span><input type="range" id="pBright" min="-0.5" max="0.5" step="0.02" value="0"></div>
+      <div class="prop-row"><span>對比</span><input type="range" id="pContrast" min="-0.5" max="0.5" step="0.02" value="0"></div>
+      <div class="prop-row"><span>飽和度</span><input type="range" id="pSat" min="-1" max="1" step="0.05" value="0"></div>
+      <div class="tip" id="bgStatus" style="margin-top:4px"></div>
+    </div>
+
+    <div id="pMulti" class="hidden">
+      <h3>群組設定</h3>
+      <div class="grid2" style="margin-bottom:8px">
+        <button id="pGroup">組成群組</button>
+        <button id="pUngroup">取消群組</button>
+      </div>
+    </div>
+
+    <div id="pCommon" class="hidden">
+      <h3>對齊與順序</h3>
+      <div class="prop-row"><span>透明度</span><input type="range" id="pOpacity" min="0.05" max="1" step="0.05"></div>
+      <div class="grid3" style="margin-bottom:6px">
+        <button data-align="left">靠左</button><button data-align="hcenter">水平置中</button><button data-align="right">靠右</button>
+        <button data-align="top">靠上</button><button data-align="vcenter">垂直置中</button><button data-align="bottom">靠下</button>
+      </div>
+      <div class="grid4" style="margin-bottom:6px">
+        <button id="pFront">最上層</button><button id="pFwd">上移</button><button id="pBwd">下移</button><button id="pBack">最底層</button>
+      </div>
+      <div class="grid2">
+        <button id="pDup">複製</button><button id="pLock">鎖定</button>
+        <button id="pDel" style="grid-column:span 2;background:#5a2330">刪除物件</button>
+      </div>
+    </div>
+  </aside>
+
+  <nav id="mobileNav">
+    <button data-mnav="anim" class="on"><span>🎬</span><span>動畫設定</span></button>
+    <button data-mnav="pro"><span>🔍</span><span>文字擷取</span></button>
+    <button data-mnav="card"><span>📐</span><span>版面元件</span></button>
+    <button data-mnav="layers"><span>📑</span><span>圖層/列印</span></button>
+    <button data-mnav="props"><span>⚙️</span><span>屬性調整</span></button>
+    <button data-mnav="close"><span>🖼️</span><span>只看畫布</span></button>
+  </nav>
+</div>
+
+<div id="ctxMenu">
+  <button data-ctx="grabtext"><span>擷取圖片文字</span></button>
+  <hr>
+  <button data-ctx="dup"><span>複製物件</span><kbd>Ctrl+D</kbd></button>
+  <button data-ctx="front"><span>移到最上層</span></button>
+  <button data-ctx="back"><span>移到最底層</span></button>
+  <button data-ctx="lock"><span>鎖定 / 解鎖</span></button>
+  <hr>
+  <button data-ctx="del" style="color:#ff7a7a"><span>刪除</span><kbd>Del</kbd></button>
+</div>
+
+<div id="eraserModal">
+  <div class="modal-box" style="width:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <h3 style="margin:0;font-size:14px">局部塗抹消除（塗抹要修補的區域）</h3>
+      <button id="eraserCancel" style="background:#5a2330;padding:5px 10px">取消</button>
+    </div>
+    <div class="prop-row" style="margin:0">
+      <span>筆刷粗細</span><input type="range" id="eraserSize" min="8" max="100" value="32">
+      <button id="eraserApply" class="act-btn" style="padding:7px 14px">執行消除</button>
+    </div>
+    <div class="eraser-canvas-wrap"><canvas id="eraserCanvas"></canvas></div>
+  </div>
+</div>
+
+<div id="cloudModal">
+  <div class="modal-box">
+    <h3 style="margin:0;font-size:15px">雲端資料庫設定 (Firebase Realtime DB)</h3>
+    <div class="tip">輸入你的 Firebase Realtime Database 網址，即可在手機與電腦之間直接同步動畫排版專案與收藏的 Seed：</div>
+    <input type="text" id="fbUrlInput" value="https://money-d8327-default-rtdb.firebaseio.com">
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button id="fbModalClose" style="padding:7px 14px">關閉</button>
+      <button id="fbModalSave" class="act-btn" style="padding:7px 14px">儲存設定</button>
+    </div>
+  </div>
+</div>
+
+<div id="lightbox"><img alt=""></div>
+
+<script>
+/* =====================================================================
+   第 1 部分腳本：
+   1. 智慧動畫導演引擎（雙編碼視覺拆解 ＋ 自動決定運鏡與物理粒子）
+   2. 60FPS 即時動畫渲染器 (AnimEngine) ＋ WebM 真實影片錄製器
+   3. 破除 45 秒限制的多通道無限制生圖核心 ＋ 中文 OCR 引擎
+   ===================================================================== */
+const IMG_API = "https://image.pollinations.ai/prompt/";
+const FAV_KEY = "ai-studio-fav-seeds-v1";
+const FB_URL_KEY = "ai-studio-fb-url";
+const $ = id => document.getElementById(id);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const hasCJK = s => /[\u3040-\u30ff\u3400-\u9fff\uac00-\ud7af]/.test(s);
+const rand = () => Math.floor(Math.random() * 1e9);
+function setStatus(t) { if ($("status")) $("status").textContent = t; }
+const blobToDataURL = b => new Promise(r => { const fr = new FileReader(); fr.onload = () => r(fr.result); fr.readAsDataURL(b); });
+const loadScript = (() => {
+  const cache = {};
+  return src => cache[src] || (cache[src] = new Promise((res, rej) => {
+    const el = document.createElement("script"); el.src = src; el.onload = res;
+    el.onerror = () => { delete cache[src]; el.remove(); rej(new Error("無法載入 " + src)); };
+    document.head.appendChild(el);
+  }));
+})();
+
+const dbReady = new Promise((resolve, reject) => {
+  const req = indexedDB.open("ai-image-studio", 1);
+  req.onupgradeneeded = () => { req.result.createObjectStore("images", { keyPath: "id" }); req.result.createObjectStore("kv"); };
+  req.onsuccess = () => resolve(req.result);
+  req.onerror = () => reject(req.error);
+});
+async function idb(storeName, mode, fn) {
+  const d = await dbReady;
+  return new Promise((resolve, reject) => {
+    const tx = d.transaction(storeName, mode);
+    const r = fn(tx.objectStore(storeName));
+    tx.oncomplete = () => resolve(r && r.result);
+    tx.onerror = () => reject(tx.error);
+  });
+}
+const imgPut = e => idb("images", "readwrite", s => s.put(e));
+const imgDel = id => idb("images", "readwrite", s => s.delete(id));
+const imgAll = () => idb("images", "readonly", s => s.getAll());
+const imgClear = () => idb("images", "readwrite", s => s.clear());
+const kvGet = k => idb("kv", "readonly", s => s.get(k));
+const kvSet = (k, v) => idb("kv", "readwrite", s => s.put(v, k));
+
+document.querySelectorAll(".tab").forEach(t => t.onclick = () => showTab(t.dataset.tab));
+function showTab(name) {
+  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.dataset.tab === name));
+  $("tab-gen").classList.toggle("hidden", name !== "gen");
+  $("tab-editor").classList.toggle("hidden", name !== "editor");
+  if (name === "editor" && typeof Editor !== "undefined") { Editor.init(); Editor.refreshAiThumbs(); requestAnimationFrame(() => Editor.fit()); }
+}
+
+/* =====================================================================
+   🎬 60FPS 即時動畫與物理粒子渲染核心 (AnimEngine)
+   支援：運鏡變換、雙分鏡補間、6種物理粒子特效、以及 MediaRecorder 匯出 .webm 影片
+   ===================================================================== */
+const AnimEngine = (() => {
+  function createParticles(count = 55) {
+    const arr = [];
+    for (let i = 0; i < count; i++) {
+      arr.push({
+        x: Math.random(), y: Math.random(),
+        r: Math.random() * 3.5 + 1.2,
+        vx: (Math.random() - 0.5) * 0.003,
+        vy: Math.random() * 0.004 + 0.0015,
+        phase: Math.random() * Math.PI * 2,
+        alpha: Math.random() * 0.65 + 0.25
+      });
+    }
+    return arr;
+  }
+
+  /* 根據運鏡模式計算當前時間 t (秒) 的 [scale, offsetX, offsetY, angleRad] */
+  function computeCameraTransform(camMode, t, duration = 6, W = 768, H = 1024) {
+    const p = (t % duration) / duration;
+    const wave = Math.sin(p * Math.PI * 2);
+    const halfWave = (1 - Math.cos(p * Math.PI * 2)) / 2;
+
+    if (camMode === "flight") {
+      return {
+        scale: 1.12 + halfWave * 0.12,
+        dx: Math.sin(p * Math.PI * 2) * W * 0.035,
+        dy: Math.cos(p * Math.PI * 4) * H * 0.025,
+        angle: Math.sin(p * Math.PI * 2) * 0.045
+      };
+    }
+    if (camMode === "zoomIn") {
+      return { scale: 1.02 + p * 0.20, dx: 0, dy: -p * H * 0.02, angle: 0 };
+    }
+    if (camMode === "zoomOut") {
+      return { scale: 1.24 - p * 0.20, dx: 0, dy: 0, angle: 0 };
+    }
+    if (camMode === "panLR") {
+      return { scale: 1.18, dx: wave * W * 0.075, dy: 0, angle: 0 };
+    }
+    if (camMode === "shake") {
+      const burst = Math.sin(t * 28) * Math.max(0, Math.sin(t * 4));
+      return {
+        scale: 1.10 + Math.abs(burst) * 0.06,
+        dx: burst * W * 0.022,
+        dy: Math.cos(t * 32) * Math.abs(burst) * H * 0.018,
+        angle: burst * 0.025
+      };
+    }
+    if (camMode === "float") {
+      return { scale: 1.07 + halfWave * 0.05, dx: wave * W * 0.015, dy: Math.cos(p * Math.PI * 2) * H * 0.02, angle: wave * 0.012 };
+    }
+    return { scale: 1, dx: 0, dy: 0, angle: 0 };
+  }
+
+  /* 繪製 60FPS 環境物理粒子與光影層 */
+  function drawVFXLayer(ctx, W, H, vfxType, t, particles) {
+    if (!vfxType || vfxType === "none") return;
+    ctx.save();
+
+    if (vfxType === "clouds") {
+      /* 高速飛行氣流線與雲霧流動 */
+      ctx.strokeStyle = "rgba(255,255,255,0.32)";
+      ctx.lineWidth = Math.max(1.5, W * 0.0025);
+      particles.forEach((pt, i) => {
+        const x = ((pt.x - t * (0.28 + (i % 5) * 0.06)) % 1 + 1) % 1 * W;
+        const y = ((pt.y + Math.sin(t * 2 + pt.phase) * 0.01) % 1 + 1) % 1 * H;
+        const len = W * (0.08 + (i % 4) * 0.04);
+        ctx.globalAlpha = pt.alpha * 0.65;
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x + len, y + len * 0.08);
+        ctx.stroke();
+      });
+      /* 底部動態雲海柔光 */
+      const g = ctx.createLinearGradient(0, H * 0.65, 0, H);
+      g.addColorStop(0, "rgba(255,255,255,0)");
+      g.addColorStop(1, `rgba(240,248,255,${0.18 + Math.sin(t * 2) * 0.06})`);
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = g;
+      ctx.fillRect(0, H * 0.65, W, H * 0.35);
+    } else if (vfxType === "godrays") {
+      /* 流動丁達爾斜射神聖光束 + 漂浮金塵 */
+      ctx.globalCompositeOperation = "screen";
+      for (let i = 0; i < 4; i++) {
+        const sway = Math.sin(t * 0.9 + i * 1.4) * W * 0.08;
+        const x0 = W * (0.15 + i * 0.22) + sway;
+        const grad = ctx.createLinearGradient(x0, 0, x0 + W * 0.25, H);
+        grad.addColorStop(0, `rgba(255, 230, 150, ${0.16 + Math.sin(t * 1.5 + i) * 0.05})`);
+        grad.addColorStop(0.7, "rgba(255, 210, 120, 0.05)");
+        grad.addColorStop(1, "rgba(255, 200, 100, 0)");
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.moveTo(x0 - W * 0.06, 0);
+        ctx.lineTo(x0 + W * 0.08, 0);
+        ctx.lineTo(x0 + W * 0.42, H);
+        ctx.lineTo(x0 + W * 0.12, H);
+        ctx.closePath();
+        ctx.fill();
+      }
+      particles.forEach(pt => {
+        const x = ((pt.x + Math.sin(t + pt.phase) * 0.03) % 1 + 1) % 1 * W;
+        const y = ((pt.y - t * 0.025) % 1 + 1) % 1 * H;
+        ctx.fillStyle = `rgba(255, 238, 170, ${pt.alpha * (0.5 + 0.5 * Math.sin(t * 3 + pt.phase))})`;
+        ctx.beginPath();
+        ctx.arc(x, y, pt.r * (W / 600), 0, Math.PI * 2);
+        ctx.fill();
+      });
+    } else if (vfxType === "sakura") {
+      /* 飄落櫻花瓣 */
+      particles.forEach(pt => {
+        const x = ((pt.x + Math.sin(t * 1.2 + pt.phase) * 0.06 + t * 0.03) % 1 + 1) % 1 * W;
+        const y = ((pt.y + t * (0.06 + pt.vy * 12)) % 1 + 1) % 1 * H;
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(t * 1.8 + pt.phase);
+        ctx.fillStyle = `rgba(255, 183, 197, ${pt.alpha * 0.9})`;
+        ctx.beginPath();
+        const rx = pt.r * 2.2 * (W / 650), ry = pt.r * 1.2 * (W / 650);
+        ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      });
+    } else if (vfxType === "rain") {
+      /* 傾盆大雨 + 偶發閃電光影 */
+      ctx.strokeStyle = "rgba(185, 220, 255, 0.52)";
+      ctx.lineWidth = Math.max(1, W * 0.0018);
+      particles.forEach((pt, i) => {
+        const x = ((pt.x - t * 0.12) % 1 + 1) % 1 * W;
+        const y = ((pt.y + t * (0.45 + (i % 4) * 0.1)) % 1 + 1) % 1 * H;
+        const len = H * 0.055;
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x - len * 0.22, y + len);
+        ctx.stroke();
+      });
+      if (Math.sin(t * 7.3) > 0.965) {
+        ctx.fillStyle = "rgba(220, 240, 255, 0.28)";
+        ctx.fillRect(0, 0, W, H);
+      }
+    } else if (vfxType === "fire") {
+      /* 往上飛舞的烈焰火星 */
+      ctx.globalCompositeOperation = "screen";
+      particles.forEach(pt => {
+        const x = ((pt.x + Math.sin(t * 2.5 + pt.phase) * 0.04) % 1 + 1) % 1 * W;
+        const y = ((pt.y - t * (0.12 + pt.vy * 18)) % 1 + 1) % 1 * H;
+        const r = pt.r * 1.6 * (W / 650);
+        ctx.fillStyle = pt.phase > 3 ? `rgba(255, 100, 20, ${pt.alpha})` : `rgba(255, 210, 60, ${pt.alpha})`;
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    } else if (vfxType === "snow") {
+      /* 漫天飄雪 */
+      particles.forEach(pt => {
+        const x = ((pt.x + Math.sin(t * 0.9 + pt.phase) * 0.04) % 1 + 1) % 1 * W;
+        const y = ((pt.y + t * (0.05 + pt.vy * 10)) % 1 + 1) % 1 * H;
+        ctx.fillStyle = `rgba(255, 255, 255, ${pt.alpha * 0.9})`;
+        ctx.beginPath();
+        ctx.arc(x, y, pt.r * 1.5 * (W / 650), 0, Math.PI * 2);
+        ctx.fill();
+      });
+    }
+
+    ctx.restore();
+  }
+
+  /* 錄製任意 Canvas 為 .webm 影片檔並下載 */
+  async function recordCanvasToWebM(targetCanvas, durationSec = 6, onProgress = null, fileName = "ai-animation.webm") {
+    const stream = targetCanvas.captureStream ? targetCanvas.captureStream(30) : targetCanvas.mozCaptureStream(30);
+    let mime = "video/webm;codecs=vp9";
+    if (!MediaRecorder.isTypeSupported(mime)) mime = "video/webm;codecs=vp8";
+    if (!MediaRecorder.isTypeSupported(mime)) mime = "video/webm";
+
+    const recorder = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 6000000 });
+    const chunks = [];
+    recorder.ondataavailable = e => { if (e.data && e.data.size > 0) chunks.push(e.data); };
+
+    return new Promise((resolve, reject) => {
+      recorder.onstop = () => {
+        const blob = new Blob(chunks, { type: "video/webm" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = fileName;
+        a.click();
+        resolve(blob);
+      };
+      recorder.onerror = err => reject(err);
+      recorder.start(100);
+
+      const start = performance.now();
+      const totalMs = durationSec * 1000;
+      const tick = () => {
+        const elapsed = performance.now() - start;
+        if (onProgress) onProgress(Math.min(99, Math.round((elapsed / totalMs) * 100)));
+        if (elapsed >= totalMs) {
+          if (recorder.state === "recording") recorder.stop();
+        } else {
+          requestAnimationFrame(tick);
+        }
+      };
+      requestAnimationFrame(tick);
+    });
+  }
+
+  return { createParticles, computeCameraTransform, drawVFXLayer, recordCanvasToWebM };
+})();
+
+/* =====================================================================
+   🧠 雙編碼器視覺與動畫拆解大腦 (同時鎖定【必現物件】＋【運鏡】＋【物理粒子】)
+   ===================================================================== */
+const VISUAL_OBJECT_ANCHORS = [
+  { reg: /飛機|客機|班機/, tag: "✈️ 必現物件：大型飛機", clip: "giant commercial jet airplane with wide wings and jet engines", zhExpand: "（畫面中央必須清楚畫出結構完整的大型噴射客機機身、兩側長機翼與渦輪引擎）", autoCam: "flight", autoVfx: "clouds" },
+  { reg: /戰鬥機|戰機/, tag: "🛩️ 必現物件：戰鬥機", clip: "supersonic military fighter jet aircraft with wings and cockpit", zhExpand: "（清楚呈現戰鬥機機身、機翼與駕駛艙）", autoCam: "flight", autoVfx: "clouds" },
+  { reg: /直升機/, tag: "🚁 必現物件：直升機", clip: "helicopter with spinning rotor blades and fuselage", zhExpand: "（清楚呈現直升機機體與螺旋槳）", autoCam: "flight", autoVfx: "clouds" },
+  { reg: /火車|列車|高鐵|捷運/, tag: "🚆 必現物件：列車", clip: "detailed passenger train on railway tracks", zhExpand: "（清楚呈現完整的火車車廂與鐵軌）", autoCam: "panLR", autoVfx: "godrays" },
+  { reg: /船|帆船|郵輪|方舟/, tag: "⛵ 必現物件：船隻", clip: "large wooden sailing ship vessel on water", zhExpand: "（清楚呈現完整的船體、甲板與船帆）", autoCam: "float", autoVfx: "clouds" },
+  { reg: /汽車|跑車|車子|卡車/, tag: "🚗 必現物件：車輛", clip: "detailed automobile vehicle with wheels and body", zhExpand: "（清楚呈現完整的車體與車輪）", autoCam: "panLR", autoVfx: "none" },
+  { reg: /吉他|鋼琴|小提琴|樂器|鼓/, tag: "🎸 必現物件：樂器", clip: "detailed musical instrument held accurately", zhExpand: "（清楚呈現樂器的完整琴身與結構）", autoCam: "zoomIn", autoVfx: "sakura" },
+  { reg: /狗|犬|柴犬|狼犬/, tag: "🐕 主體鎖定：犬隻", clip: "realistic canine dog subject in focus, detailed fur", zhExpand: "（主體是毛髮清晰的狗）", autoCam: "shake", autoVfx: "none" },
+  { reg: /貓|貓咪/, tag: "🐈 主體鎖定：貓咪", clip: "realistic feline cat subject in focus, detailed whiskers and fur", zhExpand: "（主體是毛髮清晰的貓咪）", autoCam: "zoomIn", autoVfx: "godrays" },
+  { reg: /獅|老虎|馬|老鷹|鴿子|鯨魚|龍/, tag: "🦁 主體鎖定：動物", clip: "majestic animal subject in focus, detailed anatomy", zhExpand: "（清楚呈現該動物的完整身軀）", autoCam: "zoomIn", autoVfx: "godrays" },
+  { reg: /保羅|彼得|摩西|大衛|耶穌|使徒|先知/, tag: "🧔 人物鎖定：聖經歷史人物", clip: "bearded 1st-century Middle-Eastern biblical man in woven linen tunic and mantle cloak", zhExpand: "（留著鬍鬚、身穿西元一世紀古希臘羅馬亞麻長袍與披肩的男性使徒）", autoCam: "zoomIn", autoVfx: "godrays" },
+  { reg: /雅典|衛城|帕德嫩|羅馬|神廟|石階/, tag: "🏛️ 場景鎖定：古典希臘羅馬建築", clip: "ancient Athens Acropolis marble steps, classical Greek Parthenon temple with Doric columns", zhExpand: "（古希臘雅典衛城石階與遠方帕德嫩神廟大理石柱）", autoCam: "zoomOut", autoVfx: "godrays" }
+];
+
+function buildVisualSceneGraph(rawZh) {
+  let s = (rawZh || "").trim();
+  if (!s) return { expandedZh: "", clipHeader: "", tags: [], recCam: "zoomIn", recVfx: "godrays" };
+
+  const matchedTags = [];
+  const clipAnchors = [];
+  let recCam = "zoomIn";
+  let recVfx = "godrays";
+
+  if (/^我們/.test(s)) {
+    s = s.replace(/^我們/, "一群年輕主角（全身清晰入鏡），");
+    clipAnchors.push("full body group of young people");
+    matchedTags.push("👥 主體：我們（具體人物群）");
+  } else if (/^我|[，,。！!？?\s]我/.test(s)) {
+    s = s.replace(/^我/, "一位年輕主角（全身清晰入鏡），").replace(/([，,。！!？?\s])我/g, "$1這位主角");
+    clipAnchors.push("full body young protagonist");
+    matchedTags.push("🧍 主體：我（具體全身人物）");
+  }
+
+  if (/在飛機上/.test(s) && /飛翔|展翅|動作|站|跳/.test(s)) {
+    s = s.replace(/在飛機上/g, "雙腳穩穩站在高空飛行的巨大民航客機機身與機翼頂部表面上，");
+    clipAnchors.push("person standing on top of a giant commercial airplane exterior fuselage and wide wings in mid-air");
+    recCam = "flight"; recVfx = "clouds";
+  } else if (/在飛機上|坐飛機|搭飛機/.test(s)) {
+    s = s.replace(/在飛機上|坐飛機|搭飛機/g, "在大型民航客機上（清楚呈現飛機機身、機翼與機艙結構），");
+    recCam = "flight"; recVfx = "clouds";
+  }
+
+  if (/做?飛翔的?動作|做?飛翔姿勢|展翅動作|張開雙手/.test(s)) {
+    s = s.replace(/做?飛翔的?動作|做?飛翔姿勢|展翅動作/g, "雙腳站穩，雙手臂向左右兩側水平張開做出如同鳥兒展翅的姿勢（open-arms pose）");
+    clipAnchors.push("both arms stretched wide open horizontally in a playful wing-like pose");
+    matchedTags.push("🙌 動作：雙臂張開展翅姿勢");
+    recCam = "flight";
+  }
+
+  if (/狂叫|大叫|吠叫|咆哮|怒吼|爆炸|戰鬥/.test(s)) {
+    s = s.replace(/狂叫|大叫|吠叫|咆哮/g, "張大嘴巴露出牙齒大聲吼叫，充滿爆發力");
+    clipAnchors.push("mouth wide open barking fiercely, dynamic action shot");
+    matchedTags.push("💥 運鏡：爆發震動抓拍");
+    recCam = "shake";
+  }
+
+  if (/宣教|講道|傳道|演講/.test(s)) {
+    s = s.replace(/宣教|講道|傳道/g, "舉起手臂激昂地向周圍聆聽的群眾宣講");
+    clipAnchors.push("preaching passionately with raised hand to a crowd of listeners");
+    matchedTags.push("🗣️ 動作：向群眾激昂宣講");
+  }
+
+  VISUAL_OBJECT_ANCHORS.forEach(item => {
+    if (item.reg.test(rawZh)) {
+      matchedTags.push(item.tag);
+      clipAnchors.push(item.clip);
+      if (!s.includes(item.zhExpand)) s += "，" + item.zhExpand;
+      if (item.autoCam) recCam = item.autoCam;
+      if (item.autoVfx) recVfx = item.autoVfx;
+    }
+  });
+
+  if (/櫻花|花瓣|春/.test(rawZh)) { recVfx = "sakura"; matchedTags.push("🌸 特效：飄落櫻花"); }
+  else if (/雨|雷|閃電|暴風/.test(rawZh)) { recVfx = "rain"; matchedTags.push("🌧️ 特效：大雨與閃電"); }
+  else if (/雪|冬|冰/.test(rawZh)) { recVfx = "snow"; matchedTags.push("❄️ 特效：漫天飄雪"); }
+  else if (/火|焰|戰火|燃燒/.test(rawZh)) { recVfx = "fire"; matchedTags.push("🔥 特效：烈焰火星"); }
+  else if (/飛|天空|雲|高空/.test(rawZh)) { recVfx = "clouds"; matchedTags.push("☁️ 特效：高速雲海氣流"); }
+
+  return {
+    expandedZh: s,
+    clipHeader: [...new Set(clipAnchors)].join(", "),
+    tags: matchedTags,
+    recCam,
+    recVfx
+  };
+}
+
+function resolveCamAndVfx(rawZh) {
+  const graph = buildVisualSceneGraph(rawZh);
+  const userCam = $("camMotion")?.value || "auto";
+  const userVfx = $("vfxType")?.value || "auto";
+  return {
+    cam: userCam === "auto" ? graph.recCam : userCam,
+    vfx: userVfx === "auto" ? graph.recVfx : userVfx
+  };
+}
+
+async function fastTranslate(text, targetLang = "en") {
+  if (!text || !text.trim()) return "";
+  const clean = text.trim();
+  if (!hasCJK(clean) && targetLang === "en") return clean;
+  const q = encodeURIComponent(clean);
+
+  const gtx = (async () => {
+    const ctrl = new AbortController();
+    const tid = setTimeout(() => ctrl.abort(), 5000);
+    const r = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${q}`, { signal: ctrl.signal });
+    clearTimeout(tid);
+    if (!r.ok) throw new Error("gtx");
+    const j = await r.json();
+    const out = j[0].map(x => x[0]).join("").trim();
+    if (!out || (targetLang === "en" && hasCJK(out))) throw new Error("cjk");
+    return out;
+  })();
+
+  const mm = (async () => {
+    const ctrl = new AbortController();
+    const tid = setTimeout(() => ctrl.abort(), 5500);
+    const r = await fetch(`https://api.mymemory.translated.net/get?langpair=zh-TW|${targetLang}&q=${q}`, { signal: ctrl.signal });
+    clearTimeout(tid);
+    if (!r.ok) throw new Error("mm");
+    const j = await r.json();
+    const out = (j?.responseData?.translatedText || "").trim();
+    if (!out || (targetLang === "en" && hasCJK(out))) throw new Error("cjk");
+    return out;
+  })();
+
+  try { return await Promise.any([gtx, mm]); } catch { return clean; }
+}
+const translateText = fastTranslate;
+const translateToEnglish = text => fastTranslate(text, "en");
+
+async function runGPTVisualDirector(rawZh) {
+  const cleanZh = (rawZh || "").trim();
+  if (!cleanZh) return "";
+
+  const isGptMode = ($("brainMode")?.value || "gpt") === "gpt";
+  if (!isGptMode) {
+    if ($("entityTagBox")) $("entityTagBox").innerHTML = "";
+    return await fastTranslate(cleanZh, "en");
+  }
+
+  const graph = buildVisualSceneGraph(cleanZh);
+  if ($("entityTagBox")) {
+    $("entityTagBox").innerHTML = (graph.tags.length ? graph.tags : ["🎬 智慧動畫分鏡拆解"]).map(t => `<span class="e-tag">${t}</span>`).join("");
+  }
+
+  let bodyEn = await fastTranslate(graph.expandedZh, "en");
+  bodyEn = bodyEn
+    .replace(/\bI'm\b|\bI am\b/gi, "A young protagonist is")
+    .replace(/\bon the plane\b/gi, "standing on the exterior fuselage and wide wings of a giant commercial passenger airplane flying high in the sky")
+    .replace(/\bflying moves\b|\bflying action\b/gi, "stretching both arms wide open horizontally like wings while standing firmly");
+
+  return [
+    graph.clipHeader,
+    bodyEn,
+    "dynamic animation keyframe composition, all mentioned objects fully visible in frame, high resolution masterpiece"
+  ].filter(Boolean).join(". ");
+}
+
+let lastTrackedRawPrompt = "";
+if ($("prompt")) {
+  $("prompt").addEventListener("input", () => {
+    if ($("prompt").value.trim() !== lastTrackedRawPrompt) {
+      $("enPromptPreview").value = "";
+      const g = buildVisualSceneGraph($("prompt").value.trim());
+      if ($("entityTagBox")) $("entityTagBox").innerHTML = g.tags.map(t => `<span class="e-tag">${t}</span>`).join("");
+    }
+  });
+}
+
+if ($("previewScriptBtn")) {
+  $("previewScriptBtn").onclick = async () => {
+    const raw = $("prompt").value.trim();
+    if (!raw) return alert("請先在上方輸入動畫描述");
+    const btn = $("previewScriptBtn");
+    btn.disabled = true; btn.textContent = "拆解中…";
+    try {
+      const script = await runGPTVisualDirector(raw);
+      $("enPromptPreview").value = script;
+      lastTrackedRawPrompt = raw;
+      setStatus("✅ 已產生動畫分鏡指令，可直接點擊「🎬 開始生成動畫」。");
+    } finally {
+      btn.disabled = false; btn.textContent = "預覽分鏡";
+    }
+  };
+}
+
+if ($("chatRefineBtn")) {
+  $("chatRefineBtn").onclick = async () => {
+    const mod = $("chatRefineInput").value.trim();
+    if (!mod) return alert("請輸入你想修改的動畫細節（例如：改成暴風雨閃電、鏡頭拉遠）");
+    const baseRaw = $("prompt").value.trim();
+    const combinedZh = baseRaw ? `${baseRaw}，並且${mod}` : mod;
+    $("prompt").value = combinedZh;
+    $("enPromptPreview").value = await runGPTVisualDirector(combinedZh);
+    lastTrackedRawPrompt = combinedZh;
+    $("chatRefineInput").value = "";
+    $("generate").click();
+  };
+}
+
+/* =====================================================================
+   中文 OCR 辨識與筆畫無痕抹除引擎
+   ===================================================================== */
+const OCRLayoutEngine = (() => {
+  let workerProm = null;
+  function getWorker(onProgress) {
+    if (!workerProm) {
+      workerProm = Tesseract.createWorker("chi_tra+eng", 1, {
+        logger: m => { if (m.status === "recognizing text" && onProgress) onProgress(m.progress || 0); }
+      }).catch(e => { workerProm = null; throw e; });
+    }
+    return workerProm;
+  }
+
+  const lum = (r, g, b) => r * 0.299 + g * 0.587 + b * 0.114;
+  const rgbHex = (r, g, b) => "#" + [r, g, b].map(x => Math.max(0, Math.min(255, Math.round(x))).toString(16).padStart(2, "0")).join("");
+
+  function makeScaledCanvas(srcCanvas, scale) {
+    const c = document.createElement("canvas");
+    c.width = Math.max(100, Math.round(srcCanvas.width * scale));
+    c.height = Math.max(100, Math.round(srcCanvas.height * scale));
+    c.getContext("2d").drawImage(srcCanvas, 0, 0, c.width, c.height);
+    return c;
+  }
+
+  function makeInvertedDarkBadgesCanvas(srcCanvas, scale = 0.65) {
+    const c = makeScaledCanvas(srcCanvas, scale), w = c.width, h = c.height;
+    const ctx = c.getContext("2d"), imgData = ctx.getImageData(0, 0, w, h), d = imgData.data;
+    const block = 14, gw = Math.ceil(w / block), gh = Math.ceil(h / block), gridLum = new Float32Array(gw * gh);
+    for (let gy = 0; gy < gh; gy++) {
+      for (let gx = 0; gx < gw; gx++) {
+        let sum = 0, cnt = 0;
+        for (let y = gy * block; y < Math.min(h, (gy + 1) * block); y += 2) {
+          for (let x = gx * block; x < Math.min(w, (gx + 1) * block); x += 2) {
+            const i = (y * w + x) * 4; sum += lum(d[i], d[i + 1], d[i + 2]); cnt++;
+          }
+        }
+        gridLum[gy * gw + gx] = sum / (cnt || 1);
+      }
+    }
+    for (let y = 0; y < h; y++) {
+      const gy = Math.min(gh - 1, Math.floor(y / block));
+      for (let x = 0; x < w; x++) {
+        const gx = Math.min(gw - 1, Math.floor(x / block)), i = (y * w + x) * 4, l = lum(d[i], d[i + 1], d[i + 2]);
+        if (gridLum[gy * gw + gx] < 115) {
+          const inv = 255 - l, v = inv < 120 ? Math.max(0, inv * 0.35) : 255;
+          d[i] = d[i + 1] = d[i + 2] = v;
+        } else {
+          d[i] = d[i + 1] = d[i + 2] = 255;
+        }
+      }
+    }
+    ctx.putImageData(imgData, 0, 0);
+    return c;
+  }
+
+  function sampleAccurateColors(ctx, imgW, imgH, bbox) {
+    const x0 = Math.max(0, Math.floor(bbox.x0)), y0 = Math.max(0, Math.floor(bbox.y0));
+    const w = Math.min(imgW - x0, Math.max(4, Math.ceil(bbox.x1 - bbox.x0)));
+    const h = Math.min(imgH - y0, Math.max(4, Math.ceil(bbox.y1 - bbox.y0)));
+    const data = ctx.getImageData(x0, y0, w, h).data, pixels = [];
+    for (let i = 0; i < data.length; i += 4) pixels.push({ r: data[i], g: data[i + 1], b: data[i + 2], l: lum(data[i], data[i + 1], data[i + 2]) });
+    pixels.sort((a, b) => a.l - b.l);
+    const medianLum = pixels[Math.floor(pixels.length * 0.55)].l, isDarkBg = medianLum < 110;
+    const bgSlice = isDarkBg ? pixels.slice(0, Math.max(1, Math.floor(pixels.length * 0.4))) : pixels.slice(Math.floor(pixels.length * 0.6));
+    const fgSlice = isDarkBg ? pixels.slice(Math.floor(pixels.length * 0.85)) : pixels.slice(0, Math.max(1, Math.floor(pixels.length * 0.15)));
+    const avg = arr => { let r = 0, g = 0, b = 0; arr.forEach(p => { r += p.r; g += p.g; b += p.b; }); const n = arr.length || 1; return [r / n, g / n, b / n]; };
+    let [bgR, bgG, bgB] = avg(bgSlice), [fgR, fgG, fgB] = avg(fgSlice);
+    const bgLum = lum(bgR, bgG, bgB);
+    if (Math.abs(lum(fgR, fgG, fgB) - bgLum) < 60) {
+      if (isDarkBg) { fgR = 244; fgG = 236; fgB = 216; } else { fgR = 30; fgG = 45; fgB = 36; }
+    }
+    return { bgColor: rgbHex(bgR, bgG, bgB), fgColor: rgbHex(fgR, fgG, fgB), bgRGB: [bgR, bgG, bgB], isDarkBg, bgLum };
+  }
+
+  function detectBestFont(text, relH, bgRGB) {
+    if (/^[A-Z0-9\s\-:]+$/.test(text)) return "Montserrat";
+    const isWarmParchment = bgRGB && (bgRGB[0] - bgRGB[2] > 22);
+    if (isWarmParchment && relH > 0.045) return "Noto Serif TC";
+    if (isWarmParchment && /行傳|福音|詩篇|創世|書|章/.test(text)) return "LXGW WenKai TC";
+    return "Noto Sans TC";
+  }
+
+  function eraseTextWithGrain(sourceCanvas, lines) {
+    const out = document.createElement("canvas"); out.width = sourceCanvas.width; out.height = sourceCanvas.height;
+    const ctx = out.getContext("2d"); ctx.drawImage(sourceCanvas, 0, 0);
+    lines.forEach(ln => {
+      const pad = Math.max(3, Math.round(ln.height * 0.06));
+      const x0 = Math.max(0, Math.floor(ln.x - pad)), y0 = Math.max(0, Math.floor(ln.y - pad));
+      const w = Math.min(out.width - x0, Math.ceil(ln.width + pad * 2)), h = Math.min(out.height - y0, Math.ceil(ln.height + pad * 2));
+      if (w <= 2 || h <= 2) return;
+      const imgData = ctx.getImageData(x0, y0, w, h), d = imgData.data, mask = new Uint8Array(w * h);
+      for (let i = 0; i < w * h; i++) {
+        const l = lum(d[i * 4], d[i * 4 + 1], d[i * 4 + 2]);
+        if (ln.isDarkBg ? (l > ln.bgLum + 26) : (l < ln.bgLum - 26)) mask[i] = 1;
+      }
+      const dilated = new Uint8Array(mask);
+      for (let y = 2; y < h - 2; y++) for (let x = 2; x < w - 2; x++) {
+        const i = y * w + x;
+        if (mask[i] || mask[i - 1] || mask[i + 1] || mask[i - w] || mask[i + w] || mask[i - 2] || mask[i + 2] || mask[i - w * 2] || mask[i + w * 2]) dilated[i] = 1;
+      }
+      const [baseR, baseG, baseB] = ln.bgRGB || [232, 223, 200];
+      for (let y = 0; y < h; y++) {
+        let rowR = 0, rowG = 0, rowB = 0, rowCnt = 0;
+        for (let x = 0; x < w; x++) { const i = y * w + x; if (!dilated[i]) { rowR += d[i * 4]; rowG += d[i * 4 + 1]; rowB += d[i * 4 + 2]; rowCnt++; } }
+        const rBg = rowCnt > 4 ? rowR / rowCnt : baseR, gBg = rowCnt > 4 ? rowG / rowCnt : baseG, bBg = rowCnt > 4 ? rowB / rowCnt : baseB;
+        for (let x = 0; x < w; x++) {
+          const i = y * w + x; if (!dilated[i]) continue;
+          const grain = ((x * 37 + y * 17) % 9) - 4;
+          d[i * 4] = Math.max(0, Math.min(255, rBg + grain));
+          d[i * 4 + 1] = Math.max(0, Math.min(255, gBg + grain));
+          d[i * 4 + 2] = Math.max(0, Math.min(255, bBg + grain));
+        }
+      }
+      ctx.putImageData(imgData, x0, y0);
+    });
+    return out.toDataURL("image/jpeg", 0.95);
+  }
+
+  function extractCleanBlocksFromResult(ret, scale, imgW, imgH) {
+    const rawLines = ret?.data?.lines || [], blocks = [];
+    for (const line of rawLines) {
+      const validWords = (line.words || []).filter(w => {
+        const t = (w.text || "").trim();
+        if (!t || w.confidence < 40) return false;
+        if (/^[|_~`.,:;'"!?\\/=\-+<>()[\]{}@#$%^&*©®™§£¥€]+$/.test(t)) return false;
+        const bh = (w.bbox.y1 - w.bbox.y0) / scale;
+        if (bh < imgH * 0.015 || bh > imgH * 0.22) return false;
+        if (t.length === 1 && !/[\u4e00-\u9fff0-9]/.test(t) && w.confidence < 82) return false;
+        if (/^[Iil1|O0Q〇口日目川三]{1,3}$/.test(t) && w.confidence < 78) return false;
+        return true;
+      });
+      if (!validWords.length) continue;
+      validWords.sort((a, b) => a.bbox.x0 - b.bbox.x0);
+      const medH = validWords.map(w => w.bbox.y1 - w.bbox.y0).sort((a, b) => a - b)[Math.floor(validWords.length / 2)];
+      let cur = null;
+      for (const w of validWords) {
+        if (validWords.length > 1 && (w.bbox.y1 - w.bbox.y0) > medH * 1.65) continue;
+        if (!cur) cur = { words: [w], x0: w.bbox.x0, y0: w.bbox.y0, x1: w.bbox.x1, y1: w.bbox.y1 };
+        else if (w.bbox.x0 - cur.x1 < medH * 1.35) {
+          cur.words.push(w); cur.x0 = Math.min(cur.x0, w.bbox.x0); cur.y0 = Math.min(cur.y0, w.bbox.y0); cur.x1 = Math.max(cur.x1, w.bbox.x1); cur.y1 = Math.max(cur.y1, w.bbox.y1);
+        } else { blocks.push(cur); cur = { words: [w], x0: w.bbox.x0, y0: w.bbox.y0, x1: w.bbox.x1, y1: w.bbox.y1 }; }
+      }
+      if (cur) blocks.push(cur);
+    }
+    return blocks.map(b => {
+      if (b.words.length > 1 && b.words[0].confidence < 74 && !/[\u4e00-\u9fff]/.test(b.words[0].text)) {
+        b.words.shift();
+        b.x0 = Math.min(...b.words.map(w => w.bbox.x0)); b.y0 = Math.min(...b.words.map(w => w.bbox.y0));
+        b.x1 = Math.max(...b.words.map(w => w.bbox.x1)); b.y1 = Math.max(...b.words.map(w => w.bbox.y1));
+      }
+      let text = "";
+      b.words.forEach((w, i) => {
+        const t = w.text.trim();
+        if (i > 0 && /^[A-Za-z0-9\-:]+$/.test(b.words[i - 1].text.trim()) && /^[A-Za-z0-9\-:]+$/.test(t)) text += " ";
+        text += t;
+      });
+      text = text.replace(/^[^\u4e00-\u9fffA-Za-z0-9]+/, "").replace(/[xX＊*](\d)/g, "×$1").trim();
+      const avgConf = b.words.reduce((s, w) => s + w.confidence, 0) / b.words.length;
+      const x0 = b.x0 / scale, y0 = b.y0 / scale, x1 = b.x1 / scale, y1 = b.y1 / scale;
+      return { text, x0, y0, x1, y1, width: x1 - x0, height: y1 - y0, conf: avgConf };
+    }).filter(b => b.text && b.width > 12 && b.height > 12);
+  }
+
+  function mergeMultiPassBlocks(allBlocks) {
+    allBlocks.sort((a, b) => (((b.text.match(/[\u4e00-\u9fff]/g) || []).length * 20 + b.conf) - ((a.text.match(/[\u4e00-\u9fff]/g) || []).length * 20 + a.conf)));
+    const kept = [];
+    for (const b of allBlocks) {
+      const overlaps = kept.some(k => {
+        const ix0 = Math.max(k.x0, b.x0), iy0 = Math.max(k.y0, b.y0), ix1 = Math.min(k.x1, b.x1), iy1 = Math.min(k.y1, b.y1);
+        return (ix1 > ix0 && iy1 > iy0) && ((ix1 - ix0) * (iy1 - iy0)) / Math.min(k.width * k.height, b.width * b.height) > 0.42;
+      });
+      if (!overlaps) kept.push(b);
+    }
+    kept.sort((a, b) => Math.abs(a.y0 - b.y0) > 25 ? a.y0 - b.y0 : a.x0 - b.x0);
+    return kept;
+  }
+
+  async function analyze(blobOrUrl, onProgress) {
+    const img = await new Promise((res, rej) => {
+      const im = new Image(); im.crossOrigin = "anonymous"; im.onload = () => res(im); im.onerror = rej;
+      im.src = typeof blobOrUrl === "string" ? blobOrUrl : URL.createObjectURL(blobOrUrl);
+    });
+    const cv = document.createElement("canvas"), W = img.naturalWidth || img.width, H = img.naturalHeight || img.height;
+    cv.width = W; cv.height = H;
+    const ctx = cv.getContext("2d"); ctx.drawImage(img, 0, 0);
+    const worker = await getWorker(onProgress);
+
+    const scale1 = Math.min(1, 1150 / Math.max(W, H)), ret1 = await worker.recognize(makeScaledCanvas(cv, scale1));
+    const scale2 = Math.min(0.45, 520 / Math.max(W, H)), ret2 = await worker.recognize(makeScaledCanvas(cv, scale2));
+    const scale3 = Math.min(0.75, 900 / Math.max(W, H)), ret3 = await worker.recognize(makeInvertedDarkBadgesCanvas(cv, scale3));
+
+    const merged = mergeMultiPassBlocks([
+      ...extractCleanBlocksFromResult(ret1, scale1, W, H),
+      ...extractCleanBlocksFromResult(ret2, scale2, W, H),
+      ...extractCleanBlocksFromResult(ret3, scale3, W, H)
+    ]);
+
+    const lines = merged.map(b => {
+      const colorInfo = sampleAccurateColors(ctx, W, H, b);
+      const centerX = (b.x0 + b.x1) / 2, relH = b.height / H;
+      return {
+        text: b.text, x: b.x0, y: b.y0, width: b.width, height: b.height,
+        relX: b.x0 / W, relY: b.y0 / H, relW: b.width / W, relH,
+        relCenterX: centerX / W, relCenterY: (b.y0 + b.y1) / 2 / H,
+        align: Math.abs(centerX - W / 2) < W * 0.12 ? "center" : "left",
+        fgColor: colorInfo.fgColor, bgColor: colorInfo.bgColor, bgRGB: colorInfo.bgRGB,
+        isDarkBg: colorInfo.isDarkBg, bgLum: colorInfo.bgLum,
+        isBold: relH > 0.038,
+        fontFamily: detectBestFont(b.text, relH, colorInfo.bgRGB)
+      };
+    });
+
+    const cleanedDataUrl = lines.length ? eraseTextWithGrain(cv, lines) : cv.toDataURL("image/jpeg", 0.95);
+    return { width: W, height: H, lines, cleanedDataUrl, originalDataUrl: cv.toDataURL("image/jpeg", 0.95) };
+  }
+
+  async function compositeLayoutOntoImage(baseBlobOrUrl, ocrLines, customLinesText) {
+    const img = await new Promise((res, rej) => {
+      const im = new Image(); im.crossOrigin = "anonymous"; im.onload = () => res(im); im.onerror = rej;
+      im.src = typeof baseBlobOrUrl === "string" ? blobOrUrl : URL.createObjectURL(baseBlobOrUrl);
+    });
+    const cv = document.createElement("canvas"), W = img.naturalWidth || img.width, H = img.naturalHeight || img.height;
+    cv.width = W; cv.height = H;
+    const ctx = cv.getContext("2d"); ctx.drawImage(img, 0, 0);
+    const overrideArr = (customLinesText || "").split("\n").map(s => s.trim()).filter(Boolean);
+    ocrLines.forEach((ln, idx) => {
+      const txt = overrideArr[idx] !== undefined ? overrideArr[idx] : ln.text;
+      if (!txt) return;
+      const fontSize = Math.max(14, Math.round(ln.relH * H * 0.88));
+      ctx.save();
+      ctx.font = `${ln.isBold ? "900" : "700"} ${fontSize}px "${ln.fontFamily || "Noto Sans TC"}", sans-serif`;
+      ctx.textBaseline = "middle"; ctx.textAlign = ln.align || "center";
+      const drawX = ln.align === "center" ? ln.relCenterX * W : ln.relX * W, drawY = ln.relCenterY * H;
+      ctx.fillStyle = ln.fgColor || "#2a180c"; ctx.fillText(txt, drawX, drawY);
+      ctx.restore();
+    });
+    return new Promise(res => cv.toBlob(b => res(b), "image/jpeg", 0.95));
+  }
+
+  return { analyze, compositeLayoutOntoImage, sampleAccurateColors, eraseTextWithGrain, getWorker };
+})();
+
+/* =====================================================================
+   Seed 收藏清單 + 參考圖分析 + 60FPS 即時動畫卡片播放器
+   ===================================================================== */
+function loadFavSeeds() {
+  try { return JSON.parse(localStorage.getItem(FAV_KEY) || "[]"); } catch { return []; }
+}
+function saveFavSeeds(list) {
+  localStorage.setItem(FAV_KEY, JSON.stringify(list));
+  renderFavSeedsUI();
+}
+function addSeedToFav(seed, defaultName = "", category = "常用", styleVal = "") {
+  if (!seed && seed !== 0) return alert("請先輸入或產生一個 Seed 數字");
+  const name = prompt("請輸入此 Seed 的名稱：", defaultName || `動畫 #${seed}`);
+  if (!name) return;
+  const cat = prompt("分類標籤（例如：人物、飛行、卡牌）：", category) || "常用";
+  const list = loadFavSeeds().filter(x => String(x.seed) !== String(seed));
+  list.unshift({ seed: Number(seed), name: name.trim(), category: cat.trim(), style: styleVal || $("style")?.value || "", time: Date.now() });
+  saveFavSeeds(list);
+  if ($("favDrawer")) $("favDrawer").open = true;
+}
+function renderFavSeedsUI() {
+  const list = loadFavSeeds(), catSel = $("favCatFilter"), filterCat = catSel?.value || "ALL";
+  if ($("favCountSpan")) $("favCountSpan").textContent = `${list.length} 組 ▼`;
+  const cats = ["ALL", ...new Set(list.map(x => x.category))];
+  if (catSel) {
+    const prev = catSel.value || "ALL";
+    catSel.innerHTML = cats.map(c => `<option value="${c}">${c === "ALL" ? "全部類別 (" + list.length + ")" : c}</option>`).join("");
+    if (cats.includes(prev)) catSel.value = prev;
+  }
+  const filtered = filterCat === "ALL" ? list : list.filter(x => x.category === filterCat);
+  const listEl = $("favSeedList");
+  if (!listEl) return;
+  if (!filtered.length) {
+    listEl.innerHTML = `<div class="tip" style="text-align:center;padding:6px">尚無收藏項目</div>`;
+    return;
+  }
+  listEl.innerHTML = "";
+  filtered.forEach(item => {
+    const row = document.createElement("div");
+    row.style.cssText = "display:flex;align-items:center;justify-content:space-between;background:#1a1d27;border:1px solid #2c3040;border-radius:6px;padding:5px 8px;margin-bottom:4px;gap:6px";
+    row.innerHTML = `
+      <div style="flex:1;min-width:0;cursor:pointer">
+        <div style="font-size:12px;font-weight:bold;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+          <span style="background:#2d2560;color:var(--accent2);padding:1px 5px;border-radius:4px;font-size:10px;margin-right:4px">${item.category}</span>${item.name}
+        </div>
+        <div style="font-size:10px;color:var(--muted)">Seed: ${item.seed}</div>
+      </div>
+      <button class="apply-fav" style="padding:3px 7px;font-size:11px;background:var(--accent);color:#fff">套用</button>
+      <button class="del-fav" style="padding:3px 6px;font-size:11px;background:#5a2330;color:#fff">✕</button>
+    `;
+    const applyFn = () => {
+      $("seed").value = item.seed;
+      if (item.style && $("style")) $("style").value = item.style;
+      setStatus(`已套用 Seed：${item.name} (${item.seed})`);
+    };
+    row.querySelector("div").onclick = applyFn;
+    row.querySelector(".apply-fav").onclick = applyFn;
+    row.querySelector(".del-fav").onclick = () => { if (confirm(`確定移除「${item.name}」？`)) saveFavSeeds(loadFavSeeds().filter(x => x.seed !== item.seed)); };
+    listEl.appendChild(row);
+  });
+}
+if ($("addCurrSeedFavBtn")) $("addCurrSeedFavBtn").onclick = () => addSeedToFav($("seed").value);
+if ($("randomClearSeedBtn")) $("randomClearSeedBtn").onclick = () => { $("seed").value = ""; setStatus("已設為隨機種子碼"); };
+if ($("favCatFilter")) $("favCatFilter").onchange = renderFavSeedsUI;
+renderFavSeedsUI();
+
+const Ref = { blob: null, ocrLines: [], ocrResult: null };
+async function setReference(file) {
+  if (!file || !file.type.startsWith("image/")) return;
+  Ref.blob = file; Ref.ocrLines = []; Ref.ocrResult = null;
+  $("refPanel").classList.remove("hidden"); $("refImg").src = URL.createObjectURL(file);
+  $("refOcrText").value = ""; $("ocrCountBadge").textContent = "掃描中…";
+  try {
+    $("refStatus").textContent = "正在辨識圖片文字與座標…";
+    const ocrRes = await OCRLayoutEngine.analyze(file, p => { $("refProgress").style.width = (p * 100).toFixed(1) + "%"; });
+    if (Ref.blob !== file) return;
+    Ref.ocrResult = ocrRes; Ref.ocrLines = ocrRes.lines;
+    $("ocrCountBadge").textContent = `共 ${ocrRes.lines.length} 行文字`;
+    $("refOcrText").value = ocrRes.lines.map(l => l.text).join("\n");
+    $("refCloneLayoutChk").checked = ocrRes.lines.length > 0;
+    $("refProgress").style.width = "100%";
+    $("refStatus").textContent = "可點「直接把這張圖變成動畫」或生圖疊字";
+  } catch {
+    $("ocrCountBadge").textContent = "無文字";
+    $("refStatus").textContent = "參考圖已載入";
+  }
+}
+function clearReference() {
+  Ref.blob = null; Ref.ocrLines = []; Ref.ocrResult = null;
+  $("refPanel").classList.add("hidden"); $("refFile").value = "";
+}
+$("refDrop").onclick = () => $("refFile").click();
+$("refFile").onchange = e => setReference(e.target.files[0]);
+$("refRemove").onclick = clearReference;
+["dragover", "dragenter"].forEach(ev => $("refDrop").addEventListener(ev, e => { e.preventDefault(); $("refDrop").classList.add("over"); }));
+["dragleave", "drop"].forEach(ev => $("refDrop").addEventListener(ev, e => { e.preventDefault(); $("refDrop").classList.remove("over"); }));
+$("refDrop").addEventListener("drop", e => setReference(e.dataTransfer.files[0]));
+$("refCloneToEditor").onclick = async () => {
+  if (!Ref.blob) return;
+  showTab("editor");
+  if (typeof Editor !== "undefined") await Editor.cloneImageLayoutToCanvas(Ref.ocrResult || await OCRLayoutEngine.analyze(Ref.blob), $("refOcrText").value);
+};
+
+/* 直接將上傳的參考圖轉成 60FPS 動畫卡片 */
+if ($("refAnimateDirectBtn")) {
+  $("refAnimateDirectBtn").onclick = async () => {
+    if (!Ref.blob) return;
+    const raw = $("prompt").value.trim() || "參考圖動態演繹";
+    const { cam, vfx } = resolveCamAndVfx(raw);
+    const bmp = await createImageBitmap(Ref.blob);
+    const entry = {
+      id: Date.now() + "-ref", original: raw, prompt: raw,
+      size: `${bmp.width}x${bmp.height}`, seed: rand(),
+      camMotion: cam, vfxType: vfx, duration: +($("duration")?.value || 6),
+      animMode: "live60", blob: Ref.blob, rawBgBlob: Ref.blob, time: Date.now()
+    };
+    const card = createCard(entry, true);
+    await imgPut({ ...entry, card: undefined });
+    await card.showAnim([URL.createObjectURL(Ref.blob)]);
+    setStatus("✅ 已將上傳圖片轉為 60FPS 即時動畫！可點擊「⬇ 下載影片」匯出 .webm。");
+  };
+}
+
+async function validateAndCleanImage(blob) {
+  const img = await createImageBitmap(blob), W = img.width, H = img.height;
+  const cv = document.createElement("canvas"); cv.width = W; cv.height = H;
+  const ctx = cv.getContext("2d"); ctx.drawImage(img, 0, 0);
+
+  const checkPts = [
+    [W * 0.1, H * 0.08], [W * 0.85, H * 0.08],
+    [W * 0.5, H * 0.22], [W * 0.15, H * 0.72],
+    [W * 0.85, H * 0.85], [W * 0.5, H * 0.5]
+  ];
+  let yellowHits = 0;
+  for (const [px, py] of checkPts) {
+    const p = ctx.getImageData(Math.floor(px), Math.floor(py), 1, 1).data;
+    if (p[0] > 220 && p[1] > 180 && p[1] < 235 && p[2] > 55 && p[2] < 140) yellowHits++;
+  }
+  if (yellowHits >= 4) throw new Error("RATE_LIMIT_BANNER");
+
+  const wmW = Math.min(180, Math.round(W * 0.22)), wmH = Math.min(36, Math.round(H * 0.042));
+  const x0 = W - wmW, y0 = H - wmH;
+  const refData = ctx.getImageData(x0, Math.max(0, y0 - wmH), wmW, wmH).data;
+  const target = ctx.getImageData(x0, y0, wmW, wmH), d = target.data;
+  for (let y = 0; y < wmH; y++) {
+    const blend = y / wmH;
+    for (let x = 0; x < wmW; x++) {
+      const i = (y * wmW + x) * 4, refRow = Math.min(wmH - 1, Math.max(0, wmH - 1 - (y % 6))), ri = (refRow * wmW + x) * 4;
+      const diff = Math.abs(d[i] - refData[ri]) + Math.abs(d[i + 1] - refData[ri + 1]) + Math.abs(d[i + 2] - refData[ri + 2]);
+      if (diff > 65 || y > wmH * 0.35) {
+        d[i] = Math.round(d[i] * (1 - blend * 0.85) + refData[ri] * (blend * 0.85));
+        d[i + 1] = Math.round(d[i + 1] * (1 - blend * 0.85) + refData[ri + 1] * (blend * 0.85));
+        d[i + 2] = Math.round(d[i + 2] * (1 - blend * 0.85) + refData[ri + 2] * (blend * 0.85));
+      }
+    }
+  }
+  ctx.putImageData(target, x0, y0);
+  return await new Promise(res => cv.toBlob(b => res(b || blob), "image/jpeg", 0.95));
+}
+
+["我在飛機上做飛翔動作", "羅馬宣教，在雅典", "一隻狗狂叫", "櫻花樹下彈吉他的少年，日系光影"].forEach(t => {
+  const b = document.createElement("button"); b.className = "chip"; b.textContent = t;
+  b.onclick = () => {
+    $("prompt").value = t;
+    $("enPromptPreview").value = "";
+    const g = buildVisualSceneGraph(t);
+    if ($("entityTagBox")) $("entityTagBox").innerHTML = g.tags.map(x => `<span class="e-tag">${x}</span>`).join("");
+  };
+  $("examples")?.appendChild(b);
+});
+
+async function buildPrompt(raw) {
+  const style = $("style").value;
+  const cleanRaw = raw
+    .replace(/排版(跟|與|和)?(它|他|原圖|圖片)?(一模)?一樣/g, "")
+    .replace(/文字(跟|與|和)?(我給的圖|原圖|它|他)?(一模)?一樣/g, "")
+    .trim();
+
+  let coreScript = ($("enPromptPreview")?.value || "").trim();
+  if (!coreScript || hasCJK(coreScript) || lastTrackedRawPrompt !== raw.trim()) {
+    setStatus("🧠 正在拆解動畫場景結構與運鏡參數…");
+    coreScript = await runGPTVisualDirector(cleanRaw || raw);
+    if ($("enPromptPreview")) $("enPromptPreview").value = coreScript;
+    lastTrackedRawPrompt = raw.trim();
+  }
+
+  return [coreScript, style].filter(Boolean).join(", ");
+}
+
+function buildBypassImageUrl(promptText, sizeStr, seedNum, engineName = "flux", jitterStep = 0) {
+  let [w, h] = sizeStr.split("x").map(Number);
+  if (jitterStep > 0) {
+    const offsets = [[0, 0], [-8, -8], [8, -8], [-16, 0], [0, -16]];
+    const [dw, dh] = offsets[jitterStep % offsets.length];
+    w = Math.max(256, w + dw);
+    h = Math.max(256, h + dh);
+  }
+  const realModel = engineName === "turbo" ? "turbo" : "flux";
+  const uniquePrompt = jitterStep > 0 ? `${promptText} [v${(seedNum + jitterStep) % 997}]` : promptText;
+  const q = new URLSearchParams({
+    width: String(w), height: String(h), seed: String(seedNum + jitterStep),
+    model: realModel, enhance: "false", nologo: "true", nofeed: "true", private: "true", safe: "false"
+  });
+  return IMG_API + encodeURIComponent(uniquePrompt) + "?" + q.toString();
+}
+
+function refreshEmpty() { $("empty").style.display = $("gallery").children.length ? "none" : "block"; }
+
+/* 建立 60FPS 即時動畫預覽卡片（支援直接錄製下載 .webm 影片） */
+function createCard(entry, prepend = true) {
+  const item = document.createElement("div"); item.className = "item";
+  const [w, h] = (entry.size || "768x1024").split("x").map(Number);
+  item.innerHTML = `
+    <div class="imgwrap" style="aspect-ratio:${w}/${h}">
+      <div class="spinner"></div>
+      <span class="wait"></span>
+      <canvas class="anim-player" width="${w}" height="${h}" style="display:none"></canvas>
+      <span class="anim-badge" style="display:none">🎬 60FPS LIVE</span>
+    </div>
+    <div class="meta"></div>
+    <div class="actions">
+      <button data-a="dl" class="act-btn">⬇ 下載影片</button>
+      <button data-a="redo">🔄 重生</button>
+      <button data-a="del">🗑️ 刪除</button>
+      <button data-a="seed">用此Seed</button>
+      <button data-a="fav">收藏Seed</button>
+      <button data-a="copy">載入分鏡</button>
+      <button data-a="layout" class="span3 primary" style="margin-top:2px;padding:7px;font-size:12px">📐 轉入動畫排版編輯器 →</button>
+    </div>`;
+
+  const wrap = item.querySelector(".imgwrap");
+  const meta = item.querySelector(".meta"), cv = item.querySelector("canvas.anim-player"), badge = item.querySelector(".anim-badge"), waitEl = item.querySelector(".wait");
+  const updateMeta = () => { meta.textContent = `${entry.original || "(動畫)"} · seed ${entry.seed}`; meta.title = entry.prompt; };
+  updateMeta();
+  const A = a => item.querySelector(`[data-a="${a}"]`);
+
+  let animRaf = null;
+  let loadedImgs = [];
+  const particles = AnimEngine.createParticles(55);
+
+  const stopLoop = () => { if (animRaf) { cancelAnimationFrame(animRaf); animRaf = null; } };
+
+  const startLoop = () => {
+    stopLoop();
+    const ctx = cv.getContext("2d");
+    const dur = entry.duration || 6;
+    const camMode = entry.camMotion || "zoomIn";
+    const vfxType = entry.vfxType || "godrays";
+    const startT = performance.now();
+
+    const renderFrame = now => {
+      if (!document.body.contains(cv)) return;
+      const t = (now - startT) / 1000;
+      ctx.clearRect(0, 0, w, h);
+
+      if (loadedImgs.length > 0) {
+        const tf = AnimEngine.computeCameraTransform(camMode, t, dur, w, h);
+        ctx.save();
+        ctx.translate(w / 2 + tf.dx, h / 2 + tf.dy);
+        ctx.rotate(tf.angle);
+        ctx.scale(tf.scale, tf.scale);
+
+        /* 若為雙分鏡連續演繹模式 (story2)，在兩幕畫面間進行平滑呼吸補間與動作切換 */
+        if (loadedImgs.length > 1) {
+          const blend = (1 - Math.cos((t % dur) / dur * Math.PI * 2)) / 2;
+          ctx.globalAlpha = 1;
+          ctx.drawImage(loadedImgs[0], -w / 2, -h / 2, w, h);
+          ctx.globalAlpha = blend;
+          ctx.drawImage(loadedImgs[1], -w / 2, -h / 2, w, h);
+        } else {
+          ctx.drawImage(loadedImgs[0], -w / 2, -h / 2, w, h);
+        }
+        ctx.restore();
+
+        /* 疊加物理粒子特效層 */
+        AnimEngine.drawVFXLayer(ctx, w, h, vfxType, t, particles);
+      }
+      animRaf = requestAnimationFrame(renderFrame);
+    };
+    animRaf = requestAnimationFrame(renderFrame);
+  };
+
+  const card = {
+    loading() {
+      stopLoop(); cv.style.display = "none"; badge.style.display = "none";
+      wrap.querySelector(".err")?.remove();
+      if (!wrap.querySelector(".spinner")) wrap.insertAdjacentHTML("afterbegin", '<div class="spinner"></div>');
+    },
+    wait(t) { waitEl.textContent = t; },
+    async showAnim(srcList) {
+      const imgs = [];
+      for (const s of srcList) {
+        const im = await new Promise(res => {
+          const el = new Image(); el.crossOrigin = "anonymous";
+          el.onload = () => res(el); el.onerror = () => res(null);
+          el.src = s;
+        });
+        if (im) imgs.push(im);
+      }
+      if (!imgs.length) return false;
+      loadedImgs = imgs;
+      entry.loadedSrc = srcList[0];
+      wrap.querySelector(".spinner")?.remove();
+      waitEl.textContent = "";
+      cv.style.display = "block";
+      badge.style.display = "inline-block";
+      badge.textContent = imgs.length > 1 ? "🎞️ 雙幕連續動畫" : "🎬 60FPS 動畫";
+      startLoop();
+      return true;
+    },
+    fail(msg) {
+      stopLoop(); wrap.querySelector(".spinner")?.remove();
+      waitEl.textContent = "";
+      wrap.insertAdjacentHTML("beforeend", `<span class="err">${msg}</span>`);
+    }
+  };
+  entry.card = card;
+
+  A("dl").onclick = async () => {
+    if (!loadedImgs.length) return alert("動畫尚未準備完成");
+    const btn = A("dl"), old = btn.textContent;
+    btn.disabled = true;
+    try {
+      await AnimEngine.recordCanvasToWebM(cv, entry.duration || 6, p => { btn.textContent = `錄製 ${p}%`; }, `ai-anim-${entry.seed}.webm`);
+    } catch (e) {
+      alert("影片匯出失敗：" + e.message);
+    } finally {
+      btn.disabled = false; btn.textContent = old;
+    }
+  };
+  A("redo").onclick = () => { entry.seed = rand(); updateMeta(); generateSingleCardNow(entry, 0); };
+  A("del").onclick = () => { stopLoop(); entry.cancelled = true; item.remove(); imgDel(entry.id); refreshEmpty(); };
+  A("seed").onclick = () => {
+    $("seed").value = entry.seed;
+    $("prompt").value = entry.original;
+    $("enPromptPreview").value = entry.prompt;
+    lastTrackedRawPrompt = entry.original;
+    setStatus(`已載入 Seed (${entry.seed}) 與分鏡`);
+  };
+  A("fav").onclick = () => addSeedToFav(entry.seed, (entry.original || "").slice(0, 14) || `動畫 #${entry.seed}`, "常用", entry.styleValue || "");
+  A("copy").onclick = () => {
+    $("enPromptPreview").value = entry.prompt;
+    navigator.clipboard?.writeText(entry.prompt);
+    setStatus("已載入並複製此動畫英文分鏡");
+  };
+  A("layout").onclick = async () => {
+    if (!entry.blob && !entry.loadedSrc) return alert("動畫尚未生成完成");
+    showTab("editor");
+    const srcUrl = entry.blob ? await blobToDataURL(entry.blob) : (entry.loadedSrc || entry.url);
+    if (typeof Editor !== "undefined") {
+      Editor.setEditorAnimConfig(entry.camMotion || "zoomIn", entry.vfxType || "godrays", entry.duration || 6);
+      if (entry.ocrLines?.length) {
+        const baseDataUrl = entry.rawBgBlob ? await blobToDataURL(entry.rawBgBlob) : srcUrl;
+        await Editor.cloneImageLayoutToCanvas({ width: w, height: h, lines: entry.ocrLines, cleanedDataUrl: baseDataUrl }, entry.customOcrText);
+      } else {
+        Editor.loadAnimatedSceneToEditor(srcUrl, w, h);
+      }
+    }
+  };
+  prepend ? $("gallery").prepend(item) : $("gallery").appendChild(item);
+  refreshEmpty();
+  return card;
+}
+
+let globalChannelCounter = 0;
+
+async function fetchValidCleanFrame(promptText, sizeStr, seedNum, slotIdx = 0) {
+  const ch = (globalChannelCounter + slotIdx) % 2 === 0 ? "flux" : "turbo";
+  const alt = ch === "flux" ? "turbo" : "flux";
+  const routes = [
+    { engine: ch, jitter: slotIdx },
+    { engine: alt, jitter: slotIdx + 1 },
+    { engine: "turbo", jitter: slotIdx + 2 },
+    { engine: "flux", jitter: slotIdx + 3 }
+  ];
+  for (const r of routes) {
+    const url = buildBypassImageUrl(promptText, sizeStr, seedNum, r.engine, r.jitter);
+    try {
+      const timeoutProm = new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), 26000));
+      const res = await Promise.race([fetch(url, { referrerPolicy: "no-referrer" }), timeoutProm]);
+      if (!res || !res.ok) continue;
+      let blob = await res.blob();
+      if (blob.size < 1500) continue;
+      blob = await validateAndCleanImage(blob);
+      return { blob, url };
+    } catch {
+      await sleep(400);
+    }
+  }
+  throw new Error("ALL_ROUTES_BUSY");
+}
+
+async function generateSingleCardNow(entry, cardIdx = 0) {
+  entry.cancelled = false;
+  entry.card.loading();
+  globalChannelCounter++;
+
+  try {
+    entry.card.wait("🎬 正在生成動畫主分鏡…");
+    const frame1 = await fetchValidCleanFrame(entry.prompt, entry.size, entry.seed, cardIdx);
+    let blob1 = frame1.blob;
+    entry.rawBgBlob = blob1;
+    entry.url = frame1.url;
+
+    if (entry.ocrLines?.length) {
+      entry.card.wait("正在合成動態文字層…");
+      blob1 = await OCRLayoutEngine.compositeLayoutOntoImage(blob1, entry.ocrLines, entry.customOcrText);
+    }
+    entry.blob = blob1;
+    const frameUrls = [URL.createObjectURL(blob1)];
+
+    /* 若選擇「雙分鏡連續動作演繹 (story2)」，自動生成第二幕連續動作分鏡 */
+    if (entry.animMode === "story2" && !entry.cancelled) {
+      entry.card.wait("🎞️ 正在生成第 2 幕連續動作分鏡…");
+      try {
+        const prompt2 = `${entry.prompt}, next continuous action frame, dynamic motion progression`;
+        const frame2 = await fetchValidCleanFrame(prompt2, entry.size, entry.seed + 77, cardIdx + 1);
+        let blob2 = frame2.blob;
+        if (entry.ocrLines?.length) {
+          blob2 = await OCRLayoutEngine.compositeLayoutOntoImage(blob2, entry.ocrLines, entry.customOcrText);
+        }
+        frameUrls.push(URL.createObjectURL(blob2));
+      } catch {}
+    }
+
+    const { card, cancelled, ...plain } = entry;
+    await imgPut(plain);
+    await card.showAnim(frameUrls);
+  } catch {
+    if (!entry.cancelled) entry.card.fail("連線忙碌，請點擊「🔄 重生」");
+  }
+}
+
+$("generate").onclick = async () => {
+  const raw = $("prompt").value.trim();
+  if (!raw && !Ref.blob) { setStatus("請先輸入動畫描述或上傳參考圖"); $("prompt").focus(); return; }
+  $("generate").disabled = true;
+  try {
+    const wantsSameLayout = /排版|一樣|同款|文字/.test(raw) || $("refCloneLayoutChk")?.checked;
+    const prompt = await buildPrompt(raw);
+    const { cam, vfx } = resolveCamAndVfx(raw);
+    const dur = +($("duration")?.value || 6);
+    const animMode = $("animMode")?.value || "live60";
+    setStatus(`🎬 正在生成 60FPS 動畫（運鏡：${cam} · 特效：${vfx}）…`);
+
+    const count = +$("count").value;
+    const baseSeed = $("seed").value === "" ? rand() : +$("seed").value;
+    const styleVal = $("style")?.value || "";
+
+    const tasks = [];
+    for (let i = 0; i < count; i++) {
+      const entry = {
+        id: Date.now() + "-" + i, original: raw, prompt, size: $("size").value,
+        seed: baseSeed + i, styleValue: styleVal,
+        camMotion: cam, vfxType: vfx, duration: dur, animMode,
+        time: Date.now(),
+        ocrLines: (Ref.blob && wantsSameLayout && Ref.ocrLines?.length) ? JSON.parse(JSON.stringify(Ref.ocrLines)) : null,
+        customOcrText: $("refOcrText")?.value || ""
+      };
+      createCard(entry);
+      tasks.push(generateSingleCardNow(entry, i));
+    }
+    await Promise.all(tasks);
+    setStatus(`✅ 動畫生成完成！點擊卡片「⬇ 下載影片」可儲存 .webm 動畫檔，或轉入編輯器加動態字。`);
+  } catch (e) {
+    setStatus("錯誤：" + e.message);
+  } finally {
+    $("generate").disabled = false;
+  }
+};
+
+$("prompt").addEventListener("keydown", e => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) $("generate").click(); });
+$("chatRefineInput").addEventListener("keydown", e => { if (e.key === "Enter") $("chatRefineBtn").click(); });
+$("clear").onclick = async () => {
+  if (!confirm("確定清除所有歷史動畫？")) return;
+  await imgClear(); $("gallery").innerHTML = ""; refreshEmpty();
+};
+$("lightbox").onclick = () => { $("lightbox").style.display = "none"; };
+imgAll().then(list => {
+  list.sort((a, b) => b.time - a.time).forEach(e => {
+    const card = createCard(e, false);
+    const u = e.blob ? URL.createObjectURL(e.blob) : e.url;
+    if (u) card.showAnim([u]);
+  });
+  refreshEmpty();
+});
+</script>
+<!-- ==================== 請將第 2 部分貼在此行下方 ==================== -->
+<script>
+/* =====================================================================
+   第 2 部分腳本：
+   動畫排版編輯器核心 + 物件獨立動畫引擎 + WebM 影片錄製匯出 + 手機觸控與雲端同步
+   ===================================================================== */
+const Editor = (() => {
+  let canvas, W = 768, H = 1024, zoom = 1, ready = false;
+  let history = [], hIndex = -1, restoring = false, saveTimer = null;
+  let eyedropperMode = false, boxGrabMode = false, grabRect = null, startPt = null;
+  let touchPanMode = false;
+
+  /* 60FPS 舞台動畫狀態管理 */
+  let isPlaying = true, isInteracting = false, isRecording = false;
+  let edAnimRaf = null, animStartTime = performance.now();
+  const edParticles = AnimEngine.createParticles(55);
+
+  const EXTRA = [
+    "name", "lockMovementX", "lockMovementY", "lockScalingX", "lockScalingY",
+    "lockRotation", "hasControls", "selectable", "evented", "_radiusPct",
+    "iconColor", "paintFill", "paintStroke", "globalCompositeOperation",
+    "isOnion", "isTexOverlay", "isAnimBg", "objAnim",
+    "_baseLeft", "_baseTop", "_baseScaleX", "_baseScaleY", "_baseAngle", "_baseOpacity", "_fullText"
+  ];
+
+  function init() {
+    if (ready) return;
+    ready = true;
+    canvas = new fabric.Canvas("c", { preserveObjectStacking: true, backgroundColor: "#0f1117" });
+    fabric.Object.prototype.set({
+      transparentCorners: false, cornerColor: "#5865f2",
+      cornerStyle: "circle", borderColor: "#5865f2", cornerSize: window.innerWidth <= 860 ? 18 : 12
+    });
+
+    canvas.on("object:added", e => {
+      if (!restoring && e.target) captureBaseState(e.target);
+      queueSave(); refreshQuickTextList();
+    });
+    canvas.on("object:removed", () => { queueSave(); refreshQuickTextList(); });
+    canvas.on("object:modified", e => {
+      if (e.target) {
+        (e.target.type === "activeSelection" ? e.target.getObjects() : [e.target]).forEach(captureBaseState);
+      }
+      queueSave(); refreshProps(); refreshQuickTextList();
+    });
+    canvas.on("text:changed", e => {
+      if (e.target) { e.target._fullText = e.target.text; captureBaseState(e.target); }
+      ensureFont(e.target); queueSave(); refreshQuickTextList();
+    });
+
+    /* 當使用者點選或拖曳物件時，自動暫停動畫偏移並回正座標，確保對位精準 */
+    canvas.on("selection:created", () => { pauseForInteraction(); refreshProps(); });
+    canvas.on("selection:updated", () => { pauseForInteraction(); refreshProps(); });
+    canvas.on("selection:cleared", () => { resumeFromInteraction(); refreshProps(); });
+    canvas.on("object:moving", e => { pauseForInteraction(); snap(e.target); });
+    canvas.on("mouse:up", () => { if (guides.length) { guides = []; canvas.requestRenderAll(); } });
+
+    /* 在 Fabric 畫布渲染後疊加 60FPS 環境物理粒子與導引線 */
+    canvas.on("after:render", () => {
+      if ((isPlaying && !isInteracting) || isRecording) {
+        const ctx = canvas.getContext();
+        const t = (performance.now() - animStartTime) / 1000;
+        const vfx = $("edVfxType")?.value || "godrays";
+        ctx.save();
+        ctx.transform(...canvas.viewportTransform);
+        AnimEngine.drawVFXLayer(ctx, W, H, vfx, t, edParticles);
+        ctx.restore();
+      }
+      drawGuides();
+    });
+
+    ["object:added", "object:removed", "object:modified", "selection:created", "selection:updated", "selection:cleared"].forEach(ev => canvas.on(ev, refreshLayers));
+    document.fonts.addEventListener("loadingdone", refreshFonts);
+    window.addEventListener("resize", () => { if (!$("tab-editor").classList.contains("hidden")) fit(); });
+
+    bindUI();
+    bindMobileAndCloud();
+    renderTemplates();
+    startEditorAnimLoop();
+
+    kvGet("project").then(p => {
+      if (p) loadProject(p, false);
+      else { setSize(768, 1024, false); pushHistory(); }
+    }).catch(() => { setSize(768, 1024, false); pushHistory(); });
+  }
+
+  /* =====================================================================
+     🎬 舞台 60FPS 即時動畫迴圈（背景運鏡 ＋ 物件獨立動畫 ＋ 編輯自動回正）
+     ===================================================================== */
+  function captureBaseState(o) {
+    if (!o || o.isOnion) return;
+    o._baseLeft = o.left;
+    o._baseTop = o.top;
+    o._baseScaleX = o.scaleX || 1;
+    o._baseScaleY = o.scaleY || 1;
+    o._baseAngle = o.angle || 0;
+    o._baseOpacity = o.opacity ?? 1;
+    if (isText(o) && !o._isTypingAnim) {
+      o._fullText = o.text;
+    }
+  }
+
+  function restoreAllBaseStates() {
+    if (!canvas) return;
+    canvas.getObjects().forEach(o => {
+      if (o.isOnion) return;
+      if (o._baseLeft !== undefined) o.left = o._baseLeft;
+      if (o._baseTop !== undefined) o.top = o._baseTop;
+      if (o._baseScaleX !== undefined) o.scaleX = o._baseScaleX;
+      if (o._baseScaleY !== undefined) o.scaleY = o._baseScaleY;
+      if (o._baseAngle !== undefined) o.angle = o._baseAngle;
+      if (o._baseOpacity !== undefined) o.opacity = o._baseOpacity;
+      if (isText(o) && o._fullText !== undefined && o.text !== o._fullText) {
+        o._isTypingAnim = false;
+        o.set("text", o._fullText);
+      }
+      o.setCoords();
+    });
+  }
+
+  function pauseForInteraction() {
+    if (!isInteracting) {
+      isInteracting = true;
+      restoreAllBaseStates();
+      canvas.requestRenderAll();
+    }
+  }
+
+  function resumeFromInteraction() {
+    if (!canvas.getActiveObject()) {
+      canvas.getObjects().forEach(captureBaseState);
+      isInteracting = false;
+    }
+  }
+
+  function togglePlayState(forceState = null) {
+    isPlaying = forceState !== null ? forceState : !isPlaying;
+    const btn = $("edPlayToggleBtn");
+    if (btn) {
+      btn.classList.toggle("playing", isPlaying);
+      btn.textContent = isPlaying ? "⏸️ 動畫播放中" : "▶️ 播放動畫";
+    }
+    if (isPlaying) {
+      canvas.discardActiveObject();
+      canvas.getObjects().forEach(captureBaseState);
+      isInteracting = false;
+      animStartTime = performance.now();
+    } else {
+      restoreAllBaseStates();
+      canvas.requestRenderAll();
+    }
+  }
+
+  function startEditorAnimLoop() {
+    if (edAnimRaf) cancelAnimationFrame(edAnimRaf);
+    const step = now => {
+      if (canvas && (!$("tab-editor").classList.contains("hidden") || isRecording)) {
+        if ((isPlaying && !isInteracting) || isRecording) {
+          const t = (now - animStartTime) / 1000;
+          const dur = +($("edDuration")?.value || 6);
+          const camMode = $("edCamMotion")?.value || "zoomIn";
+          const objs = canvas.getObjects();
+
+          objs.forEach((o, idx) => {
+            if (o.isOnion || o.isTexOverlay) return;
+            if (o._baseLeft === undefined) captureBaseState(o);
+
+            /* 1. 背景底圖套用攝影機運鏡變換 */
+            const isBg = o.isAnimBg || (o.type === "image" && idx === 0);
+            if (isBg && camMode !== "none") {
+              const tf = AnimEngine.computeCameraTransform(camMode, t, dur, W, H);
+              o.left = o._baseLeft + tf.dx;
+              o.top = o._baseTop + tf.dy;
+              o.scaleX = o._baseScaleX * tf.scale;
+              o.scaleY = o._baseScaleY * tf.scale;
+              o.angle = o._baseAngle + (tf.angle * 180 / Math.PI);
+              return;
+            }
+
+            /* 2. 前景物件與文字套用獨立動畫 (objAnim) */
+            const anim = o.objAnim || "none";
+            if (anim === "none") return;
+
+            if (anim === "float") {
+              o.top = o._baseTop + Math.sin(t * 3 + idx) * (H * 0.015);
+              o.angle = o._baseAngle + Math.cos(t * 2 + idx) * 1.8;
+            } else if (anim === "pulse") {
+              const s = 1 + Math.sin(t * 4.5 + idx) * 0.075;
+              o.scaleX = o._baseScaleX * s;
+              o.scaleY = o._baseScaleY * s;
+            } else if (anim === "slideUp") {
+              const cycleT = t % dur;
+              const p = Math.min(1, cycleT / 1.1);
+              const ease = 1 - Math.pow(1 - p, 3);
+              o.top = o._baseTop + (1 - ease) * (H * 0.08);
+              o.opacity = o._baseOpacity * ease;
+            } else if (anim === "shake") {
+              o.left = o._baseLeft + Math.sin(t * 36 + idx) * (W * 0.008);
+              o.top = o._baseTop + Math.cos(t * 42 + idx) * (H * 0.006);
+            } else if (anim === "typewriter" && isText(o)) {
+              const full = o._fullText ?? o.text;
+              const cycleP = (t % dur) / (dur * 0.55);
+              const charCount = Math.min(full.length, Math.max(1, Math.floor(cycleP * full.length)));
+              const sub = full.slice(0, charCount);
+              if (o.text !== sub) {
+                o._isTypingAnim = true;
+                o.set("text", sub);
+              }
+            }
+          });
+
+          canvas.renderAll();
+        }
+      }
+      edAnimRaf = requestAnimationFrame(step);
+    };
+    edAnimRaf = requestAnimationFrame(step);
+  }
+
+  function setEditorAnimConfig(cam, vfx, dur) {
+    init();
+    if ($("edCamMotion") && cam) $("edCamMotion").value = cam;
+    if ($("edVfxType") && vfx) $("edVfxType").value = vfx;
+    if ($("edDuration") && dur) $("edDuration").value = String(dur);
+    togglePlayState(true);
+  }
+
+  function loadAnimatedSceneToEditor(srcUrl, w, h) {
+    init();
+    setSize(w || 768, h || 1024, false);
+    fabric.Image.fromURL(srcUrl, img => {
+      if (!img) return;
+      /* 移除舊的背景層，保留前景文字或邊框 */
+      canvas.getObjects().filter(o => o.isAnimBg).forEach(o => canvas.remove(o));
+      img.set({
+        left: W / 2, top: H / 2, originX: "center", originY: "center",
+        scaleX: W / img.width, scaleY: H / img.height,
+        name: "🎬 動畫背景層", isAnimBg: true
+      });
+      captureBaseState(img);
+      canvas.add(img);
+      canvas.sendToBack(img);
+      togglePlayState(true);
+      queueSave(); refreshLayers();
+    }, { crossOrigin: "anonymous" });
+  }
+
+  /* ---- 尺寸與縮放 ---- */
+  function applyZoom() {
+    if (!canvas) return;
+    canvas.setZoom(zoom);
+    canvas.setDimensions({ width: Math.round(W * zoom), height: Math.round(H * zoom) });
+    $("edZoom").textContent = Math.round(zoom * 100) + "%";
+  }
+  function fit() {
+    if (!canvas) return;
+    const st = $("stage");
+    const pad = window.innerWidth <= 860 ? 20 : 48;
+    zoom = Math.min((st.clientWidth - pad) / W, (st.clientHeight - pad) / H);
+    zoom = Math.max(0.05, Math.min(zoom, 2));
+    applyZoom();
+  }
+  function setSize(w, h, doMagicResize = false) {
+    const oldW = W, oldH = H;
+    W = Math.max(50, Math.min(5000, +w || 768));
+    H = Math.max(50, Math.min(5000, +h || 1024));
+    $("edW").value = W; $("edH").value = H;
+    if (canvas) {
+      restoreAllBaseStates();
+      const sx = W / oldW, sy = H / oldH, s = Math.min(sx, sy);
+      canvas.getObjects().forEach(o => {
+        if (o.isTexOverlay) {
+          o.set({ left: 0, top: 0, width: W, height: H, scaleX: 1, scaleY: 1, angle: 0, originX: "left", originY: "top" });
+        } else if (o.isOnion) {
+          o.set({ left: W / 2, top: H / 2, scaleX: W / o.width, scaleY: H / o.height });
+        } else if (doMagicResize && (oldW !== W || oldH !== H)) {
+          o.set({ left: o.left * sx, top: o.top * sy, scaleX: (o.scaleX || 1) * s, scaleY: (o.scaleY || 1) * s });
+        }
+        o.setCoords();
+        captureBaseState(o);
+      });
+    }
+    const opt = [...$("edPreset").options].find(o => o.value === `${W}x${H}`);
+    $("edPreset").value = opt ? opt.value : "custom";
+    fit();
+  }
+
+  function setProStatus(msg) { if ($("proOcrStatus")) $("proOcrStatus").textContent = msg; }
+
+  /* =====================================================================
+     原圖對照 + 全頁文字清單 + 中文排版轉為動態文字層
+     ===================================================================== */
+  function setOnionSkinImage(dataUrl, opacity = 0) {
+    if (!canvas) return;
+    const old = canvas.getObjects().find(o => o.isOnion);
+    if (old) canvas.remove(old);
+    if (!dataUrl) return;
+    fabric.Image.fromURL(dataUrl, img => {
+      if (!img) return;
+      img.set({
+        left: W / 2, top: H / 2, originX: "center", originY: "center",
+        scaleX: W / img.width, scaleY: H / img.height,
+        opacity: opacity, selectable: false, evented: false, hasControls: false,
+        name: "原圖對照層", isOnion: true
+      });
+      canvas.add(img);
+      canvas.bringToFront(img);
+      $("onionSkinSlider").value = opacity;
+      canvas.requestRenderAll();
+    }, { crossOrigin: "anonymous" });
+  }
+
+  function updateOnionOpacity(val) {
+    if (!canvas) return;
+    const onion = canvas.getObjects().find(o => o.isOnion);
+    if (!onion) {
+      if (+val > 0) alert("請先點右側「換圖」或使用圖片文字擷取功能載入原圖");
+      $("onionSkinSlider").value = 0;
+      return;
+    }
+    onion.set({ opacity: +val, visible: +val > 0 });
+    if (+val > 0) canvas.bringToFront(onion);
+    canvas.requestRenderAll();
+  }
+
+  function refreshQuickTextList() {
+    const box = $("quickTextList");
+    if (!canvas || !box) return;
+    const texts = canvas.getObjects().filter(o => isText(o));
+    if (!texts.length) {
+      box.innerHTML = `<div class="tip">目前畫布無文字圖層</div>`;
+      return;
+    }
+    box.innerHTML = "";
+    texts.forEach(t => {
+      const row = document.createElement("div");
+      row.style.cssText = "display:flex;gap:4px;align-items:center";
+      const inp = document.createElement("input");
+      inp.type = "text";
+      inp.value = (t._fullText || t.text || "").replace(/\n/g, " ");
+      inp.style.cssText = "flex:1;padding:5px 7px;font-size:12px;border-left:3px solid " + (typeof t.fill === "string" ? t.fill : "#5865f2");
+      inp.onfocus = () => { canvas.setActiveObject(t); canvas.requestRenderAll(); };
+      inp.oninput = () => {
+        t._fullText = inp.value;
+        t.set("text", inp.value);
+        if (t.initDimensions) t.initDimensions();
+        captureBaseState(t);
+        canvas.requestRenderAll(); queueSave();
+      };
+      const btn = document.createElement("button");
+      btn.textContent = "選取";
+      btn.style.cssText = "padding:4px 7px;font-size:11px;flex:none";
+      btn.onclick = () => { canvas.setActiveObject(t); canvas.requestRenderAll(); };
+      row.append(inp, btn);
+      box.appendChild(row);
+    });
+  }
+
+  async function cloneImageLayoutToCanvas(ocrRes, customLinesText = "") {
+    init();
+    if (!ocrRes || !ocrRes.width) return;
+    setProStatus("正在建立動態底圖與可編輯文字圖層…");
+    setSize(ocrRes.width, ocrRes.height, false);
+    canvas.clear();
+    const bgSrc = ocrRes.cleanedDataUrl || ocrRes.originalDataUrl;
+    await new Promise(res => {
+      fabric.Image.fromURL(bgSrc, img => {
+        if (img) {
+          img.set({
+            left: W / 2, top: H / 2, originX: "center", originY: "center",
+            scaleX: W / img.width, scaleY: H / img.height,
+            name: "🎬 去字動畫底圖（已鎖定）", isAnimBg: true,
+            selectable: false, evented: false, lockMovementX: true, lockMovementY: true, hasControls: false
+          });
+          captureBaseState(img);
+          canvas.add(img);
+        }
+        res();
+      }, { crossOrigin: "anonymous" });
+    });
+
+    const overrideArr = (customLinesText || "").split("\n").map(s => s.trim()).filter(Boolean);
+    (ocrRes.lines || []).forEach((ln, idx) => {
+      const txt = overrideArr[idx] !== undefined ? overrideArr[idx] : ln.text;
+      if (!txt) return;
+      const fs = Math.max(14, Math.round(ln.relH * H * 0.88));
+      const leftPos = ln.align === "center" ? ln.relCenterX * W : ln.relX * W;
+      const tbObj = new fabric.Textbox(txt, {
+        left: leftPos,
+        top: ln.relCenterY * H,
+        width: Math.min(W * 0.95, Math.max(fs * txt.length * 1.08, ln.relW * W * 1.15)),
+        fontSize: fs,
+        fontFamily: ln.fontFamily || "Noto Sans TC",
+        fontWeight: ln.isBold ? "900" : "700",
+        fill: ln.fgColor || "#1e2d24",
+        textAlign: ln.align || "left",
+        originX: ln.align === "center" ? "center" : "left",
+        originY: "center",
+        lineHeight: 1.15,
+        splitByGrapheme: true,
+        objAnim: ln.relH > 0.045 ? "pulse" : "slideUp"
+      });
+      captureBaseState(tbObj);
+      canvas.add(tbObj);
+      ensureFont(tbObj);
+    });
+
+    if (ocrRes.originalDataUrl) setOnionSkinImage(ocrRes.originalDataUrl, 0);
+    togglePlayState(true);
+    queueSave(); refreshLayers(); refreshQuickTextList();
+    setProStatus(`✅ 已建立 ${ocrRes.lines?.length || 0} 個動態文字層！點選文字可修改內容或切換動畫。`);
+  }
+
+  async function grabTextFromSelectedImage() {
+    pauseForInteraction();
+    let targetImg = act();
+    if (!isImage(targetImg)) targetImg = canvas.getObjects().find(o => isImage(o) && !o.isOnion);
+    if (!targetImg) return alert("畫布上沒有圖片可供擷取");
+    setProStatus("正在掃描圖片文字與座標…");
+    try {
+      const el = targetImg._originalElement || targetImg.getElement();
+      const cv = document.createElement("canvas");
+      cv.width = el.naturalWidth || el.width; cv.height = el.naturalHeight || el.height;
+      cv.getContext("2d").drawImage(el, 0, 0);
+      const origUrl = cv.toDataURL("image/jpeg", 0.95);
+      const res = await OCRLayoutEngine.analyze(origUrl, p => setProStatus(`辨識進度 ${(p * 100).toFixed(0)}%…`));
+      const bound = targetImg.getBoundingRect(true, true);
+      targetImg.setSrc(res.cleanedDataUrl, () => {
+        targetImg.set({ name: "🎬 去字動畫底圖（已鎖定）", isAnimBg: true, selectable: false, evented: false, lockMovementX: true, lockMovementY: true, hasControls: false });
+        captureBaseState(targetImg);
+        canvas.discardActiveObject();
+        res.lines.forEach(ln => {
+          const fs = Math.max(14, Math.round(ln.relH * bound.height * 0.88));
+          const leftPos = ln.align === "center" ? bound.left + ln.relCenterX * bound.width : bound.left + ln.relX * bound.width;
+          const tbObj = new fabric.Textbox(ln.text, {
+            left: leftPos, top: bound.top + ln.relCenterY * bound.height,
+            width: Math.max(fs * ln.text.length * 1.08, ln.relW * bound.width * 1.15),
+            fontSize: fs, fontFamily: ln.fontFamily || "Noto Sans TC", fontWeight: ln.isBold ? "900" : "700",
+            fill: ln.fgColor || "#1e2d24", textAlign: ln.align || "left",
+            originX: ln.align === "center" ? "center" : "left", originY: "center", splitByGrapheme: true,
+            objAnim: ln.relH > 0.045 ? "pulse" : "slideUp"
+          });
+          captureBaseState(tbObj);
+          canvas.add(tbObj); ensureFont(tbObj);
+        });
+        setOnionSkinImage(origUrl, 0);
+        togglePlayState(true);
+        queueSave(); refreshLayers(); refreshQuickTextList();
+        setProStatus(`已擷取 ${res.lines.length} 個動態文字區塊`);
+      });
+    } catch (e) { setProStatus("擷取失敗：" + e.message); }
+  }
+
+  async function syncImageToActiveText(fileOrBlob) {
+    if (!fileOrBlob) return;
+    const targetText = isText(act()) ? act() : null;
+    setProStatus("正在讀取圖片文字…");
+    try {
+      const res = await OCRLayoutEngine.analyze(fileOrBlob, p => setProStatus(`讀取進度 ${(p * 100).toFixed(0)}%…`));
+      if (!res.lines.length) return addFiles([fileOrBlob]);
+      if (targetText) {
+        if (confirm(`讀取到文字：「${res.lines.map(l => l.text).join(" / ").slice(0, 50)}」\n按【確定】套用到目前選取的文字框；按【取消】將整張圖轉為動態文字排版層`)) {
+          const mainLine = [...res.lines].sort((a, b) => b.height - a.height)[0];
+          const newFs = Math.max(18, Math.min(260, Math.round(mainLine.relH * H * 0.85)));
+          const joined = res.lines.map(l => l.text).join("\n");
+          targetText._fullText = joined;
+          targetText.set({
+            text: joined, fill: mainLine.fgColor || "#222222", fontSize: newFs,
+            fontFamily: mainLine.fontFamily || "Noto Sans TC",
+            fontWeight: mainLine.isBold ? "900" : "700", textAlign: mainLine.align || "center"
+          });
+          if (targetText.initDimensions) targetText.initDimensions();
+          targetText.setCoords(); captureBaseState(targetText);
+          canvas.requestRenderAll(); queueSave(); refreshProps(); refreshQuickTextList();
+          return;
+        }
+      }
+      await cloneImageLayoutToCanvas(res);
+    } catch (e) { setProStatus("讀取失敗：" + e.message); }
+  }
+
+  /* =====================================================================
+     版面元件、外框、邊緣羽化與紙張底紋
+     ===================================================================== */
+  function featherSelectedImage() {
+    const o = act();
+    if (!isImage(o)) return alert("請先點選一張圖片");
+    const el = o._originalElement || o.getElement();
+    const w = el.naturalWidth || el.width, h = el.naturalHeight || el.height;
+    const cv = document.createElement("canvas"); cv.width = w; cv.height = h;
+    const ctx = cv.getContext("2d");
+    ctx.drawImage(el, 0, 0, w, h);
+    ctx.globalCompositeOperation = "destination-in";
+    const r = Math.min(w, h) * 0.5;
+    const grad = ctx.createRadialGradient(w / 2, h / 2, r * 0.55, w / 2, h / 2, r * 0.98);
+    grad.addColorStop(0, "rgba(0,0,0,1)");
+    grad.addColorStop(0.75, "rgba(0,0,0,0.92)");
+    grad.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, w, h);
+    o.setSrc(cv.toDataURL("image/png"), () => { canvas.requestRenderAll(); queueSave(); });
+  }
+
+  function addSmartBoundTag(kind) {
+    pauseForInteraction();
+    const s = Math.min(W, H);
+    if (kind === "person" || kind === "element") {
+      const isP = kind === "person";
+      const circle = new fabric.Circle({ left: W * 0.65, top: H * 0.4, radius: s * 0.048, fill: "transparent", stroke: "#1e2d24", strokeWidth: 3, originX: "center", originY: "center" });
+      const iconTxt = new fabric.Text(isP ? "👤" : "🏛️", { left: W * 0.65, top: H * 0.4, fontSize: Math.round(s * 0.048), originX: "center", originY: "center" });
+      const labelTb = new fabric.Textbox(isP ? "人物\n保羅×1" : "元素\n道路×1、\n信心×1", {
+        left: W * 0.65 + s * 0.065, top: H * 0.4, width: s * 0.25, fontSize: Math.round(s * 0.032),
+        fontFamily: "Noto Sans TC", fontWeight: "900", fill: "#1e2d24", lineHeight: 1.25,
+        originX: "left", originY: "center", splitByGrapheme: true, objAnim: "slideUp"
+      });
+      canvas.add(circle, iconTxt, labelTb);
+      canvas.setActiveObject(labelTb); canvas.requestRenderAll(); queueSave();
+    } else if (kind === "bible") {
+      const bg = new fabric.Rect({ left: W / 2, top: H * 0.78, width: s * 0.42, height: s * 0.068, rx: 14, ry: 14, fill: "#1e2d24", originX: "center", originY: "center", objAnim: "slideUp" });
+      const tb = new fabric.Textbox("📖 使徒行傳 17:16-34", {
+        left: W / 2, top: H * 0.78, width: s * 0.4, fontSize: Math.round(s * 0.026),
+        fontFamily: "Noto Sans TC", fontWeight: "700", fill: "#f4ecd8", textAlign: "center",
+        originX: "center", originY: "center", splitByGrapheme: true, objAnim: "slideUp"
+      });
+      canvas.add(bg, tb); canvas.setActiveObject(tb); canvas.requestRenderAll(); queueSave();
+    } else if (kind === "score") {
+      const c1 = new fabric.Circle({ left: W / 2, top: H * 0.88, radius: s * 0.085, fill: "#f4ecd8", stroke: "#1e2d24", strokeWidth: 5, originX: "center", originY: "center", objAnim: "pulse" });
+      const c2 = new fabric.Circle({ left: W / 2, top: H * 0.88, radius: s * 0.074, fill: "transparent", stroke: "#1e2d24", strokeWidth: 2, originX: "center", originY: "center", objAnim: "pulse" });
+      const tb = new fabric.Textbox("2分", {
+        left: W / 2, top: H * 0.88, width: s * 0.14, fontSize: Math.round(s * 0.062),
+        fontFamily: "Noto Sans TC", fontWeight: "900", fill: "#1e2d24", textAlign: "center",
+        originX: "center", originY: "center", splitByGrapheme: true, objAnim: "pulse"
+      });
+      canvas.add(c1, c2, tb); canvas.setActiveObject(tb); canvas.requestRenderAll(); queueSave();
+    }
+  }
+
+  function addOrnateFrameOrBanner(kind) {
+    pauseForInteraction();
+    const s = Math.min(W, H), pad = Math.round(s * 0.035);
+    if (kind === "vintageBorder") {
+      const r1 = new fabric.Rect({ left: pad, top: pad, width: W - pad * 2, height: H - pad * 2, fill: "transparent", stroke: "#1e2d24", strokeWidth: 8, rx: 12, ry: 12, selectable: false, evented: false, name: "雙線外框" });
+      const r2 = new fabric.Rect({ left: pad + 14, top: pad + 14, width: W - (pad + 14) * 2, height: H - (pad + 14) * 2, fill: "transparent", stroke: "#1e2d24", strokeWidth: 2, rx: 8, ry: 8, selectable: false, evented: false, name: "雙線內框" });
+      canvas.add(r1, r2); canvas.requestRenderAll(); queueSave();
+    } else if (kind === "scrollBanner") {
+      const bg = new fabric.Rect({ left: W / 2, top: H * 0.6, width: W * 0.78, height: s * 0.13, rx: 18, ry: 18, fill: "#efe3c2", stroke: "#6b4c2b", strokeWidth: 4, shadow: new fabric.Shadow({ color: "rgba(0,0,0,0.28)", blur: 14, offsetX: 0, offsetY: 6 }), originX: "center", originY: "center" });
+      const tb = new fabric.Textbox("保羅在雅典講道", { left: W / 2, top: H * 0.6, width: W * 0.72, fontSize: Math.round(s * 0.068), fontFamily: "Noto Serif TC", fontWeight: "900", fill: "#2a180c", textAlign: "center", originX: "center", originY: "center", splitByGrapheme: true, objAnim: "pulse" });
+      canvas.add(bg, tb); canvas.setActiveObject(tb); canvas.requestRenderAll(); queueSave();
+    } else if (kind === "darkBadge") {
+      const poly = new fabric.Polygon([{ x: 0, y: 0 }, { x: s * 0.36, y: 0 }, { x: s * 0.32, y: s * 0.05 }, { x: s * 0.36, y: s * 0.1 }, { x: 0, y: s * 0.1 }], { left: pad + 20, top: pad + 18, fill: "#1e2d24" });
+      const tb = new fabric.Textbox("事件卡", { left: pad + 35, top: pad + 18 + s * 0.05, width: s * 0.3, fontSize: Math.round(s * 0.042), fontFamily: "Noto Sans TC", fontWeight: "900", fill: "#f4ecd8", originX: "left", originY: "center", splitByGrapheme: true });
+      canvas.add(poly, tb); canvas.setActiveObject(tb); canvas.requestRenderAll(); queueSave();
+    }
+  }
+
+  function toggleParchmentTexture() {
+    let old = canvas.getObjects().find(o => o.isTexOverlay);
+    if (old) { canvas.remove(old); canvas.requestRenderAll(); queueSave(); refreshLayers(); return; }
+    const pc = document.createElement("canvas"); pc.width = pc.height = 160;
+    const ctx = pc.getContext("2d");
+    ctx.fillStyle = "rgba(212, 185, 138, 0.22)"; ctx.fillRect(0, 0, 160, 160);
+    for (let i = 0; i < 900; i++) {
+      ctx.fillStyle = i % 2 ? "rgba(120, 85, 40, 0.06)" : "rgba(255, 248, 225, 0.08)";
+      ctx.fillRect(Math.random() * 160, Math.random() * 160, Math.random() * 6 + 1, Math.random() * 6 + 1);
+    }
+    const r = new fabric.Rect({
+      left: 0, top: 0, width: W, height: H, fill: new fabric.Pattern({ source: pc, repeat: "repeat" }),
+      selectable: false, evented: false, isTexOverlay: true, name: "羊皮紙紋理層",
+      globalCompositeOperation: "multiply", lockMovementX: true, lockMovementY: true, hasControls: false
+    });
+    canvas.add(r); canvas.bringToFront(r);
+    canvas.requestRenderAll(); queueSave(); refreshLayers();
+  }
+
+  /* =====================================================================
+     A4 拼版列印 PDF + 主角背景分離（分離後主角自動加上懸浮動畫） + 局部塗抹消除
+     ===================================================================== */
+  async function exportA4PrintSheetPDF() {
+    const btn = $("exportA4SheetBtn"), oldTxt = btn.textContent;
+    restoreAllBaseStates();
+    snapshot(); btn.disabled = true; btn.textContent = "處理中…";
+    try {
+      await loadScript("https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js");
+      await Promise.all(pages.map(preloadFonts));
+      const mode = $("printGridMode").value;
+      const [cols, rows] = mode.split("x").map(Number);
+      const perSheet = cols * rows;
+      const pdf = new window.jspdf.jsPDF({ orientation: "p", unit: "mm", format: "a4", compress: true });
+      const pageW = 210, pageH = 297, marginX = 10, marginY = 12, gap = 2;
+      const cellW = (pageW - marginX * 2 - gap * (cols - 1)) / cols;
+      const cellH = (pageH - marginY * 2 - gap * (rows - 1)) / rows;
+
+      const totalCards = pages.length === 1 ? perSheet : pages.length;
+      for (let i = 0; i < totalCards; i++) {
+        const slot = i % perSheet;
+        if (i > 0 && slot === 0) pdf.addPage("a4", "p");
+        const c = slot % cols, r = Math.floor(slot / cols);
+        const x = marginX + c * (cellW + gap), y = marginY + r * (cellH + gap);
+        const srcPage = pages[pages.length === 1 ? 0 : i];
+        const imgUrl = await renderJSON(srcPage, 2, { format: "jpeg", quality: 0.94 });
+        pdf.addImage(imgUrl, "JPEG", x, y, cellW, cellH);
+
+        pdf.setDrawColor(120, 120, 120); pdf.setLineWidth(0.2);
+        const mLen = 3;
+        [[x, y], [x + cellW, y], [x, y + cellH], [x + cellW, y + cellH]].forEach(([cx, cy]) => {
+          pdf.line(cx - mLen, cy, cx + mLen, cy);
+          pdf.line(cx, cy - mLen, cx, cy + mLen);
+        });
+      }
+      pdf.save(`A4-print-${mode}-${Date.now()}.pdf`);
+    } catch (e) { alert("匯出失敗：" + e.message); }
+    finally { btn.disabled = false; btn.textContent = oldTxt; }
+  }
+
+  async function magicGrabSubject() {
+    pauseForInteraction();
+    let o = act();
+    if (!isImage(o)) o = canvas.getObjects().find(x => isImage(x) && !x.isOnion);
+    if (!o) return alert("請先在畫布上加入或點選一張圖片");
+    try {
+      const { T, model, processor } = await loadBgModel();
+      const el = o._originalElement || o.getElement(), w = el.naturalWidth || el.width, h = el.naturalHeight || el.height;
+      const bgCv = document.createElement("canvas"); bgCv.width = w; bgCv.height = h;
+      const bgCtx = bgCv.getContext("2d"); bgCtx.filter = "blur(18px) brightness(0.98)"; bgCtx.drawImage(el, -20, -20, w + 40, h + 40);
+      const fgCv = document.createElement("canvas"); fgCv.width = w; fgCv.height = h;
+      const fgCtx = fgCv.getContext("2d"); fgCtx.drawImage(el, 0, 0, w, h);
+      const image = await T.RawImage.fromCanvas(fgCv), { pixel_values } = await processor(image.rgb()), { output } = await model({ input: pixel_values });
+      const mask = await T.RawImage.fromTensor(output[0].mul(255).to("uint8")).resize(w, h), d = fgCtx.getImageData(0, 0, w, h);
+      for (let i = 0; i < w * h; i++) d.data[i * 4 + 3] = Math.min(d.data[i * 4 + 3], mask.data[i]);
+      fgCtx.putImageData(d, 0, 0);
+      const props = { left: o._baseLeft ?? o.left, top: o._baseTop ?? o.top, scaleX: o._baseScaleX ?? o.scaleX, scaleY: o._baseScaleY ?? o.scaleY, angle: o._baseAngle ?? o.angle, originX: o.originX, originY: o.originY };
+      o.setSrc(bgCv.toDataURL("image/jpeg", 0.9), () => {
+        o.set({ ...props, name: "🎬 分離背景層", isAnimBg: true });
+        captureBaseState(o);
+        fabric.Image.fromURL(fgCv.toDataURL("image/png"), fgImg => {
+          fgImg.set({
+            ...props, name: "🕺 動態主角層（懸浮動畫）", objAnim: "float",
+            shadow: new fabric.Shadow({ color: "rgba(0,0,0,0.38)", blur: 22, offsetX: 8, offsetY: 8 })
+          });
+          captureBaseState(fgImg);
+          canvas.add(fgImg);
+          togglePlayState(true);
+          queueSave(); refreshLayers();
+        });
+      });
+    } catch (e) { alert("主角背景分離失敗：" + e.message); }
+  }
+
+  let eraserTarget = null, eraserBaseImg = null, eraserDrawing = false;
+  function openMagicEraser() {
+    pauseForInteraction();
+    const o = act(); if (!isImage(o)) return alert("請先點選一張圖片");
+    eraserTarget = o;
+    const el = o._originalElement || o.getElement(), w = el.naturalWidth || el.width, h = el.naturalHeight || el.height;
+    const ec = $("eraserCanvas"); ec.width = w; ec.height = h; ec.style.maxWidth = "80vw"; ec.style.maxHeight = "60vh";
+    const ctx = ec.getContext("2d"); ctx.drawImage(el, 0, 0, w, h);
+    eraserBaseImg = ctx.getImageData(0, 0, w, h);
+    $("eraserModal").style.display = "flex";
+    const getPos = e => {
+      const r = ec.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      return { x: (clientX - r.left) * (w / r.width), y: (clientY - r.top) * (h / r.height) };
+    };
+    const startDraw = e => {
+      eraserDrawing = true; const p = getPos(e);
+      ctx.strokeStyle = "rgba(255,0,85,0.65)"; ctx.lineWidth = +$("eraserSize").value * (w / 800);
+      ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.beginPath(); ctx.moveTo(p.x, p.y);
+    };
+    const moveDraw = e => { if (!eraserDrawing) return; e.preventDefault(); const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); };
+    ec.onmousedown = startDraw; ec.onmousemove = moveDraw; ec.onmouseup = ec.onmouseleave = () => { eraserDrawing = false; };
+    ec.ontouchstart = startDraw; ec.ontouchmove = moveDraw; ec.ontouchend = () => { eraserDrawing = false; };
+  }
+  function applyMagicEraser() {
+    if (!eraserTarget || !eraserBaseImg) return;
+    const ec = $("eraserCanvas"), w = ec.width, h = ec.height, ctx = ec.getContext("2d");
+    const painted = ctx.getImageData(0, 0, w, h).data, outImg = new ImageData(new Uint8ClampedArray(eraserBaseImg.data), w, h), d = outImg.data, mask = new Uint8Array(w * h);
+    for (let i = 0; i < w * h; i++) { const idx = i * 4; if (painted[idx] - eraserBaseImg.data[idx] > 40 || Math.abs(painted[idx + 1] - eraserBaseImg.data[idx + 1]) > 35) mask[i] = 1; }
+    for (let pass = 0; pass < 35; pass++) for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 1; x++) {
+      const i = y * w + x; if (!mask[i]) continue;
+      let r = 0, g = 0, b = 0, cnt = 0;
+      for (const n of [i - 1, i + 1, i - w, i + w, i - w - 1, i - w + 1, i + w - 1, i + w + 1]) if (!mask[n]) { r += d[n * 4]; g += d[n * 4 + 1]; b += d[n * 4 + 2]; cnt++; }
+      if (cnt > 0) { d[i * 4] = r / cnt; d[i * 4 + 1] = g / cnt; d[i * 4 + 2] = b / cnt; if (pass % 2 === 1) mask[i] = 0; }
+    }
+    ctx.putImageData(outImg, 0, 0);
+    eraserTarget.setSrc(ec.toDataURL("image/jpeg", 0.94), () => { canvas.requestRenderAll(); queueSave(); $("eraserModal").style.display = "none"; });
+  }
+
+  /* ---- 新增基本物件 ---- */
+  function center(obj) { obj.set({ left: W / 2, top: H / 2, originX: "center", originY: "center" }); captureBaseState(obj); return obj; }
+  function addObj(obj) { pauseForInteraction(); canvas.add(obj); canvas.setActiveObject(obj); canvas.requestRenderAll(); }
+  function addText(kind) {
+    const base = Math.min(W, H);
+    const cfg = {
+      title: { text: "標題文字", size: base * 0.085, weight: "900", anim: "pulse" },
+      subtitle: { text: "副標題文字", size: base * 0.05, weight: "700", anim: "slideUp" },
+      body: { text: "內文段落", size: base * 0.032, weight: "400", anim: "typewriter" }
+    }[kind];
+    const t = new fabric.Textbox(cfg.text, {
+      width: W * (kind === "body" ? 0.65 : 0.8), fontSize: Math.round(cfg.size),
+      fontWeight: cfg.weight, fontFamily: "Noto Sans TC", fill: "#ffffff",
+      stroke: "#000000", strokeWidth: kind === "title" ? 3 : 0, paintFirst: "stroke",
+      textAlign: "center", lineHeight: 1.25, splitByGrapheme: true, objAnim: cfg.anim
+    });
+    addObj(center(t)); ensureFont(t);
+  }
+  function addShape(kind) {
+    const s = Math.min(W, H) * 0.28, fill = "#5865f2"; let o;
+    if (kind === "rect") o = new fabric.Rect({ width: s * 1.4, height: s, fill });
+    if (kind === "round") o = new fabric.Rect({ width: s * 1.4, height: s, fill, rx: s * 0.15, ry: s * 0.15 });
+    if (kind === "circle") o = new fabric.Circle({ radius: s / 2, fill });
+    if (kind === "line") o = new fabric.Line([0, 0, s * 1.5, 0], { stroke: "#ffffff", strokeWidth: Math.max(4, s * 0.03) });
+    if (o) addObj(center(o));
+  }
+  function addImage(src) {
+    init();
+    fabric.Image.fromURL(src, img => {
+      if (!img || !img.width) return alert("圖片載入失敗");
+      const hasBg = canvas.getObjects().some(o => o.isAnimBg);
+      if (!hasBg) {
+        /* 若畫布尚無動畫底圖，自動將第一張加入的圖鋪滿設為動畫背景層 */
+        img.set({ left: W / 2, top: H / 2, originX: "center", originY: "center", scaleX: Math.max(W / img.width, H / img.height), scaleY: Math.max(W / img.width, H / img.height), name: "🎬 動畫背景層", isAnimBg: true });
+        captureBaseState(img);
+        canvas.add(img); canvas.sendToBack(img);
+        togglePlayState(true);
+      } else {
+        const s = Math.min((W * 0.65) / img.width, (H * 0.65) / img.height, 1);
+        img.set({ scaleX: s, scaleY: s, objAnim: "float" });
+        addObj(center(img));
+      }
+      queueSave(); refreshLayers();
+    }, { crossOrigin: "anonymous" });
+  }
+  async function addFiles(files) { for (const f of files) if (f.type?.startsWith("image/")) addImage(await shrink(await blobToDataURL(f))); }
+  async function refreshAiThumbs() {
+    const list = (await imgAll()).filter(e => e.blob || e.url).sort((a, b) => b.time - a.time);
+    const box = $("aiThumbs"); box.innerHTML = "";
+    $("aiThumbsEmpty").classList.toggle("hidden", list.length > 0);
+    list.forEach(e => {
+      const im = document.createElement("img");
+      im.src = e.blob ? URL.createObjectURL(e.blob) : e.url;
+      im.title = e.original || e.prompt;
+      im.onclick = async () => {
+        if (e.camMotion) setEditorAnimConfig(e.camMotion, e.vfxType || "godrays", e.duration || 6);
+        addImage(e.blob ? await blobToDataURL(e.blob) : e.url);
+      };
+      box.appendChild(im);
+    });
+  }
+
+  /* ---- 多頁 / 復原 / 重做 / 自動儲存 ---- */
+  let pages = [null], cur = 0, thumbs = [];
+  const blankPage = () => ({ version: fabric.version, objects: [], background: "#0f1117" });
+  function snapshot() {
+    if (!canvas) return { W, H, pages, cur };
+    restoreAllBaseStates();
+    const onions = canvas.getObjects().filter(o => o.isOnion);
+    onions.forEach(o => canvas.remove(o));
+    pages[cur] = canvas.toJSON(EXTRA);
+    onions.forEach(o => { canvas.add(o); canvas.bringToFront(o); });
+    return { W, H, pages, cur };
+  }
+  function normalize(p) {
+    if (!p.pages) p = { W: p.W, H: p.H, pages: [p.json || blankPage()], cur: 0 };
+    p.cur = Math.max(0, Math.min(p.cur || 0, p.pages.length - 1)); return p;
+  }
+  function pushHistory() {
+    if (isRecording) return;
+    const snap = JSON.stringify(snapshot()); updateThumb();
+    if (history[hIndex] === snap) return;
+    history = history.slice(0, hIndex + 1); history.push(snap);
+    if (history.length > 40) history.shift();
+    hIndex = history.length - 1;
+    kvSet("project", snap).catch(() => {}); updateUndo();
+  }
+  function queueSave() { if (restoring || isRecording) return; clearTimeout(saveTimer); saveTimer = setTimeout(pushHistory, 350); }
+  function updateUndo() { $("edUndo").disabled = hIndex <= 0; $("edRedo").disabled = hIndex >= history.length - 1; }
+  function loadPageJSON(json, done) {
+    restoring = true; guides = []; canvas.discardActiveObject();
+    canvas.loadFromJSON(json, () => {
+      canvas.getObjects().forEach(o => { captureBaseState(o); ensureFont(o); });
+      canvas.renderAll(); restoring = false;
+      $("pBg").value = toHex(canvas.backgroundColor) || "#0f1117";
+      refreshProps(); refreshLayers(); refreshQuickTextList();
+      if (done) done();
+    });
+  }
+  function applyState(p, done) {
+    p = normalize(p); pages = p.pages; cur = p.cur; thumbs = [];
+    setSize(p.W, p.H, false);
+    loadPageJSON(pages[cur], () => { if (done) done(); renderAllThumbs(); });
+  }
+  function loadProject(data, record = true) {
+    applyState(typeof data === "string" ? JSON.parse(data) : data, () => {
+      if (record) pushHistory(); else { history = [JSON.stringify(snapshot())]; hIndex = 0; updateUndo(); }
+    });
+  }
+  function undo() { if (hIndex > 0) { hIndex--; restore(); } }
+  function redo() { if (hIndex < history.length - 1) { hIndex++; restore(); } }
+  function restore() { applyState(JSON.parse(history[hIndex]), () => { updateUndo(); kvSet("project", history[hIndex]).catch(() => {}); }); }
+
+  const THUMB = 160;
+  function updateThumb() {
+    if (!canvas) return;
+    try { thumbs[cur] = canvas.toDataURL({ format: "jpeg", quality: 0.7, multiplier: THUMB / (Math.max(W, H) * zoom) }); } catch {}
+    renderPages();
+  }
+  async function renderAllThumbs() {
+    for (let i = 0; i < pages.length; i++) if (i !== cur && pages[i]) thumbs[i] = await renderJSON(pages[i], THUMB / Math.max(W, H), { format: "jpeg", quality: 0.7 });
+    updateThumb();
+  }
+  function renderPages() {
+    const box = $("pageList"); box.innerHTML = "";
+    pages.forEach((_, i) => {
+      const d = document.createElement("div"); d.className = "pg" + (i === cur ? " on" : ""); d.style.width = Math.round(44 * W / H) + "px";
+      if (thumbs[i]) { const im = document.createElement("img"); im.src = thumbs[i]; d.appendChild(im); }
+      const n = document.createElement("span"); n.textContent = i + 1; d.appendChild(n);
+      d.onclick = () => switchPage(i); box.appendChild(d);
+    });
+    $("pgInfo").textContent = `${cur + 1} / ${pages.length} 頁`;
+    $("pgDel").disabled = pages.length < 2; $("pgLeft").disabled = cur === 0; $("pgRight").disabled = cur === pages.length - 1;
+  }
+  function switchPage(i) { if (i === cur || i < 0 || i >= pages.length) return; snapshot(); updateThumb(); cur = i; loadPageJSON(pages[i], pushHistory); }
+  function addPage(copy) { snapshot(); updateThumb(); pages.splice(cur + 1, 0, copy ? JSON.parse(JSON.stringify(pages[cur])) : blankPage()); thumbs.splice(cur + 1, 0, copy ? thumbs[cur] : null); cur++; loadPageJSON(pages[cur], pushHistory); }
+  function deletePage() { if (pages.length < 2 || !confirm(`刪除第 ${cur + 1} 頁？`)) return; pages.splice(cur, 1); thumbs.splice(cur, 1); cur = Math.min(cur, pages.length - 1); loadPageJSON(pages[cur], pushHistory); }
+  function movePage(d) { const j = cur + d; if (j < 0 || j >= pages.length) return; snapshot(); [pages[cur], pages[j]] = [pages[j], pages[cur]]; [thumbs[cur], thumbs[j]] = [thumbs[j], thumbs[cur]]; cur = j; pushHistory(); }
+
+  /* ---- 屬性面板 ---- */
+  const act = () => canvas.getActiveObject();
+  const isText = o => o && (o.type === "textbox" || o.type === "i-text" || o.type === "text");
+  const isImage = o => o && o.type === "image";
+  const isShape = o => !!o && ["rect", "circle", "ellipse", "triangle", "polygon", "line", "path"].includes(o.type);
+  function toHex(c) {
+    if (!c || typeof c !== "string") return null;
+    if (c.startsWith("#")) return c.length === 4 ? "#" + [...c.slice(1)].map(x => x + x).join("") : c.slice(0, 7);
+    const m = c.match(/\d+/g); return m ? "#" + m.slice(0, 3).map(n => (+n).toString(16).padStart(2, "0")).join("") : null;
+  }
+  const ALIGNS = [["left", "靠左"], ["center", "置中"], ["right", "靠右"]];
+  function refreshProps() {
+    const o = act();
+    $("pCanvas").classList.toggle("hidden", !!o);
+    $("pCommon").classList.toggle("hidden", !o);
+    $("pText").classList.toggle("hidden", !isText(o));
+    $("pShape").classList.toggle("hidden", !isShape(o));
+    $("pImage").classList.toggle("hidden", !isImage(o));
+    const multi = o?.type === "activeSelection", grp = o?.type === "group";
+    $("pMulti").classList.toggle("hidden", !(multi || grp));
+    $("pGroup").classList.toggle("hidden", !multi); $("pUngroup").classList.toggle("hidden", !grp);
+    document.querySelectorAll("[data-objanim]").forEach(b => b.classList.toggle("on", o && (o.objAnim || "none") === b.dataset.objanim));
+    if (!o) return;
+    $("pOpacity").value = o.opacity ?? 1;
+    $("pLock").textContent = o.lockMovementX ? "解鎖" : "鎖定";
+    if (isText(o)) {
+      $("pFont").value = o.fontFamily; $("pFontSize").value = Math.round(o.fontSize);
+      $("pTextColor").value = toHex(o.fill) || "#000000";
+      $("pBold").classList.toggle("on", o.fontWeight === "bold" || +o.fontWeight >= 700);
+      $("pItalic").classList.toggle("on", o.fontStyle === "italic");
+      $("pAlign").textContent = (ALIGNS.find(a => a[0] === o.textAlign) || ALIGNS[0])[1];
+      $("pLine").value = o.lineHeight; $("pSpacing").value = o.charSpacing || 0;
+      $("pTextStroke").value = toHex(o.stroke) || "#000000"; $("pTextStrokeW").value = o.stroke ? o.strokeWidth : 0;
+      $("pTextBg").value = toHex(o.backgroundColor) || "#ffffff";
+    }
+    if (isShape(o)) {
+      $("pFill").value = toHex(o.fill) || "#ffffff";
+      $("pStroke").value = toHex(o.stroke) || "#000000"; $("pStrokeW").value = o.strokeWidth || 0;
+      $("pRadiusRow").classList.toggle("hidden", o.type !== "rect");
+      if (o.type === "rect") $("pRadius").value = o.rx || 0;
+    }
+    if (isImage(o)) {
+      const f = name => (o.filters || []).find(x => x.type === name);
+      $("pBright").value = f("Brightness")?.brightness || 0;
+      $("pContrast").value = f("Contrast")?.contrast || 0;
+      $("pSat").value = f("Saturation")?.saturation || 0;
+      $("pImgRadius").value = o._radiusPct || 0;
+    }
+  }
+  function setProp(props) {
+    const o = act(); if (!o) return;
+    (o.type === "activeSelection" ? o.getObjects() : [o]).forEach(t => { t.set(props); captureBaseState(t); });
+    o.setCoords(); canvas.requestRenderAll(); queueSave();
+  }
+  function setTextProp(props) {
+    const o = act(); if (!isText(o)) return;
+    o.set(props); if (o.initDimensions) o.initDimensions();
+    o.setCoords(); captureBaseState(o); canvas.requestRenderAll(); queueSave();
+  }
+  function applyImageFilters() {
+    const o = act(); if (!isImage(o)) return;
+    const F = fabric.Image.filters, fl = [];
+    const b = +$("pBright").value, c = +$("pContrast").value, s = +$("pSat").value;
+    if (b) fl.push(new F.Brightness({ brightness: b }));
+    if (c) fl.push(new F.Contrast({ contrast: c }));
+    if (s) fl.push(new F.Saturation({ saturation: s }));
+    o.filters = fl; o.applyFilters(); canvas.requestRenderAll(); queueSave();
+  }
+  function alignTo(where) {
+    const o = act(); if (!o) return;
+    const r = o.getBoundingRect(true, true);
+    const dx = { left: -r.left, hcenter: W / 2 - (r.left + r.width / 2), right: W - (r.left + r.width) }[where] || 0;
+    const dy = { top: -r.top, vcenter: H / 2 - (r.top + r.height / 2), bottom: H - (r.top + r.height) }[where] || 0;
+    o.set({ left: o.left + dx, top: o.top + dy }); o.setCoords(); captureBaseState(o); canvas.requestRenderAll(); queueSave();
+  }
+  function removeActive() {
+    const o = act(); if (!o) return;
+    (o.type === "activeSelection" ? o.getObjects() : [o]).forEach(x => canvas.remove(x));
+    canvas.discardActiveObject(); canvas.requestRenderAll();
+  }
+  function toggleLock() {
+    const o = act(); if (!o) return;
+    const lock = !o.lockMovementX;
+    o.set({ lockMovementX: lock, lockMovementY: lock, lockScalingX: lock, lockScalingY: lock, lockRotation: lock, hasControls: !lock, selectable: true, evented: true });
+    canvas.requestRenderAll(); refreshProps(); queueSave();
+  }
+  function coverCanvas() {
+    const o = act(); if (!isImage(o)) return;
+    const s = Math.max(W / o.width, H / o.height);
+    o.set({ scaleX: s, scaleY: s, angle: 0, left: W / 2, top: H / 2, originX: "center", originY: "center", isAnimBg: true, name: "🎬 動畫背景層" });
+    o.setCoords(); captureBaseState(o); canvas.sendToBack(o); canvas.requestRenderAll(); queueSave();
+  }
+  async function ensureFont(o) {
+    if (!isText(o)) return;
+    try { await document.fonts.load(`${o.fontStyle || "normal"} ${o.fontWeight || 400} 40px "${o.fontFamily}"`, o.text || "字A"); } catch {}
+    refreshFonts();
+  }
+  function refreshFonts() {
+    if (!canvas) return;
+    fabric.util.clearFabricFontCache();
+    canvas.getObjects().forEach(x => { if (isText(x)) { x.initDimensions(); x.setCoords(); x.dirty = true; } });
+    canvas.requestRenderAll();
+  }
+  function setFont(name) { setTextProp({ fontFamily: name }); ensureFont(act()); }
+
+  function textEffect(fx) {
+    const o = act(); if (!isText(o)) return;
+    const fs = o.fontSize, col = typeof o.fill === "string" ? o.fill : "#222222";
+    const S = (c, b, x, y) => new fabric.Shadow({ color: c, blur: b, offsetX: x, offsetY: y });
+    const base = { shadow: null, stroke: null, strokeWidth: 0, backgroundColor: "", fill: col, paintFirst: "fill" };
+    if (fx === "shadow") setTextProp({ ...base, shadow: S("rgba(0,0,0,0.45)", fs * 0.15, fs * 0.05, fs * 0.05) });
+    else if (fx === "outline") setTextProp({ ...base, stroke: "#ffffff", strokeWidth: fs * 0.08, paintFirst: "stroke" });
+    else if (fx === "gold") setTextProp({ ...base, fill: "#d4a373", stroke: "#2a180c", strokeWidth: fs * 0.05, paintFirst: "stroke", shadow: S("rgba(0,0,0,0.4)", 8, 2, 3) });
+    else setTextProp(base);
+    refreshProps();
+  }
+
+  function setImageRadius(pct) {
+    const o = act(); if (!isImage(o)) return;
+    o._radiusPct = pct;
+    if (pct > 0) {
+      const r = Math.min(o.width, o.height) * pct / 100;
+      o.clipPath = new fabric.Rect({ width: o.width, height: o.height, rx: r, ry: r, originX: "center", originY: "center", left: 0, top: 0 });
+    } else o.clipPath = null;
+    o.dirty = true; canvas.requestRenderAll(); queueSave();
+  }
+
+  const TF_URL = "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.7.1";
+  let bgModel = null;
+  function loadBgModel() {
+    if (!bgModel) bgModel = (async () => {
+      const T = await import(TF_URL), id = "briaai/RMBG-1.4";
+      const model = await T.AutoModel.from_pretrained(id, { config: { model_type: "custom" }, dtype: "q8", device: "wasm" });
+      const processor = await T.AutoProcessor.from_pretrained(id, { config: { do_normalize: true, do_pad: false, do_rescale: true, do_resize: true, image_mean: [0.5, 0.5, 0.5], feature_extractor_type: "ImageFeatureExtractor", image_std: [1, 1, 1], resample: 2, rescale_factor: 0.00392156862745098, size: { width: 1024, height: 1024 } } });
+      return { T, model, processor };
+    })().catch(e => { bgModel = null; throw e; });
+    return bgModel;
+  }
+  async function removeBg() {
+    pauseForInteraction();
+    const o = act(); if (!isImage(o)) return alert("請先點選一張圖片");
+    const btn = $("pRemoveBg"), st = $("bgStatus"); btn.disabled = true;
+    try {
+      st.textContent = "載入去背模型中…";
+      const { T, model, processor } = await loadBgModel();
+      st.textContent = "去背處理中…"; await sleep(30);
+      const el = o._originalElement || o.getElement(), w = el.naturalWidth || el.width, h = el.naturalHeight || el.height;
+      const cv = document.createElement("canvas"); cv.width = w; cv.height = h;
+      const ctx = cv.getContext("2d"); ctx.drawImage(el, 0, 0, w, h);
+      const image = await T.RawImage.fromCanvas(cv), { pixel_values } = await processor(image.rgb()), { output } = await model({ input: pixel_values });
+      const mask = await T.RawImage.fromTensor(output[0].mul(255).to("uint8")).resize(w, h), d = ctx.getImageData(0, 0, w, h);
+      for (let i = 0; i < w * h; i++) d.data[i * 4 + 3] = Math.min(d.data[i * 4 + 3], mask.data[i]);
+      ctx.putImageData(d, 0, 0);
+      o.setSrc(cv.toDataURL("image/png"), () => {
+        o.set({ isAnimBg: false, objAnim: "float", name: "去背主角層" });
+        if (o.filters?.length) o.applyFilters();
+        o.setCoords(); captureBaseState(o); canvas.requestRenderAll(); queueSave();
+        st.textContent = "去背完成（已套用懸浮動畫）"; btn.disabled = false;
+      });
+    } catch (e) { st.textContent = "去背失敗：" + e.message; btn.disabled = false; }
+  }
+
+  function saveProject() {
+    const blob = new Blob([JSON.stringify(snapshot())], { type: "application/json" });
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `anim-project-${Date.now()}.json`; a.click();
+  }
+
+  function shrink(url, max = 2000) {
+    return new Promise(res => {
+      const im = new Image();
+      im.onload = () => {
+        const s = Math.min(1, max / Math.max(im.width, im.height)); if (s >= 1) return res(url);
+        const c = document.createElement("canvas"); c.width = Math.round(im.width * s); c.height = Math.round(im.height * s);
+        c.getContext("2d").drawImage(im, 0, 0, c.width, c.height);
+        res(c.toDataURL(url.startsWith("data:image/png") ? "image/png" : "image/jpeg", 0.9));
+      };
+      im.onerror = () => res(url); im.src = url;
+    });
+  }
+
+  function renderJSON(json, mult = 1, { format = "png", quality = 0.95, w = W, h = H } = {}) {
+    return new Promise(res => {
+      const sc = new fabric.StaticCanvas(null, { width: w, height: h, enableRetinaScaling: false });
+      const j = { ...json };
+      if (format === "jpeg" && !j.background) j.background = "#ffffff";
+      sc.loadFromJSON(j, () => {
+        sc.renderAll(); let url = "";
+        try { url = sc.toDataURL({ format, quality, multiplier: mult }); } catch {}
+        sc.dispose(); res(url);
+      });
+    });
+  }
+  async function preloadFonts(json) {
+    const list = [];
+    const walk = o => { if (o.objects) o.objects.forEach(walk); else if (o.fontFamily) list.push([`${o.fontStyle || "normal"} ${o.fontWeight || 400} 40px "${o.fontFamily}"`, o.text || "字A"]); };
+    (json?.objects || []).forEach(walk);
+    await Promise.all(list.map(([f, t]) => document.fonts.load(f, t).catch(() => {})));
+    fabric.util.clearFabricFontCache();
+  }
+
+  /* 錄製畫布完整動態（含背景運鏡 + 粒子 + 文字獨立動畫）並匯出 .webm 影片 */
+  async function exportEditorVideo(triggerBtn) {
+    const btn = triggerBtn || $("edExport"), oldTxt = btn.textContent;
+    btn.disabled = true;
+    const savedZoom = zoom;
+    try {
+      canvas.discardActiveObject();
+      canvas.getObjects().forEach(captureBaseState);
+      isInteracting = false;
+      isRecording = true;
+      togglePlayState(true);
+      /* 切換為 1:1 原始解析度進行高畫質影片錄製 */
+      zoom = 1;
+      applyZoom();
+      animStartTime = performance.now();
+      const dur = +($("edDuration")?.value || 6);
+      await AnimEngine.recordCanvasToWebM(
+        canvas.lowerCanvasEl,
+        dur,
+        p => { btn.textContent = `錄製中 ${p}%`; },
+        `anim-design-${W}x${H}-${Date.now()}.webm`
+      );
+    } catch (e) {
+      alert("影片錄製失敗：" + e.message);
+    } finally {
+      isRecording = false;
+      zoom = savedZoom;
+      applyZoom();
+      btn.disabled = false;
+      btn.textContent = oldTxt;
+    }
+  }
+
+  async function exportDesign() {
+    const fmt = $("edFormat").value;
+    if (fmt === "webm") {
+      await exportEditorVideo($("edExport"));
+      return;
+    }
+    const btn = $("edExport"), old = btn.textContent;
+    restoreAllBaseStates();
+    snapshot(); btn.disabled = true; btn.textContent = "處理中…";
+    try {
+      await Promise.all(pages.map(preloadFonts));
+      const name = `design-${W}x${H}`;
+      if (fmt === "pdf") {
+        await loadScript("https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js");
+        const orient = W >= H ? "l" : "p", pdf = new window.jspdf.jsPDF({ orientation: orient, unit: "px", format: [W, H], hotfixes: ["px_scaling"], compress: true });
+        for (let i = 0; i < pages.length; i++) {
+          if (i) pdf.addPage([W, H], orient);
+          pdf.addImage(await renderJSON(pages[i], 2, { format: "jpeg", quality: 0.92 }), "JPEG", 0, 0, W, H);
+        }
+        pdf.save(name + ".pdf");
+      } else {
+        const jpg = fmt === "jpeg", url = await renderJSON(pages[cur], 2, { format: jpg ? "jpeg" : "png" });
+        const blobUrl = URL.createObjectURL(await (await fetch(url)).blob());
+        const a = document.createElement("a"); a.href = blobUrl; a.download = `${name}.${jpg ? "jpg" : "png"}`; a.click();
+      }
+    } catch (e) { alert("匯出失敗：" + (e.message || e)); }
+    finally { btn.disabled = false; btn.textContent = old; }
+  }
+
+  let guides = [];
+  function snap(o) {
+    guides = [];
+    const th = 7 / zoom, r = o.getBoundingRect(true, true), xs = [0, W / 2, W], ys = [0, H / 2, H];
+    canvas.getObjects().forEach(x => {
+      if (x === o || x.visible === false || x.isOnion || (o.type === "activeSelection" && o.contains(x))) return;
+      const b = x.getBoundingRect(true, true);
+      xs.push(b.left, b.left + b.width / 2, b.left + b.width); ys.push(b.top, b.top + b.height / 2, b.top + b.height);
+    });
+    const best = (cands, vals) => { let m = null; for (const v of vals) for (const c of cands) { const d = c - v; if (Math.abs(d) < th && (!m || Math.abs(d) < Math.abs(m.d))) m = { d, c }; } return m; };
+    const mx = best(xs, [r.left, r.left + r.width / 2, r.left + r.width]), my = best(ys, [r.top, r.top + r.height / 2, r.top + r.height]);
+    if (mx) { o.left += mx.d; guides.push({ x: mx.c }); }
+    if (my) { o.top += my.d; guides.push({ y: my.c }); }
+    if (mx || my) o.setCoords();
+  }
+  function drawGuides() {
+    if (!guides.length) return;
+    const ctx = canvas.getContext();
+    ctx.save(); ctx.transform(...canvas.viewportTransform);
+    ctx.strokeStyle = "#00a8fc"; ctx.lineWidth = 1.5 / zoom; ctx.setLineDash([6 / zoom, 4 / zoom]);
+    ctx.beginPath();
+    guides.forEach(g => { if (g.x !== undefined) { ctx.moveTo(g.x, 0); ctx.lineTo(g.x, H); } else { ctx.moveTo(0, g.y); ctx.lineTo(W, g.y); } });
+    ctx.stroke(); ctx.restore();
+  }
+
+  let layerTimer = null, dragObj = null;
+  function refreshLayers() { clearTimeout(layerTimer); layerTimer = setTimeout(renderLayers, 60); }
+  function layerName(o) {
+    if (o.name) return o.name;
+    const animTag = o.objAnim && o.objAnim !== "none" ? ` [${o.objAnim}]` : "";
+    if (isText(o)) return "文字：" + (o._fullText || o.text || "").replace(/\s+/g, " ").slice(0, 12) + animTag;
+    return ({ image: "圖片", group: "群組", rect: "矩形", circle: "圓形", line: "直線" }[o.type] || o.type) + animTag;
+  }
+  function renderLayers() {
+    if (!canvas) return;
+    const box = $("layerList"); box.innerHTML = "";
+    const objs = canvas.getObjects().slice().reverse(), sel = canvas.getActiveObjects();
+    objs.forEach(o => {
+      const row = document.createElement("div");
+      row.className = "layer" + (sel.includes(o) ? " on" : "") + (o.visible === false ? " hid" : "");
+      row.draggable = true;
+      row.innerHTML = `<span class="lname"></span><button class="up-b" title="上移">▲</button><button class="dn-b" title="下移">▼</button><button class="lv" title="顯示/隱藏">${o.visible === false ? "🚫" : "👁"}</button><button class="ll" title="鎖定/解鎖">${o.lockMovementX || o.selectable === false ? "🔒" : "🔓"}</button>`;
+      row.querySelector(".lname").textContent = layerName(o);
+      row.onclick = e => { if (e.target.tagName === "BUTTON" || o.visible === false || o.selectable === false) return; canvas.setActiveObject(o); canvas.requestRenderAll(); };
+      row.querySelector(".up-b").onclick = () => { canvas.bringForward(o); canvas.requestRenderAll(); queueSave(); renderLayers(); };
+      row.querySelector(".dn-b").onclick = () => { canvas.sendBackwards(o); canvas.requestRenderAll(); queueSave(); renderLayers(); };
+      row.querySelector(".lv").onclick = () => { o.visible = o.visible === false; if (!o.visible) canvas.discardActiveObject(); canvas.requestRenderAll(); queueSave(); renderLayers(); };
+      row.querySelector(".ll").onclick = () => {
+        const lock = !(o.lockMovementX || o.selectable === false);
+        o.set({ lockMovementX: lock, lockMovementY: lock, lockScalingX: lock, lockScalingY: lock, lockRotation: lock, hasControls: !lock, selectable: !lock, evented: !lock });
+        canvas.requestRenderAll(); refreshProps(); queueSave(); renderLayers();
+      };
+      row.ondragstart = () => { dragObj = o; };
+      row.ondragover = e => e.preventDefault();
+      row.ondrop = e => { e.preventDefault(); if (!dragObj || dragObj === o) return; canvas.moveTo(dragObj, canvas.getObjects().indexOf(o)); dragObj = null; canvas.requestRenderAll(); queueSave(); renderLayers(); };
+      box.appendChild(row);
+    });
+    $("layerEmpty").classList.toggle("hidden", objs.length > 0);
+  }
+
+  let clip = null;
+  function addClone(c) {
+    pauseForInteraction();
+    canvas.discardActiveObject();
+    c.set({ left: (c._baseLeft ?? c.left) + 30, top: (c._baseTop ?? c.top) + 30, evented: true });
+    if (c.type === "activeSelection") { c.canvas = canvas; c.forEachObject(x => { captureBaseState(x); canvas.add(x); }); c.setCoords(); }
+    else { captureBaseState(c); canvas.add(c); }
+    canvas.setActiveObject(c); canvas.requestRenderAll();
+  }
+  function duplicate() { const o = act(); if (o) o.clone(addClone, EXTRA); }
+  function copy() { const o = act(); if (o) o.clone(c => { clip = c; }, EXTRA); }
+  function paste() { if (!clip) return; clip.clone(c => { addClone(c); clip.set({ left: clip.left + 30, top: clip.top + 30 }); }, EXTRA); }
+
+  const tb = (text, x, y, w, size, o = {}) => ({ type: "textbox", text, left: x, top: y, width: w, fontSize: size, fontFamily: "Noto Sans TC", fontWeight: "700", fill: "#222222", textAlign: "center", originX: "center", originY: "center", lineHeight: 1.2, splitByGrapheme: true, styles: [], ...o });
+  const tl = (text, x, y, w, size, o = {}) => tb(text, x, y, w, size, { originX: "left", textAlign: "left", ...o });
+  const rc = (x, y, w, h, fill, o = {}) => ({ type: "rect", left: x, top: y, width: w, height: h, fill, strokeWidth: 0, ...o });
+  const ci = (x, y, r, fill, o = {}) => ({ type: "circle", left: x, top: y, radius: r, fill, originX: "center", originY: "center", strokeWidth: 0, ...o });
+  const tpl = (name, w, h, background, objects) => ({ name, W: w, H: h, json: { version: "5.3.0", background, objects } });
+  const TEMPLATES = [
+    tpl("動態事件卡 (直式)", 744, 1039, "#e8dfc8", [
+      rc(28, 28, 688, 983, "transparent", { stroke: "#1e2d24", strokeWidth: 6, rx: 12, ry: 12 }),
+      rc(60, 48, 220, 56, "#1e2d24", { rx: 8, ry: 8 }),
+      tb("事件卡", 170, 76, 200, 32, { fontWeight: "900", fill: "#f4ecd8" }),
+      tb("STORY 37", 590, 76, 180, 28, { fontFamily: "Montserrat", fontWeight: "800", fill: "#1e2d24" }),
+      rc(60, 560, 624, 96, "#dfd3b5", { stroke: "#1e2d24", strokeWidth: 3, rx: 14, ry: 14 }),
+      tb("保羅在雅典講道", 372, 608, 580, 56, { fontFamily: "Noto Serif TC", fontWeight: "900", fill: "#1e2d24", objAnim: "pulse" }),
+      tl("👤 人物\n保羅×1", 90, 745, 240, 32, { fontWeight: "900", fill: "#1e2d24", objAnim: "slideUp" }),
+      tl("🏛️ 元素\n道路×1、信心×1", 400, 745, 280, 32, { fontWeight: "900", fill: "#1e2d24", objAnim: "slideUp" }),
+      rc(120, 880, 360, 54, "#1e2d24", { rx: 12, ry: 12 }),
+      tb("📖 使徒行傳 17:16-34", 300, 907, 340, 24, { fill: "#f4ecd8" }),
+      ci(585, 905, 58, "#f4ecd8", { stroke: "#1e2d24", strokeWidth: 4, objAnim: "pulse" }),
+      tb("2分", 585, 905, 100, 42, { fontWeight: "900", fill: "#1e2d24", objAnim: "pulse" })
+    ]),
+    tpl("動態事件卡 (橫式)", 1039, 744, "#e8dfc8", [
+      rc(24, 24, 991, 696, "transparent", { stroke: "#1e2d24", strokeWidth: 6, rx: 10, ry: 10 }),
+      rc(55, 42, 220, 52, "#1e2d24", { rx: 6, ry: 6 }),
+      tb("事件卡", 165, 68, 200, 30, { fontWeight: "900", fill: "#f4ecd8" }),
+      tb("STORY 37", 880, 68, 180, 26, { fontFamily: "Montserrat", fontWeight: "800", fill: "#1e2d24" }),
+      tl("保羅在雅典講道", 55, 165, 620, 78, { fontFamily: "Noto Serif TC", fontWeight: "900", fill: "#1e2d24", objAnim: "pulse" }),
+      rc(730, 140, 255, 540, "transparent", { stroke: "#1e2d24", strokeWidth: 3, rx: 12, ry: 12 }),
+      tl("👤 人物\n保羅×1", 755, 230, 210, 28, { fontWeight: "900", fill: "#1e2d24", objAnim: "slideUp" }),
+      tl("🏛️ 元素\n道路×1、\n信心×1", 755, 380, 210, 28, { fontWeight: "900", fill: "#1e2d24", objAnim: "slideUp" }),
+      rc(745, 500, 225, 44, "#1e2d24", { rx: 10, ry: 10 }),
+      tb("📖 使徒行傳 17:16-34", 857, 522, 215, 20, { fill: "#f4ecd8" }),
+      ci(857, 615, 52, "#f4ecd8", { stroke: "#1e2d24", strokeWidth: 4, objAnim: "pulse" }),
+      tb("2分", 857, 615, 90, 38, { fontWeight: "900", fill: "#1e2d24", objAnim: "pulse" })
+    ])
+  ];
+  async function renderTemplates() {
+    const box = $("tplGrid"); box.innerHTML = "";
+    for (const t of TEMPLATES) {
+      const d = document.createElement("div"); d.className = "tpl";
+      const im = document.createElement("img"), cap = document.createElement("div");
+      cap.textContent = `${t.name}`;
+      d.append(im, cap); d.onclick = () => { setSize(t.W, t.H, false); loadPageJSON(JSON.parse(JSON.stringify(t.json)), pushHistory); };
+      box.appendChild(d);
+      im.src = await renderJSON(t.json, 220 / Math.max(t.W, t.H), { format: "jpeg", quality: 0.8, w: t.W, h: t.H });
+    }
+  }
+
+  /* =====================================================================
+     手機版抽屜導覽 + 單指平移畫布 + Firebase Realtime Database 雲端讀寫
+     ===================================================================== */
+  function bindMobileAndCloud() {
+    const leftSide = $("leftSideDrawer"), rightSide = $("props");
+    const closeDrawers = () => {
+      leftSide.classList.remove("mobile-open");
+      rightSide.classList.remove("mobile-open");
+      document.querySelectorAll("#mobileNav button").forEach(b => b.classList.toggle("on", b.dataset.mnav === "close"));
+    };
+    $("closeLeftDrawerBtn").onclick = closeDrawers;
+    $("closeRightDrawerBtn").onclick = closeDrawers;
+
+    document.querySelectorAll("#mobileNav button").forEach(b => {
+      b.onclick = () => {
+        const target = b.dataset.mnav;
+        document.querySelectorAll("#mobileNav button").forEach(x => x.classList.toggle("on", x === b));
+        if (target === "close") {
+          closeDrawers();
+        } else if (target === "props") {
+          leftSide.classList.remove("mobile-open");
+          rightSide.classList.add("mobile-open");
+        } else {
+          rightSide.classList.remove("mobile-open");
+          leftSide.classList.add("mobile-open");
+          const titles = { anim: "動畫運鏡與特效", pro: "文字擷取與清單", card: "版面元件與範本", layers: "圖層與 A4 列印" };
+          $("leftDrawerTitle").textContent = titles[target] || "工具面板";
+          document.querySelectorAll(".stabs button").forEach(x => x.classList.toggle("on", x.dataset.panel === target));
+          document.querySelectorAll(".spanel").forEach(p => p.classList.toggle("hidden", p.dataset.panel !== target));
+          if (target === "layers") renderLayers();
+        }
+      };
+    });
+
+    const panBtn = $("mobilePanToggleBtn");
+    panBtn.onclick = () => {
+      touchPanMode = !touchPanMode;
+      panBtn.classList.toggle("act-btn", touchPanMode);
+      panBtn.textContent = touchPanMode ? "🖐️ 平移中" : "🖐️ 移畫布";
+      canvas.selection = !touchPanMode;
+      canvas.forEachObject(o => {
+        if (touchPanMode) { o._savedSel = o.selectable; o._savedEv = o.evented; o.selectable = false; o.evented = false; }
+        else { if (o._savedSel !== undefined) o.selectable = o._savedSel; if (o._savedEv !== undefined) o.evented = o._savedEv; }
+      });
+      canvas.discardActiveObject(); canvas.requestRenderAll();
+    };
+
+    const st = $("stage");
+    let tStart = null;
+    st.addEventListener("touchstart", e => {
+      if (!touchPanMode || e.touches.length !== 1) return;
+      tStart = { x: e.touches[0].clientX + st.scrollLeft, y: e.touches[0].clientY + st.scrollTop };
+    }, { passive: true });
+    st.addEventListener("touchmove", e => {
+      if (!touchPanMode || !tStart || e.touches.length !== 1) return;
+      e.preventDefault();
+      st.scrollLeft = tStart.x - e.touches[0].clientX;
+      st.scrollTop = tStart.y - e.touches[0].clientY;
+    }, { passive: false });
+    st.addEventListener("touchend", () => { tStart = null; });
+
+    const getFbBaseUrl = () => (localStorage.getItem(FB_URL_KEY) || $("fbUrlInput").value || "https://money-d8327-default-rtdb.firebaseio.com").replace(/\/+$/, "");
+    const savedFb = localStorage.getItem(FB_URL_KEY);
+    if (savedFb) $("fbUrlInput").value = savedFb;
+
+    $("cloudCfgBtn").onclick = () => { $("cloudModal").style.display = "flex"; };
+    $("fbModalClose").onclick = () => { $("cloudModal").style.display = "none"; };
+    $("fbModalSave").onclick = () => {
+      localStorage.setItem(FB_URL_KEY, $("fbUrlInput").value.trim());
+      $("cloudModal").style.display = "none";
+      alert("已儲存 Firebase 資料庫網址");
+    };
+
+    $("cloudSaveBtn").onclick = async () => {
+      const pid = ($("cloudProjId").value || "").trim().replace(/[.#$[\]/]/g, "_");
+      if (!pid) return alert("請輸入專案代號");
+      const btn = $("cloudSaveBtn"); btn.disabled = true; btn.textContent = "上傳中…";
+      try {
+        init();
+        const payload = {
+          updatedAt: Date.now(),
+          project: snapshot(),
+          favSeeds: loadFavSeeds()
+        };
+        const res = await fetch(`${getFbBaseUrl()}/ai_card_studio/${encodeURIComponent(pid)}.json`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        alert(`已儲存至雲端（代號：${pid}）。在手機或另一台電腦輸入相同代號點擊「📥 讀雲端」即可接續編輯。`);
+      } catch (e) {
+        alert("雲端儲存失敗，請點 ⚙️ 檢查 Firebase 網址與權限設定：" + e.message);
+      } finally {
+        btn.disabled = false; btn.textContent = "☁️ 存雲端";
+      }
+    };
+
+    $("cloudLoadBtn").onclick = async () => {
+      const pid = ($("cloudProjId").value || "").trim().replace(/[.#$[\]/]/g, "_");
+      if (!pid) return alert("請輸入專案代號");
+      const btn = $("cloudLoadBtn"); btn.disabled = true; btn.textContent = "讀取中…";
+      try {
+        const res = await fetch(`${getFbBaseUrl()}/ai_card_studio/${encodeURIComponent(pid)}.json`);
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const data = await res.json();
+        if (!data || !data.project) return alert(`找不到代號「${pid}」的雲端資料`);
+        if (Array.isArray(data.favSeeds)) saveFavSeeds(data.favSeeds);
+        showTab("editor");
+        loadProject(data.project, true);
+        alert(`已載入雲端專案「${pid}」`);
+      } catch (e) {
+        alert("雲端讀取失敗：" + e.message);
+      } finally {
+        btn.disabled = false; btn.textContent = "📥 讀雲端";
+      }
+    };
+  }
+
+  /* ---- 綁定所有按鈕與快捷鍵 ---- */
+  function bindUI() {
+    document.querySelectorAll(".stabs button").forEach(b => b.onclick = () => {
+      document.querySelectorAll(".stabs button").forEach(x => x.classList.toggle("on", x === b));
+      document.querySelectorAll(".spanel").forEach(p => p.classList.toggle("hidden", p.dataset.panel !== b.dataset.panel));
+      if (b.dataset.panel === "layers") renderLayers();
+    });
+
+    /* 播放/暫停按鈕與選取物件獨立動畫綁定 */
+    $("edPlayToggleBtn").onclick = () => togglePlayState();
+    $("exportVideoQuickBtn").onclick = () => exportEditorVideo($("exportVideoQuickBtn"));
+    ["edCamMotion", "edVfxType", "edDuration"].forEach(id => {
+      if ($(id)) $(id).onchange = () => { togglePlayState(true); };
+    });
+
+    document.querySelectorAll("[data-objanim]").forEach(b => {
+      b.onclick = () => {
+        const o = act();
+        if (!o) return alert("請先在畫布上點選一個文字或圖片物件！");
+        const animType = b.dataset.objanim;
+        (o.type === "activeSelection" ? o.getObjects() : [o]).forEach(item => {
+          item.objAnim = animType;
+          captureBaseState(item);
+        });
+        document.querySelectorAll("[data-objanim]").forEach(x => x.classList.toggle("on", x === b));
+        togglePlayState(true);
+        queueSave(); renderLayers();
+      };
+    });
+
+    $("proCloneImgBtn").onclick = () => $("proCloneFile").click();
+    $("proCloneFile").onchange = async e => {
+      const f = e.target.files[0]; if (!f) return; e.target.value = "";
+      setProStatus("正在分析圖片文字座標與背景…");
+      const res = await OCRLayoutEngine.analyze(f, p => setProStatus(`掃描進度 ${(p * 100).toFixed(0)}%…`));
+      await cloneImageLayoutToCanvas(res);
+    };
+    $("proGrabSelectedBtn").onclick = grabTextFromSelectedImage;
+    $("pGrabTextBtn").onclick = grabTextFromSelectedImage;
+
+    $("onionSkinSlider").oninput = e => updateOnionOpacity(e.target.value);
+    $("onionUploadBtn").onclick = () => $("onionFile").click();
+    $("onionFile").onchange = async e => {
+      const f = e.target.files[0]; if (!f) return; e.target.value = "";
+      setOnionSkinImage(await blobToDataURL(f), 0.45);
+    };
+
+    $("edEyedropBtn").onclick = () => {
+      eyedropperMode = !eyedropperMode;
+      $("edEyedropBtn").classList.toggle("on", eyedropperMode);
+      $("stage").classList.toggle("eyedrop", eyedropperMode);
+      if (eyedropperMode) setProStatus("請在畫布任意位置點擊吸取顏色");
+    };
+
+    $("pFeatherImgBtn").onclick = featherSelectedImage;
+    document.querySelectorAll("[data-smarttag]").forEach(b => b.onclick = () => addSmartBoundTag(b.dataset.smarttag));
+    document.querySelectorAll("[data-ornate]").forEach(b => b.onclick = () => addOrnateFrameOrBanner(b.dataset.ornate));
+    document.querySelectorAll("[data-tex]").forEach(b => b.onclick = () => toggleParchmentTexture());
+    $("exportA4SheetBtn").onclick = exportA4PrintSheetPDF;
+
+    $("proBoxGrabBtn").onclick = () => {
+      pauseForInteraction();
+      boxGrabMode = !boxGrabMode;
+      $("proBoxGrabBtn").textContent = boxGrabMode ? "拖曳框選區域（點此取消）" : "框選區域轉文字";
+      canvas.selection = !boxGrabMode;
+      canvas.forEachObject(o => { o._prevEv = o.evented; if (boxGrabMode) o.evented = false; });
+      if (boxGrabMode && window.innerWidth <= 860) $("leftSideDrawer").classList.remove("mobile-open");
+    };
+
+    canvas.on("mouse:down", opt => {
+      if (eyedropperMode) {
+        try {
+          const retina = canvas.getRetinaScaling ? canvas.getRetinaScaling() : 1;
+          const px = Math.round((opt.e.offsetX || 0) * retina);
+          const py = Math.round((opt.e.offsetY || 0) * retina);
+          const p = canvas.lowerCanvasEl.getContext("2d").getImageData(px, py, 1, 1).data;
+          const hex = "#" + [p[0], p[1], p[2]].map(x => x.toString(16).padStart(2, "0")).join("");
+          const o = act();
+          if (o && (isText(o) || isShape(o))) {
+            o.set("fill", hex);
+            canvas.requestRenderAll(); queueSave(); refreshProps();
+          }
+          navigator.clipboard?.writeText(hex).catch(() => {});
+          setProStatus(`已吸取顏色 ${hex}`);
+        } catch {}
+        eyedropperMode = false;
+        $("edEyedropBtn").classList.remove("on");
+        $("stage").classList.remove("eyedrop");
+        return;
+      }
+      if (!boxGrabMode) return;
+      startPt = canvas.getPointer(opt.e);
+      grabRect = new fabric.Rect({ left: startPt.x, top: startPt.y, width: 1, height: 1, fill: "rgba(0,168,252,0.18)", stroke: "#00a8fc", strokeWidth: 3, strokeDashArray: [6, 4], selectable: false, evented: false });
+      canvas.add(grabRect);
+    });
+    canvas.on("mouse:move", opt => {
+      if (!boxGrabMode || !grabRect || !startPt) return;
+      const pt = canvas.getPointer(opt.e);
+      grabRect.set({ left: Math.min(startPt.x, pt.x), top: Math.min(startPt.y, pt.y), width: Math.abs(pt.x - startPt.x), height: Math.abs(pt.y - startPt.y) });
+      canvas.requestRenderAll();
+    });
+    canvas.on("mouse:up", async () => {
+      if (!boxGrabMode || !grabRect) return;
+      const box = { left: grabRect.left, top: grabRect.top, width: grabRect.width, height: grabRect.height };
+      canvas.remove(grabRect); grabRect = null; startPt = null; boxGrabMode = false;
+      $("proBoxGrabBtn").textContent = "框選區域轉文字";
+      canvas.selection = true;
+      canvas.forEachObject(o => { if (o._prevEv !== undefined) o.evented = o._prevEv; });
+      if (box.width < 12 || box.height < 12) return;
+      const bgImg = canvas.getObjects().find(o => isImage(o) && !o.isOnion);
+      if (!bgImg) return alert("找不到底圖");
+      setProStatus("正在辨識框選區域文字…");
+      const el = bgImg._originalElement || bgImg.getElement(), imgW = el.naturalWidth || el.width, imgH = el.naturalHeight || el.height;
+      const bound = bgImg.getBoundingRect(true, true), sx = imgW / bound.width, sy = imgH / bound.height;
+      const cropX = Math.max(0, (box.left - bound.left) * sx), cropY = Math.max(0, (box.top - bound.top) * sy);
+      const cropW = Math.min(imgW - cropX, box.width * sx), cropH = Math.min(imgH - cropY, box.height * sy);
+      const subCv = document.createElement("canvas"), subScale = Math.min(2, Math.max(0.4, 90 / cropH));
+      subCv.width = Math.max(20, Math.round(cropW * subScale)); subCv.height = Math.max(20, Math.round(cropH * subScale));
+      subCv.getContext("2d").drawImage(el, cropX, cropY, cropW, cropH, 0, 0, subCv.width, subCv.height);
+      const fullCv = document.createElement("canvas"); fullCv.width = imgW; fullCv.height = imgH;
+      const fullCtx = fullCv.getContext("2d"); fullCtx.drawImage(el, 0, 0);
+      const colorInfo = OCRLayoutEngine.sampleAccurateColors(fullCtx, imgW, imgH, { x0: cropX, y0: cropY, x1: cropX + cropW, y1: cropY + cropH });
+      if (colorInfo.isDarkBg) {
+        const sctx = subCv.getContext("2d"), sd = sctx.getImageData(0, 0, subCv.width, subCv.height);
+        for (let i = 0; i < sd.data.length; i += 4) { sd.data[i] = 255 - sd.data[i]; sd.data[i + 1] = 255 - sd.data[i + 1]; sd.data[i + 2] = 255 - sd.data[i + 2]; }
+        sctx.putImageData(sd, 0, 0);
+      }
+      let txt = "";
+      try { const w = await OCRLayoutEngine.getWorker(); txt = ((await w.recognize(subCv))?.data?.text || "").replace(/\s+/g, " ").trim(); } catch {}
+      if (!txt) txt = prompt("請輸入此處文字：", "文字") || "文字";
+      const newBgUrl = OCRLayoutEngine.eraseTextWithGrain(fullCv, [{ x: cropX, y: cropY, width: cropW, height: cropH, bgRGB: colorInfo.bgRGB, isDarkBg: colorInfo.isDarkBg, bgLum: colorInfo.bgLum }]);
+      bgImg.setSrc(newBgUrl, () => {
+        bgImg.set({ name: "🎬 去字動畫底圖（已鎖定）", isAnimBg: true, selectable: false, evented: false });
+        captureBaseState(bgImg);
+        const fs = Math.max(14, Math.round(box.height * 0.78));
+        const tbObj = new fabric.Textbox(txt, { left: box.left + box.width / 2, top: box.top + box.height / 2, width: Math.max(box.width * 1.15, fs * txt.length * 1.05), fontSize: fs, fontFamily: "Noto Sans TC", fontWeight: "900", fill: colorInfo.fgColor, textAlign: "center", originX: "center", originY: "center", splitByGrapheme: true, objAnim: "pulse" });
+        captureBaseState(tbObj);
+        canvas.add(tbObj); canvas.setActiveObject(tbObj); canvas.requestRenderAll(); queueSave(); refreshQuickTextList();
+        setProStatus(`已建立動態文字層「${txt}」`);
+      });
+    });
+
+    $("proMagicGrab").onclick = magicGrabSubject;
+    $("proMagicEraser").onclick = openMagicEraser;
+    $("eraserCancel").onclick = () => { $("eraserModal").style.display = "none"; };
+    $("eraserApply").onclick = applyMagicEraser;
+    $("proRemoveBgQuick").onclick = removeBg;
+    $("pRemoveBg").onclick = removeBg;
+
+    document.querySelectorAll("[data-text]").forEach(b => b.onclick = () => addText(b.dataset.text));
+    document.querySelectorAll("[data-shape]").forEach(b => b.onclick = () => addShape(b.dataset.shape));
+    document.querySelectorAll("[data-align]").forEach(b => b.onclick = () => alignTo(b.dataset.align));
+    document.querySelectorAll("[data-fx]").forEach(b => b.onclick = () => textEffect(b.dataset.fx));
+
+    $("edUpload").onclick = () => $("edFile").click();
+    $("edFile").onchange = e => { addFiles([...e.target.files]); e.target.value = ""; };
+    $("edPreset").onchange = e => { if (e.target.value === "custom") { $("edW").focus(); return; } const [w, h] = e.target.value.split("x"); setSize(w, h, $("magicResizeChk").checked); queueSave(); };
+    $("edW").onchange = $("edH").onchange = () => { setSize($("edW").value, $("edH").value, $("magicResizeChk").checked); queueSave(); };
+    $("edUndo").onclick = undo; $("edRedo").onclick = redo;
+    $("edZoomIn").onclick = () => { zoom = Math.min(zoom * 1.2, 4); applyZoom(); };
+    $("edZoomOut").onclick = () => { zoom = Math.max(zoom / 1.2, 0.05); applyZoom(); };
+    $("edFit").onclick = fit;
+    $("edNew").onclick = () => { if (!confirm("確定清空目前所有頁面？")) return; pages = [blankPage()]; cur = 0; thumbs = []; loadPageJSON(pages[0], pushHistory); };
+    $("edSave").onclick = saveProject;
+    $("edOpen").onclick = () => $("edOpenFile").click();
+    $("edOpenFile").onchange = async e => { const f = e.target.files[0]; if (f) { try { loadProject(await f.text()); } catch { alert("檔案格式錯誤"); } } e.target.value = ""; };
+    $("edExport").onclick = exportDesign;
+    $("pBg").oninput = e => { canvas.backgroundColor = e.target.value; canvas.requestRenderAll(); queueSave(); };
+
+    $("pFont").onchange = e => setFont(e.target.value);
+    $("pFontSize").oninput = e => setTextProp({ fontSize: +e.target.value || 12 });
+    $("pTextColor").oninput = e => setTextProp({ fill: e.target.value });
+    $("pBold").onclick = () => { const o = act(); setTextProp({ fontWeight: (o.fontWeight === "bold" || +o.fontWeight >= 700) ? "400" : "bold" }); ensureFont(o); refreshProps(); };
+    $("pItalic").onclick = () => { setTextProp({ fontStyle: act().fontStyle === "italic" ? "normal" : "italic" }); refreshProps(); };
+    $("pAlign").onclick = () => { const i = ALIGNS.findIndex(a => a[0] === act().textAlign); setTextProp({ textAlign: ALIGNS[(i + 1) % ALIGNS.length][0] }); refreshProps(); };
+    $("pLine").oninput = e => setTextProp({ lineHeight: +e.target.value });
+    $("pSpacing").oninput = e => setTextProp({ charSpacing: +e.target.value });
+    const strokeText = () => { const w = +$("pTextStrokeW").value; setTextProp({ stroke: w ? $("pTextStroke").value : null, strokeWidth: w, paintFirst: "stroke" }); };
+    $("pTextStroke").oninput = strokeText; $("pTextStrokeW").oninput = strokeText;
+    $("pTextBg").oninput = e => setTextProp({ backgroundColor: e.target.value });
+    $("pTextBgClear").onclick = () => setTextProp({ backgroundColor: "" });
+
+    $("pFill").oninput = e => setProp({ fill: e.target.value });
+    $("pFillClear").onclick = () => setProp({ fill: "transparent" });
+    const strokeShape = () => setProp({ stroke: $("pStroke").value, strokeWidth: +$("pStrokeW").value });
+    $("pStroke").oninput = strokeShape; $("pStrokeW").oninput = strokeShape;
+    $("pRadius").oninput = e => setProp({ rx: +e.target.value, ry: +e.target.value });
+
+    $("pCover").onclick = coverCanvas;
+    ["pBright", "pContrast", "pSat"].forEach(id => $(id).oninput = applyImageFilters);
+    $("pImgRadius").oninput = e => setImageRadius(+e.target.value);
+
+    $("pOpacity").oninput = e => setProp({ opacity: +e.target.value });
+    $("pFront").onclick = () => { act() && canvas.bringToFront(act()); queueSave(); };
+    $("pBack").onclick = () => { act() && canvas.sendToBack(act()); queueSave(); };
+    $("pFwd").onclick = () => { act() && canvas.bringForward(act()); queueSave(); };
+    $("pBwd").onclick = () => { act() && canvas.sendBackwards(act()); queueSave(); };
+    $("pDup").onclick = duplicate; $("pLock").onclick = toggleLock; $("pDel").onclick = removeActive;
+    $("pGroup").onclick = () => { const o = act(); if (o?.type === "activeSelection") { o.toGroup(); canvas.requestRenderAll(); queueSave(); refreshProps(); refreshLayers(); } };
+    $("pUngroup").onclick = () => { const o = act(); if (o?.type === "group") { o.toActiveSelection(); canvas.requestRenderAll(); queueSave(); refreshProps(); refreshLayers(); } };
+
+    $("pgAdd").onclick = () => addPage(false); $("pgDup").onclick = () => addPage(true); $("pgDel").onclick = deletePage;
+    $("pgLeft").onclick = () => movePage(-1); $("pgRight").onclick = () => movePage(1);
+
+    const st = $("stage");
+    let spaceDown = false, isPanning = false, panStart = { x: 0, y: 0 };
+    window.addEventListener("keydown", e => { if (e.code === "Space" && !["INPUT", "TEXTAREA"].includes(document.activeElement?.tagName) && !act()?.isEditing) { spaceDown = true; st.classList.add("panning"); } });
+    window.addEventListener("keyup", e => { if (e.code === "Space") { spaceDown = false; isPanning = false; st.classList.remove("panning"); } });
+    st.addEventListener("mousedown", e => {
+      $("ctxMenu").style.display = "none";
+      if (spaceDown) { isPanning = true; panStart = { x: e.clientX + st.scrollLeft, y: e.clientY + st.scrollTop }; e.preventDefault(); }
+      else if (e.target === st) { canvas.discardActiveObject(); resumeFromInteraction(); canvas.requestRenderAll(); }
+    });
+    window.addEventListener("mousemove", e => { if (isPanning) { st.scrollLeft = panStart.x - e.clientX; st.scrollTop = panStart.y - e.clientY; } });
+    window.addEventListener("mouseup", () => { isPanning = false; });
+
+    st.addEventListener("contextmenu", e => {
+      e.preventDefault();
+      const menu = $("ctxMenu"); menu.style.display = "block";
+      menu.style.left = Math.min(window.innerWidth - 190, e.clientX) + "px";
+      menu.style.top = Math.min(window.innerHeight - 200, e.clientY) + "px";
+    });
+    document.querySelectorAll("[data-ctx]").forEach(b => b.onclick = () => {
+      $("ctxMenu").style.display = "none";
+      const cmd = b.dataset.ctx;
+      if (cmd === "grabtext") grabTextFromSelectedImage();
+      if (cmd === "dup") duplicate();
+      if (cmd === "front" && act()) { canvas.bringToFront(act()); queueSave(); }
+      if (cmd === "back" && act()) { canvas.sendToBack(act()); queueSave(); }
+      if (cmd === "lock") toggleLock();
+      if (cmd === "del") removeActive();
+    });
+
+    st.addEventListener("dragover", e => { e.preventDefault(); st.classList.add("over"); });
+    st.addEventListener("dragleave", () => st.classList.remove("over"));
+    st.addEventListener("drop", e => {
+      e.preventDefault(); st.classList.remove("over");
+      const files = [...e.dataTransfer.files].filter(f => f.type.startsWith("image/"));
+      if (files.length && isText(act())) syncImageToActiveText(files[0]); else addFiles(files);
+    });
+    st.addEventListener("wheel", e => { if (!e.ctrlKey) return; e.preventDefault(); zoom = Math.max(0.05, Math.min(4, zoom * (e.deltaY < 0 ? 1.1 : 0.9))); applyZoom(); }, { passive: false });
+
+    document.addEventListener("paste", e => {
+      if ($("tab-editor").classList.contains("hidden")) return;
+      const files = [...(e.clipboardData?.files || [])].filter(f => f.type.startsWith("image/"));
+      if (files.length) { e.preventDefault(); if (isText(act())) syncImageToActiveText(files[0]); else addFiles(files); }
+      else if (clip) { e.preventDefault(); paste(); }
+    });
+
+    document.addEventListener("keydown", e => {
+      if ($("tab-editor").classList.contains("hidden")) return;
+      const tag = document.activeElement?.tagName;
+      if (["INPUT", "TEXTAREA", "SELECT"].includes(tag) && document.activeElement.type !== "range") return;
+      const o = act(); if (o && o.isEditing) return;
+      const ctrl = e.ctrlKey || e.metaKey, k = e.key.toLowerCase();
+      if (ctrl && k === "z" && !e.shiftKey) { e.preventDefault(); undo(); }
+      else if (ctrl && (k === "y" || (k === "z" && e.shiftKey))) { e.preventDefault(); redo(); }
+      else if (ctrl && k === "d") { e.preventDefault(); duplicate(); }
+      else if (ctrl && k === "c" && o) copy();
+      else if (k === "escape") { canvas.discardActiveObject(); resumeFromInteraction(); canvas.requestRenderAll(); }
+      else if ((k === "delete" || k === "backspace") && o) { e.preventDefault(); removeActive(); }
+      else if (o && k.startsWith("arrow")) {
+        e.preventDefault(); const step = e.shiftKey ? 10 : 1;
+        o.set({ left: o.left + (k === "arrowleft" ? -step : k === "arrowright" ? step : 0), top: o.top + (k === "arrowup" ? -step : k === "arrowdown" ? step : 0) });
+        o.setCoords(); captureBaseState(o); canvas.requestRenderAll(); queueSave();
+      }
+    });
+  }
+
+  return {
+    init, fit, addImage, refreshAiThumbs,
+    cloneImageLayoutToCanvas, setEditorAnimConfig, loadAnimatedSceneToEditor
+  };
+})();
+</script>
+</body>
+</html>

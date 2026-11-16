@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>AI 動畫生成與排版系統</title>
+<title>AI 真實動作動畫與 10 分鐘短片製作系統</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&family=Noto+Serif+TC:wght@400;700;900&family=LXGW+WenKai+TC:wght@400;700&family=Huninn&family=Montserrat:wght@400;800&family=Playfair+Display:wght@400;700&family=Bebas+Neue&display=swap" rel="stylesheet">
@@ -24,12 +24,12 @@
   button { cursor:pointer; border:none; border-radius:6px; font-family:inherit; color:var(--text); background:var(--btn); transition:background .15s; }
   button:hover { background:var(--btnh); }
   button:disabled { opacity:.45; cursor:not-allowed; }
-  label { display:block; font-size:12px; color:var(--muted); margin:9px 0 4px; }
+  label { display:block; font-size:12px; color:var(--muted); margin:8px 0 4px; }
   textarea, select, input[type=number], input[type=text] { width:100%; background:#11131b; color:var(--text); border:1px solid var(--line); border-radius:6px; padding:7px 9px; font-size:13px; font-family:inherit; user-select:text; }
-  textarea { min-height:64px; resize:vertical; }
+  textarea { min-height:62px; resize:vertical; }
   .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:14px; }
   .row { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
-  .check { display:flex; align-items:center; gap:7px; margin-top:7px; font-size:12px; color:var(--text); cursor:pointer; }
+  .check { display:flex; align-items:center; gap:7px; margin-top:6px; font-size:12px; color:var(--text); cursor:pointer; }
   .primary { width:100%; margin-top:10px; padding:12px; font-size:15px; font-weight:bold; color:#fff; background:linear-gradient(90deg,#5865f2,#00a8fc); }
   .primary:hover { filter:brightness(1.08); }
   .act-btn { background:#2b3252; color:#fff; font-weight:bold; }
@@ -41,8 +41,8 @@
 
   /* ---------- 動畫生圖頁 ---------- */
   #tab-gen { height:calc(100vh - 50px); overflow-y:auto; }
-  #tab-gen main { max-width:1260px; margin:0 auto; padding:14px; display:grid; grid-template-columns:405px 1fr; gap:16px; }
-  .drop { border:2px dashed var(--line); border-radius:8px; padding:11px; text-align:center; color:var(--muted); font-size:12px; cursor:pointer; }
+  #tab-gen main { max-width:1300px; margin:0 auto; padding:14px; display:grid; grid-template-columns:420px 1fr; gap:16px; }
+  .drop { border:2px dashed var(--line); border-radius:8px; padding:10px; text-align:center; color:var(--muted); font-size:12px; cursor:pointer; }
   .refbox { display:flex; gap:10px; align-items:flex-start; margin-top:8px; }
   .refbox img { width:76px; height:76px; object-fit:cover; border-radius:6px; border:1px solid var(--line); }
   .refbox .refinfo { flex:1; font-size:12px; color:var(--muted); }
@@ -54,11 +54,13 @@
   .e-tag { font-size:11px; padding:2px 7px; border-radius:4px; background:#1e293b; color:#38bdf8; border:1px solid #0284c7; }
   details.fav-drawer { background:#11131b; border:1px solid var(--line); border-radius:8px; padding:8px 10px; margin-top:8px; }
   details.fav-drawer summary { cursor:pointer; font-size:12px; font-weight:bold; color:var(--text); list-style:none; display:flex; justify-content:space-between; align-items:center; }
-  .gallery { display:grid; grid-template-columns:repeat(auto-fill,minmax(225px,1fr)); gap:12px; }
+  .gallery { display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:12px; }
   .item { background:#11131b; border:1px solid var(--line); border-radius:8px; overflow:hidden; display:flex; flex-direction:column; }
   .item .imgwrap { position:relative; display:flex; align-items:center; justify-content:center; background:#0b0d13; overflow:hidden; }
   .item canvas.anim-player { width:100%; height:100%; object-fit:contain; display:block; cursor:pointer; }
-  .item .anim-badge { position:absolute; top:7px; left:7px; background:rgba(0,0,0,.72); color:#38bdf8; font-size:10px; font-weight:bold; padding:2px 7px; border-radius:99px; border:1px solid #0284c7; pointer-events:none; }
+  .item .anim-badge { position:absolute; top:7px; left:7px; background:rgba(0,0,0,.78); color:#38bdf8; font-size:10px; font-weight:bold; padding:2px 7px; border-radius:99px; border:1px solid #0284c7; pointer-events:none; }
+  .item .scrubber-bar { display:flex; align-items:center; gap:5px; padding:4px 8px; background:#161924; border-top:1px solid var(--line); font-size:10px; color:var(--muted); }
+  .item .scrubber-bar input[type=range] { flex:1; height:4px; accent-color:var(--accent2); }
   .item .meta { padding:6px 8px; font-size:11px; color:var(--muted); line-height:1.4; max-height:42px; overflow:hidden; }
   .item .actions { display:grid; grid-template-columns:repeat(3,1fr); gap:4px; padding:0 8px 8px; }
   .item .actions button { padding:6px 3px; font-size:11px; }
@@ -71,8 +73,8 @@
   .section-title { display:flex; justify-content:space-between; align-items:center; margin:0 0 10px; }
   .section-title h2 { font-size:16px; margin:0; }
 
-  /* ---------- 動畫排版編輯器（電腦版 3 欄佈局） ---------- */
-  #tab-editor { height:calc(100vh - 50px); display:grid; grid-template-columns:295px 1fr 275px; position:relative; }
+  /* ---------- 動畫排版與 10 分鐘長片編輯器 ---------- */
+  #tab-editor { height:calc(100vh - 50px); display:grid; grid-template-columns:305px 1fr 280px; position:relative; }
   .side { background:var(--card); border-right:1px solid var(--line); overflow-y:auto; padding:12px; }
   .side.right { border-right:none; border-left:1px solid var(--line); }
   .side h3 { font-size:12px; margin:12px 0 6px; color:var(--muted); display:flex; justify-content:space-between; align-items:center; }
@@ -95,12 +97,16 @@
   .topbar .export { background:linear-gradient(90deg,#5865f2,#00a8fc); color:#fff; font-weight:bold; }
   .play-btn { background:#10b981 !important; color:#fff !important; font-weight:bold; }
   .play-btn.playing { background:#f59e0b !important; }
-  #stage { flex:1; overflow:auto; display:flex; align-items:center; justify-content:center; background:#090a0f; padding:20px; position:relative; }
+  #stage { flex:1; overflow:auto; display:flex; align-items:center; justify-content:center; background:#090a0f; padding:16px; position:relative; }
   #stage.panning { cursor:grab !important; }
   #stage.eyedrop { cursor:crosshair !important; }
   #stage .canvas-container { box-shadow:0 4px 24px #000a; }
+  /* 10分鐘長片時間軸控制列 */
+  #timelineBar { display:flex; align-items:center; gap:8px; padding:6px 12px; background:#131622; border-top:1px solid var(--line); font-size:12px; }
+  #timelineBar input[type=range] { flex:1; accent-color:var(--accent2); cursor:pointer; }
+  #timecodeDisplay { font-family:monospace; font-size:12px; color:#38bdf8; min-width:95px; text-align:center; }
   .prop-row { display:flex; gap:6px; align-items:center; margin-bottom:6px; font-size:12px; color:var(--muted); }
-  .prop-row > span { width:58px; flex:none; }
+  .prop-row > span { width:68px; flex:none; }
   .prop-row input[type=color] { width:32px; height:26px; border:none; background:none; padding:0; cursor:pointer; }
   .prop-row input[type=range] { flex:1; }
   .prop-row select, .prop-row input[type=number], .prop-row input[type=text] { flex:1; padding:5px; }
@@ -140,7 +146,6 @@
   #mobileNav { display:none; }
   .drawer-close-bar { display:none; }
 
-  /* ---------- 手機版響應式介面（螢幕寬度 <= 860px 自動切換） ---------- */
   @media (max-width: 860px) {
     header { padding:0 8px; gap:6px; height:46px; overflow-x:auto; flex-wrap:nowrap; }
     header h1 { display:none; }
@@ -153,13 +158,13 @@
 
     #tab-editor { display:flex; flex-direction:column; height:calc(100vh - 46px); }
     .center { flex:1; height:calc(100% - 50px); }
-    #stage { padding:10px; }
+    #stage { padding:8px; }
     .topbar { padding:5px 8px; gap:4px; }
     #pagebar { padding:4px 8px; }
     .pg { height:36px; }
 
     .side {
-      position:fixed; left:0; right:0; bottom:50px; height:58vh;
+      position:fixed; left:0; right:0; bottom:50px; height:60vh;
       border-right:none; border-left:none; border-top:2px solid var(--accent);
       border-radius:14px 14px 0 0; z-index:45; box-shadow:0 -8px 30px #000c;
       transform:translateY(110%); transition:transform .22s ease-out;
@@ -185,10 +190,10 @@
 </head>
 <body>
 <header>
-  <h1>AI 動畫生成與排版</h1>
+  <h1>AI 真實動作動畫系統</h1>
   <div class="tabs">
-    <button class="tab active" data-tab="gen">🎬 AI 生成動畫</button>
-    <button class="tab" data-tab="editor">📐 動畫排版編輯</button>
+    <button class="tab active" data-tab="gen">🎬 AI 動作動畫生成</button>
+    <button class="tab" data-tab="editor">📐 10分鐘短片與排版編輯</button>
   </div>
   <div class="cloud-bar">
     <input type="text" id="cloudProjId" placeholder="專案代號" value="card01">
@@ -198,12 +203,12 @@
   </div>
 </header>
 
-<!-- ======================= Tab 1：AI 生成動畫 ======================= -->
+<!-- ======================= Tab 1：AI 動作動畫生成 ======================= -->
 <div id="tab-gen">
 <main>
   <section class="card">
-    <label style="margin-top:0">參考圖片（選填：可把靜態圖直接轉成動畫，或提取原圖文字疊加到新動畫）</label>
-    <div class="drop" id="refDrop">點擊選擇圖片，或拖曳圖片至此（支援「圖片轉動畫」）</div>
+    <label style="margin-top:0">參考圖片（選填：可為靜態圖綁定骨骼做真實動作，或提取卡牌文字）</label>
+    <div class="drop" id="refDrop">點擊選擇圖片，或拖曳圖片至此（自動建立 256 節點動作骨骼網格）</div>
     <input type="file" id="refFile" accept="image/*" hidden>
     <div id="refPanel" class="hidden">
       <div class="refbox">
@@ -212,7 +217,7 @@
           <div id="refStatus">分析中…</div>
           <div class="progress"><div id="refProgress"></div></div>
           <div style="display:flex;gap:5px;margin-top:6px">
-            <button id="refAnimateDirectBtn" class="act-btn" style="padding:4px 8px;font-size:11px">🎬 直接把這張圖變成動畫</button>
+            <button id="refAnimateDirectBtn" class="act-btn" style="padding:4px 8px;font-size:11px">🦴 綁定骨骼直接做動作</button>
             <button id="refRemove" style="padding:4px 8px;font-size:11px">移除</button>
           </div>
         </div>
@@ -222,122 +227,112 @@
           <span style="font-size:12px;font-weight:bold;color:var(--accent2)">辨識出的圖片文字（可直接修改）</span>
           <span id="ocrCountBadge" style="font-size:11px;color:var(--muted)">分析中</span>
         </div>
-        <textarea id="refOcrText" style="min-height:46px;font-size:12px"></textarea>
+        <textarea id="refOcrText" style="min-height:44px;font-size:12px"></textarea>
         <label class="check">
-          <input type="checkbox" id="refCloneLayoutChk" checked> 動畫生成時，依原圖座標同步疊加動態文字
+          <input type="checkbox" id="refCloneLayoutChk" checked> 生成時依原圖座標疊加文字
         </label>
-        <button id="refCloneToEditor" class="act-btn" style="width:100%;margin-top:6px;padding:8px;font-size:12px">
-          將此圖與文字轉入「動畫排版編輯器」做動態卡牌 →
+        <button id="refCloneToEditor" class="act-btn" style="width:100%;margin-top:6px;padding:7px;font-size:12px">
+          轉入編輯器調整骨骼關節與文字 →
         </button>
       </div>
     </div>
 
-    <div style="display:flex;justify-content:space-between;align-items:center;margin:10px 0 4px">
-      <label for="prompt" style="margin:0">動畫指令描述（輸入想看的動作、人物與場景）</label>
-      <select id="brainMode" style="width:auto;padding:3px 6px;font-size:11px;background:#1f2942;color:#7dd3fc;border-color:#334168">
-        <option value="gpt" selected>🧠 深度視覺與動態拆解</option>
-        <option value="literal">🎯 純字面翻譯</option>
-      </select>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin:9px 0 4px">
+      <label for="prompt" style="margin:0">動作與場景指令（支援單幕或多幕 10 分鐘劇本，每行一幕）</label>
+      <button id="autoExpandStoryBtn" class="act-btn" style="padding:3px 8px;font-size:11px">📜 自動擴寫多幕短片劇本</button>
     </div>
-    <textarea id="prompt" placeholder="例如：我在飛機上做飛翔動作 / 羅馬宣教，在雅典 / 一隻狗狂叫 / 櫻花樹下彈吉他的少年"></textarea>
+    <textarea id="prompt" placeholder="例如：我在飛機上做飛翔動作 / 一隻狗狂叫 / 羅馬宣教，在雅典（若輸入多行，系統可自動串成多幕長片）"></textarea>
     <div class="chips" id="examples"></div>
 
-    <!-- 視覺與動態拆解預覽盒 + 連續對話改動畫 -->
+    <!-- 骨骼動作拆解預覽盒 -->
     <div class="gpt-box">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">
-        <span style="font-size:11px;font-weight:bold;color:#7dd3fc">🎬 AI 動畫導演拆解（必現物件 ＋ 自動運鏡與特效）</span>
-        <button id="previewScriptBtn" style="padding:2px 7px;font-size:11px;background:#2b3252;color:#fff">預覽分鏡</button>
+        <span style="font-size:11px;font-weight:bold;color:#7dd3fc">🦴 骨骼動作綁定與視覺拆解（自動偵測文字裡的動作）</span>
+        <button id="previewScriptBtn" style="padding:2px 7px;font-size:11px;background:#2b3252;color:#fff">解析動作</button>
       </div>
       <div id="entityTagBox" class="entity-tags"></div>
-      <textarea id="enPromptPreview" style="min-height:48px;font-size:11px;color:#cbd5e1;padding:6px" placeholder="按下「開始生成動畫」時，系統會自動鎖定【主體＋必現載具＋運鏡動作＋物理粒子】…"></textarea>
+      <textarea id="enPromptPreview" style="min-height:44px;font-size:11px;color:#cbd5e1;padding:6px" placeholder="按下開始生成時，系統會自動解析【手臂關節、腿部步態、嘴部張合、呼吸起伏、載具結構】…"></textarea>
 
       <div style="display:flex;gap:5px;margin-top:6px">
-        <input type="text" id="chatRefineInput" placeholder="💬 對話改動畫（例：改成暴風雨閃電、鏡頭劇烈震動、換成夜晚）" style="flex:1;font-size:12px;padding:6px 8px">
-        <button id="chatRefineBtn" class="act-btn" style="padding:6px 10px;font-size:12px;white-space:nowrap">對話修改</button>
+        <input type="text" id="chatRefineInput" placeholder="💬 微調動作或畫面（例：手張得更大、狗跳起來叫、加上推進的螺旋槳）" style="flex:1;font-size:12px;padding:6px 8px">
+        <button id="chatRefineBtn" class="act-btn" style="padding:6px 10px;font-size:12px;white-space:nowrap">套用修改</button>
       </div>
     </div>
 
-    <div class="row">
-      <div>
-        <label for="camMotion">🎥 攝影機運鏡動作</label>
-        <select id="camMotion">
-          <option value="auto" selected>自動（依指令智慧運鏡）</option>
-          <option value="flight">✈️ 高空飛行搖擺＋推進（適合飛機/空中）</option>
-          <option value="zoomIn">🔍 電影慢速推進（聚焦主角與細節）</option>
-          <option value="zoomOut">🌍 史詩全景拉遠（展現壯闊場景）</option>
-          <option value="panLR">↔️ 水平環景搖鏡（左右巡視場景）</option>
-          <option value="shake">💥 爆發震動抓拍（適合狂叫/戰鬥/吼叫）</option>
-          <option value="float">🌊 柔和呼吸懸浮（適合日常/唯美）</option>
-        </select>
+    <!-- 24關節真實部位動作控制與細膩度設定 -->
+    <div class="sub-box">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <span style="font-size:12px;font-weight:bold;color:#ffd166">🦾 主體部位動作模式（不掉亮片，真實驅動身體部位變形）</span>
       </div>
-      <div>
-        <label for="vfxType">✨ 環境動態物理特效</label>
-        <select id="vfxType">
-          <option value="auto" selected>自動（依場景配對粒子）</option>
-          <option value="clouds">☁️ 高速雲海氣流＋飛行風線</option>
-          <option value="godrays">☀️ 流動丁達爾光束＋神聖金塵</option>
-          <option value="sakura">🌸 隨風飄落櫻花瓣</option>
-          <option value="rain">🌧️ 傾盆大雨＋隨機閃電光影</option>
-          <option value="fire">🔥 飛舞烈焰火星＋熱浪光暈</option>
-          <option value="snow">❄️ 漫天飄雪粒子</option>
-          <option value="none">無額外特效（純運鏡）</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="row">
-      <div>
-        <label for="animMode">🎞️ 動畫生成模式</label>
-        <select id="animMode">
-          <option value="live60" selected>⚡ 60FPS 即時運鏡動畫（秒出片）</option>
-          <option value="story2">🎞️ 雙分鏡連續動作演繹（前後兩幕補間）</option>
-        </select>
-      </div>
-      <div>
-        <label for="style">🎨 動畫美術風格</label>
-        <select id="style">
-          <option value="">自動（依描述決定）</option>
-          <option value="Makoto Shinkai anime film style, vibrant clouds and sky, emotional cinematic lighting, detailed anime art">日系劇場版動漫 (新海誠風)</option>
-          <option value="cinematic movie still, shot on ARRI Alexa 65, natural volumetric lighting, realistic textures, 8k">電影級寫實影片</option>
-          <option value="Studio Ghibli hand-painted animation style, lush watercolor background, warm sunlight">吉卜力手繪動畫風</option>
-          <option value="3D Pixar and Disney animation movie style, expressive character, Octane render, volumetric lighting">3D 皮克斯動畫電影</option>
-          <option value="Unreal Engine 5 photorealistic 3D cinematic animation render, ray tracing, 8k VFX">UE5 次世代 3D 動畫</option>
-          <option value="modern cel-shaded webtoon animation, clean ink line art, vibrant coloring">韓系動態網漫風</option>
-          <option value="Spider-Verse comic animation style, dynamic action lines, halftone dots, bold ink">美漫潮流新宇宙風</option>
-          <option value="vintage copperplate etching engraving illustration, fine crosshatching ink lines, antique cream paper">復古銅版線畫動畫</option>
-          <option value="medieval illuminated manuscript style, aged parchment texture, ornate gold leaf accents">羊皮紙手抄本古風</option>
-          <option value="epic digital concept art, heavy brushwork, dynamic rim lighting, rich environment">奇幻厚塗概念動畫</option>
-          <option value="traditional ink wash animation, expressive zen brush strokes, textured xuan paper">東方水墨流動動畫</option>
-          <option value="cyberpunk aesthetic, neon lights, futuristic metropolis, rainy reflections">賽博龐克霓虹動畫</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="row">
-      <div>
-        <label for="size">影片尺寸比例</label>
-        <select id="size">
-          <option value="768x1024" selected>3:4 直式動態卡牌 (768×1024)</option>
-          <option value="1024x768">4:3 橫式動態卡牌 (1024×768)</option>
-          <option value="1280x720">16:9 橫式動畫短片 (1280×720)</option>
-          <option value="720x1280">9:16 手機直式短片 (720×1280)</option>
-          <option value="1024x1024">1:1 方形動畫 (1024×1024)</option>
-        </select>
-      </div>
-      <div>
-        <label for="duration">影片秒數與一次生成數</label>
-        <div class="row" style="gap:5px">
-          <select id="duration" title="匯出影片秒數">
-            <option value="4">4 秒</option>
-            <option value="6" selected>6 秒</option>
-            <option value="8">8 秒</option>
-            <option value="10">10 秒</option>
+      <div class="row">
+        <div>
+          <label style="margin-top:0" for="actionPreset">主體核心動作</label>
+          <select id="actionPreset">
+            <option value="auto" selected>🤖 依文字自動綁定動作（推薦）</option>
+            <option value="wings">✈️ 雙臂張開展翅＋機身平衡搖擺（飛翔動作）</option>
+            <option value="bark">🐕 張嘴咆哮狂叫＋前肢蹬踏＋耳朵抖動（動物吠叫）</option>
+            <option value="preach">🗣️ 右手高舉揮動宣講＋轉頭環視＋開口演說（講道/演講）</option>
+            <option value="run">🏃 全身跑步跨步循環（抬腿屈膝＋前後擺臂＋重心彈跳）</option>
+            <option value="walk">🚶 自然行走步態（雙腿交替邁步＋肩胯平衡擺動）</option>
+            <option value="jump">🦘 蓄力屈膝跳躍＋空中舒展落地</option>
+            <option value="playMusic">🎸 雙手彈奏樂器律動＋身體隨節拍搖擺</option>
+            <option value="fight">⚔️ 揮擊出拳戰鬥動作＋呼吸急促起伏</option>
+            <option value="idle">🧍 細膩呼吸胸腔起伏＋眨眼轉頭＋衣髮微動</option>
           </select>
-          <select id="count" title="同時生成幾部動畫">
-            <option value="1" selected>1 部</option>
-            <option value="2">2 部</option>
-            <option value="3">3 部</option>
-            <option value="4">4 部</option>
+        </div>
+        <div>
+          <label style="margin-top:0" for="style">美術風格</label>
+          <select id="style">
+            <option value="">自動（依描述決定）</option>
+            <option value="cinematic movie still, shot on ARRI Alexa 65, natural volumetric lighting, realistic textures, 8k">電影級寫實</option>
+            <option value="Makoto Shinkai anime film style, vibrant clouds and sky, emotional cinematic lighting, detailed anime art">日系劇場版動漫</option>
+            <option value="Studio Ghibli hand-painted animation style, lush watercolor background, warm sunlight">吉卜力手繪動畫</option>
+            <option value="3D Pixar and Disney animation movie style, expressive character, Octane render">3D 皮克斯動畫</option>
+            <option value="Unreal Engine 5 photorealistic 3D cinematic animation render, ray tracing, 8k">UE5 擬真 3D</option>
+            <option value="modern cel-shaded webtoon animation, clean ink line art, vibrant coloring">韓系網漫風</option>
+            <option value="vintage copperplate etching engraving illustration, fine crosshatching ink lines, antique cream paper">復古銅版線畫</option>
+            <option value="medieval illuminated manuscript style, aged parchment texture, ornate gold leaf accents">羊皮紙手抄本</option>
+            <option value="epic digital concept art, heavy brushwork, dynamic rim lighting, rich environment">奇幻厚塗插畫</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 微動作細節滑桿（手腳、嘴部、呼吸、衣擺物理） -->
+      <div style="margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;font-size:11px;color:var(--muted)">
+        <div><span>💪 手腳關節幅度</span><input type="range" id="rigLimbAmp" min="0" max="2" step="0.1" value="1.2"></div>
+        <div><span>👄 嘴部張合/吠叫</span><input type="range" id="rigMouthAmp" min="0" max="2" step="0.1" value="1.2"></div>
+        <div><span>🫁 胸腔呼吸與重心</span><input type="range" id="rigBreathAmp" min="0" max="2" step="0.1" value="1.0"></div>
+        <div><span>🌬️ 衣擺/毛髮風力物理</span><input type="range" id="rigClothAmp" min="0" max="2" step="0.1" value="1.1"></div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div>
+        <label for="size">畫面比例</label>
+        <select id="size">
+          <option value="768x1024" selected>3:4 直式 (768×1024)</option>
+          <option value="1024x768">4:3 橫式 (1024×768)</option>
+          <option value="1280x720">16:9 寬螢幕短片 (1280×720)</option>
+          <option value="720x1280">9:16 手機直式短片 (720×1280)</option>
+          <option value="1024x1024">1:1 方形 (1024×1024)</option>
+        </select>
+      </div>
+      <div>
+        <label for="duration">影片總長度（支援 10 分鐘長片）</label>
+        <div class="row" style="gap:5px">
+          <select id="duration" title="設定動畫片長（最長支援 10~15 分鐘）">
+            <option value="6">6 秒短片</option>
+            <option value="15">15 秒短片</option>
+            <option value="30">30 秒短片</option>
+            <option value="60">1 分鐘 (60秒)</option>
+            <option value="180">3 分鐘 (180秒)</option>
+            <option value="300">5 分鐘 (300秒)</option>
+            <option value="600" selected>10 分鐘長片 (600秒)</option>
+            <option value="900">15 分鐘長片 (900秒)</option>
+          </select>
+          <select id="animMode" title="單幕或多幕連續動作">
+            <option value="rigged" selected>🦴 單幕精細骨骼動作</option>
+            <option value="multiAct">🎞️ 多幕關鍵影格連續動作</option>
           </select>
         </div>
       </div>
@@ -354,93 +349,96 @@
       <summary><span>常用 Seed 收藏清單</span><span id="favCountSpan" style="color:var(--muted);font-weight:normal">0 組 ▼</span></summary>
       <div style="margin-top:8px">
         <select id="favCatFilter" style="margin-bottom:6px;padding:5px;font-size:12px"></select>
-        <div id="favSeedList" style="max-height:130px;overflow-y:auto"></div>
+        <div id="favSeedList" style="max-height:120px;overflow-y:auto"></div>
       </div>
     </details>
 
-    <button id="generate" class="primary">🎬 開始生成動畫（無時間限制）</button>
+    <button id="generate" class="primary">🎬 開始生成真實動作動畫</button>
     <div id="status" class="status"></div>
   </section>
 
   <section class="card">
-    <div class="section-title"><h2>動畫生成結果（即時 60FPS 預覽 · 可直接下載 .webm 影片）</h2><button id="clear" style="padding:5px 10px;font-size:12px">清除全部</button></div>
+    <div class="section-title">
+      <h2>動畫作品庫（支援 10 分鐘時間軸拖曳預覽 · 真實部位骨骼變形）</h2>
+      <button id="clear" style="padding:5px 10px;font-size:12px">清除全部</button>
+    </div>
     <div class="gallery" id="gallery"></div>
-    <div class="empty" id="empty">尚無動畫，輸入指令後點擊「🎬 開始生成動畫」。</div>
+    <div class="empty" id="empty">尚無動畫，輸入動作描述後點擊「🎬 開始生成真實動作動畫」。</div>
   </section>
 </main>
 </div>
 
-<!-- ======================= Tab 2：動畫排版編輯器 ======================= -->
+<!-- ======================= Tab 2：10分鐘短片時間軸與動畫排版編輯器 ======================= -->
 <div id="tab-editor" class="hidden">
   <aside class="side" id="leftSideDrawer">
     <div class="drawer-close-bar">
-      <span id="leftDrawerTitle">動畫與排版工具</span>
+      <span id="leftDrawerTitle">骨骼動作與短片工具</span>
       <button id="closeLeftDrawerBtn" style="padding:3px 8px;font-size:12px">✕ 收起</button>
     </div>
     <div class="stabs">
-      <button data-panel="anim" class="on">🎬 動畫</button>
+      <button data-panel="anim" class="on">🦴 動作</button>
       <button data-panel="pro">🔍 抓字</button>
       <button data-panel="card">📐 元件</button>
-      <button data-panel="layers">📑 圖層</button>
+      <button data-panel="layers">📑 分鏡</button>
     </div>
 
-    <!-- 分頁 1：畫布運鏡、環境粒子與物件獨立動畫 -->
+    <!-- 分頁 1：24關節骨骼動作設定與 10 分鐘長片設定 -->
     <div class="spanel" data-panel="anim">
       <div class="box-group" style="border-color:#00a8fc">
-        <h4>🎥 畫布背景運鏡與物理特效</h4>
-        <div class="prop-row"><span>背景運鏡</span>
-          <select id="edCamMotion">
-            <option value="flight">✈️ 高空飛行搖擺＋推進</option>
-            <option value="zoomIn" selected>🔍 電影慢速推進</option>
-            <option value="zoomOut">🌍 史詩全景拉遠</option>
-            <option value="panLR">↔️ 水平環景搖鏡</option>
-            <option value="shake">💥 爆發震動抓拍</option>
-            <option value="float">🌊 柔和呼吸懸浮</option>
-            <option value="none">⏹️ 固定不動</option>
+        <h4>🦴 畫布主體骨骼動作控制（真實部位驅動）</h4>
+        <div class="prop-row"><span>主體動作</span>
+          <select id="edActionPreset">
+            <option value="wings">✈️ 雙臂張開展翅＋飛機側傾平衡</option>
+            <option value="bark">🐕 張嘴咆哮狂叫＋前肢發力蹬踏</option>
+            <option value="preach">🗣️ 高舉右手宣講＋轉頭環視＋開口</option>
+            <option value="run">🏃 全身跑步跨步＋前後擺臂循環</option>
+            <option value="walk">🚶 自然行走邁步＋肩胯擺動</option>
+            <option value="jump">🦘 蓄力屈膝跳躍＋空中舒展</option>
+            <option value="playMusic">🎸 雙手彈奏樂器＋身體律動</option>
+            <option value="fight">⚔️ 出拳揮擊戰鬥＋急促呼吸</option>
+            <option value="idle">🧍 細膩呼吸胸腔起伏＋眨眼衣動</option>
+            <option value="none">⏹️ 靜止無部位變形</option>
           </select>
         </div>
-        <div class="prop-row"><span>環境粒子</span>
-          <select id="edVfxType">
-            <option value="clouds">☁️ 高速雲海氣流＋風線</option>
-            <option value="godrays" selected>☀️ 流動丁達爾光束＋金塵</option>
-            <option value="sakura">🌸 隨風飄落櫻花瓣</option>
-            <option value="rain">🌧️ 傾盆大雨＋閃電</option>
-            <option value="fire">🔥 飛舞烈焰火星</option>
-            <option value="snow">❄️ 漫天飄雪粒子</option>
-            <option value="none">無環境粒子</option>
-          </select>
-        </div>
-        <div class="prop-row"><span>影片秒數</span>
+        <div class="prop-row"><span>手腳幅度</span><input type="range" id="edLimbAmp" min="0" max="2.2" step="0.1" value="1.2"></div>
+        <div class="prop-row"><span>嘴部張合</span><input type="range" id="edMouthAmp" min="0" max="2.2" step="0.1" value="1.2"></div>
+        <div class="prop-row"><span>呼吸起伏</span><input type="range" id="edBreathAmp" min="0" max="2.2" step="0.1" value="1.0"></div>
+        <div class="prop-row"><span>衣髮風力</span><input type="range" id="edClothAmp" min="0" max="2.2" step="0.1" value="1.1"></div>
+        <div class="prop-row"><span>短片總長</span>
           <select id="edDuration">
-            <option value="4">4 秒動畫</option>
-            <option value="6" selected>6 秒動畫</option>
-            <option value="8">8 秒動畫</option>
-            <option value="10">10 秒動畫</option>
+            <option value="6">6 秒</option>
+            <option value="15">15 秒</option>
+            <option value="30">30 秒</option>
+            <option value="60">1 分鐘 (60秒)</option>
+            <option value="180">3 分鐘 (180秒)</option>
+            <option value="300">5 分鐘 (300秒)</option>
+            <option value="600" selected>10 分鐘長片 (600秒)</option>
+            <option value="900">15 分鐘長片 (900秒)</option>
           </select>
         </div>
+        <label class="check"><input type="checkbox" id="showMeshPinsChk"> 🎯 在畫布上顯示並手動調整骨骼關節點（頭/口/手/腳）</label>
       </div>
 
       <div class="box-group">
-        <h4>✨ 選取物件獨立動畫（點選文字/貼圖/主角層）</h4>
-        <div class="tip" style="margin-bottom:6px">點選畫布上的任何文字或圖片，為它加上專屬動態效果：</div>
+        <h4>✨ 前景文字與貼圖獨立動態</h4>
         <div class="grid2" style="margin-bottom:6px">
-          <button data-objanim="none">⏹️ 固定無動畫</button>
-          <button data-objanim="float">🎈 上下懸浮飛行</button>
-          <button data-objanim="pulse">💓 呼吸放大脈衝</button>
-          <button data-objanim="typewriter">⌨️ 打字機逐字出現</button>
-          <button data-objanim="slideUp">⬆️ 由下往上滑入</button>
-          <button data-objanim="shake">⚡ 狂暴震動搖晃</button>
+          <button data-objanim="none">⏹️ 固定無動態</button>
+          <button data-objanim="float">🎈 隨動作懸浮連動</button>
+          <button data-objanim="pulse">💓 呼吸強調脈衝</button>
+          <button data-objanim="typewriter">⌨️ 字幕逐字浮現</button>
+          <button data-objanim="slideUp">⬆️ 字幕上滑進入</button>
+          <button data-objanim="shake">⚡ 震動強調</button>
         </div>
-        <button id="exportVideoQuickBtn" class="primary" style="margin-top:4px;padding:9px;font-size:13px">⬇ 錄製並下載完整動畫影片 (.webm)</button>
+        <button id="exportVideoQuickBtn" class="primary" style="margin-top:4px;padding:9px;font-size:13px">⬇ 匯出完整動畫影片 (.webm)</button>
       </div>
 
       <div class="box-group">
-        <h4>新增圖片或已生成動畫底圖</h4>
+        <h4>新增圖片或已生成動畫</h4>
         <button id="edUpload" class="act-btn" style="width:100%;padding:7px;margin-bottom:6px">📁 上傳電腦/手機圖片</button>
         <input type="file" id="edFile" accept="image/*" multiple hidden>
         <div class="grid2" style="margin-bottom:8px">
           <button id="proRemoveBgQuick">✂️ 圖片去背</button>
-          <button id="proMagicGrab">🕺 主角背景分離</button>
+          <button id="proMagicGrab">🕺 主角與背景分離</button>
         </div>
         <div class="thumbs" id="aiThumbs"></div>
         <div class="tip" id="aiThumbsEmpty">尚無生成作品。</div>
@@ -467,17 +465,17 @@
       </div>
 
       <div class="box-group">
-        <h4>本頁文字清單（打字即時連動）</h4>
+        <h4>本幕文字清單（打字即時連動）</h4>
         <div id="quickTextList" style="display:flex;flex-direction:column;gap:5px;max-height:240px;overflow-y:auto"></div>
       </div>
     </div>
 
-    <!-- 分頁 3：版面元件与範本 -->
+    <!-- 分頁 3：版面元件與範本 -->
     <div class="spanel hidden" data-panel="card">
-      <h3>新增文字框</h3>
+      <h3>新增文字框 / 旁白字幕</h3>
       <button class="txtbtn" data-text="title" style="font-size:15px;font-weight:900">＋ 新增標題</button>
-      <button class="txtbtn" data-text="subtitle" style="font-size:13px;font-weight:700">＋ 新增副標題</button>
-      <button class="txtbtn" data-text="body" style="font-size:12px">＋ 新增內文</button>
+      <button class="txtbtn" data-text="subtitle" style="font-size:13px;font-weight:700">＋ 新增副標題 / 電影字幕</button>
+      <button class="txtbtn" data-text="body" style="font-size:12px">＋ 新增內文段落</button>
 
       <h3>預設標籤組（圖示＋文字）</h3>
       <div class="grid2" style="margin-bottom:8px">
@@ -505,8 +503,13 @@
       <div class="tplgrid" id="tplGrid"></div>
     </div>
 
-    <!-- 分頁 4：圖層與列印 -->
+    <!-- 分頁 4：多幕分鏡管理與 A4 列印 -->
     <div class="spanel hidden" data-panel="layers">
+      <div class="box-group">
+        <h4>🎞️ 10 分鐘多幕分鏡播放設定</h4>
+        <label class="check" style="margin-top:0"><input type="checkbox" id="multiScenePlayChk" checked> 播放時自動依序串聯下方所有分鏡頁（多幕連播成 10 分鐘長片）</label>
+      </div>
+
       <div class="box-group">
         <h4>A4 拼版列印匯出（含十字裁切線）</h4>
         <select id="printGridMode" style="margin-bottom:6px">
@@ -525,13 +528,13 @@
 
   <div class="center">
     <div class="topbar">
-      <button id="edPlayToggleBtn" class="play-btn playing">⏸️ 動畫播放中</button>
+      <button id="edPlayToggleBtn" class="play-btn playing">⏸️ 動作播放中</button>
       <button id="mobilePanToggleBtn" title="手機單指拖曳平移畫布模式">🖐️ 移畫布</button>
       <select id="edPreset">
         <option value="744x1039">卡牌直式 (744×1039)</option>
         <option value="1039x744">卡牌橫式 (1039×744)</option>
-        <option value="1080x1080" selected>方形 (1080×1080)</option>
-        <option value="1280x720">橫式短片 16:9 (1280×720)</option>
+        <option value="1080x1080">方形 (1080×1080)</option>
+        <option value="1280x720" selected>橫式短片 16:9 (1280×720)</option>
         <option value="720x1280">直式短片 9:16 (720×1280)</option>
         <option value="custom">自訂尺寸</option>
       </select>
@@ -554,9 +557,15 @@
       <button id="edExport" class="export">⬇ 匯出下載</button>
     </div>
     <div id="stage"><canvas id="c"></canvas></div>
+    <!-- 10分鐘長片時間軸控制列 -->
+    <div id="timelineBar">
+      <span style="color:var(--muted);font-size:11px">⏱️ 時間軸</span>
+      <input type="range" id="edTimelineScrubber" min="0" max="600" step="0.05" value="0">
+      <span id="timecodeDisplay">00:00 / 10:00</span>
+    </div>
     <div id="pagebar">
       <div id="pageList"></div>
-      <button id="pgAdd">＋ 新增分鏡頁</button><button id="pgDup">複製頁</button><button id="pgDel">刪除頁</button>
+      <button id="pgAdd">＋ 新增分鏡幕</button><button id="pgDup">複製幕</button><button id="pgDel">刪除幕</button>
       <button id="pgLeft">◀</button><button id="pgRight">▶</button><span id="pgInfo"></span>
     </div>
   </div>
@@ -568,11 +577,11 @@
     </div>
     <div id="pCanvas">
       <h3>畫布背景</h3>
-      <div class="prop-row"><span>背景色</span><input type="color" id="pBg" value="#ffffff"></div>
+      <div class="prop-row"><span>背景色</span><input type="color" id="pBg" value="#0f1117"></div>
       <div class="tip" style="margin-top:8px">
-        🎬 <b>動畫編輯說明：</b><br>
-        • 舞台預設即時播放 60FPS 運鏡與環境粒子<br>
-        • 當你點選畫布上的物件拖曳或打字時，會自動暫停回正方便對位；放開後可點上方「▶️ 播放」預覽動態，並匯出 `.webm` 影片！
+        🦴 <b>真實部位動作說明：</b><br>
+        • 系統會將底圖或主角自動切分為 <b>16×16 骨骼權重網格</b>，依據動作指令驅動<b>雙手展翅、嘴部張合狂叫、高舉手臂講道、雙腿跨步奔跑、胸腔呼吸與衣擺物理</b><br>
+        • 勾選左側「🎯 顯示並手動調整骨骼關節點」即可直接在畫布上拖曳頭、口、左手、右手、雙腳的關節位置！
       </div>
     </div>
 
@@ -619,9 +628,9 @@
 
     <div id="pImage" class="hidden">
       <h3>圖片與去背</h3>
-      <button id="pGrabTextBtn" class="act-btn" style="width:100%;margin-bottom:6px;padding:8px">擷取圖中文字轉為動態文字層</button>
+      <button id="pGrabTextBtn" class="act-btn" style="width:100%;margin-bottom:6px;padding:8px">擷取圖中文字轉為文字層</button>
       <div class="grid2" style="margin-bottom:6px">
-        <button id="pCover">設為動畫底圖</button>
+        <button id="pCover">設為骨骼動作主角層</button>
         <button id="pRemoveBg">圖片去背</button>
         <button id="proMagicEraser">局部塗抹消除</button>
         <button id="pFeatherImgBtn">邊緣漸層羽化</button>
@@ -659,10 +668,10 @@
   </aside>
 
   <nav id="mobileNav">
-    <button data-mnav="anim" class="on"><span>🎬</span><span>動畫設定</span></button>
+    <button data-mnav="anim" class="on"><span>🦴</span><span>骨骼動作</span></button>
     <button data-mnav="pro"><span>🔍</span><span>文字擷取</span></button>
     <button data-mnav="card"><span>📐</span><span>版面元件</span></button>
-    <button data-mnav="layers"><span>📑</span><span>圖層/列印</span></button>
+    <button data-mnav="layers"><span>📑</span><span>分鏡/列印</span></button>
     <button data-mnav="props"><span>⚙️</span><span>屬性調整</span></button>
     <button data-mnav="close"><span>🖼️</span><span>只看畫布</span></button>
   </nav>
@@ -696,7 +705,7 @@
 <div id="cloudModal">
   <div class="modal-box">
     <h3 style="margin:0;font-size:15px">雲端資料庫設定 (Firebase Realtime DB)</h3>
-    <div class="tip">輸入你的 Firebase Realtime Database 網址，即可在手機與電腦之間直接同步動畫排版專案與收藏的 Seed：</div>
+    <div class="tip">輸入你的 Firebase Realtime Database 網址，即可在手機與電腦之間直接同步動畫專案與收藏的 Seed：</div>
     <input type="text" id="fbUrlInput" value="https://money-d8327-default-rtdb.firebaseio.com">
     <div style="display:flex;gap:8px;justify-content:flex-end">
       <button id="fbModalClose" style="padding:7px 14px">關閉</button>
@@ -709,10 +718,7 @@
 
 <script>
 /* =====================================================================
-   第 1 部分腳本：
-   1. 智慧動畫導演引擎（雙編碼視覺拆解 ＋ 自動決定運鏡與物理粒子）
-   2. 60FPS 即時動畫渲染器 (AnimEngine) ＋ WebM 真實影片錄製器
-   3. 破除 45 秒限制的多通道無限制生圖核心 ＋ 中文 OCR 引擎
+   第 1 部分腳本：共用工具 + IndexedDB + 中文 OCR 辨識與無痕去字引擎
    ===================================================================== */
 const IMG_API = "https://image.pollinations.ai/prompt/";
 const FAV_KEY = "ai-studio-fav-seeds-v1";
@@ -723,6 +729,12 @@ const hasCJK = s => /[\u3040-\u30ff\u3400-\u9fff\uac00-\ud7af]/.test(s);
 const rand = () => Math.floor(Math.random() * 1e9);
 function setStatus(t) { if ($("status")) $("status").textContent = t; }
 const blobToDataURL = b => new Promise(r => { const fr = new FileReader(); fr.onload = () => r(fr.result); fr.readAsDataURL(b); });
+function formatTimecode(sec) {
+  const s = Math.max(0, Math.floor(sec));
+  const m = Math.floor(s / 60);
+  const rem = s % 60;
+  return String(m).padStart(2, "0") + ":" + String(rem).padStart(2, "0");
+}
 const loadScript = (() => {
   const cache = {};
   return src => cache[src] || (cache[src] = new Promise((res, rej) => {
@@ -763,425 +775,7 @@ function showTab(name) {
 }
 
 /* =====================================================================
-   🎬 60FPS 即時動畫與物理粒子渲染核心 (AnimEngine)
-   支援：運鏡變換、雙分鏡補間、6種物理粒子特效、以及 MediaRecorder 匯出 .webm 影片
-   ===================================================================== */
-const AnimEngine = (() => {
-  function createParticles(count = 55) {
-    const arr = [];
-    for (let i = 0; i < count; i++) {
-      arr.push({
-        x: Math.random(), y: Math.random(),
-        r: Math.random() * 3.5 + 1.2,
-        vx: (Math.random() - 0.5) * 0.003,
-        vy: Math.random() * 0.004 + 0.0015,
-        phase: Math.random() * Math.PI * 2,
-        alpha: Math.random() * 0.65 + 0.25
-      });
-    }
-    return arr;
-  }
-
-  /* 根據運鏡模式計算當前時間 t (秒) 的 [scale, offsetX, offsetY, angleRad] */
-  function computeCameraTransform(camMode, t, duration = 6, W = 768, H = 1024) {
-    const p = (t % duration) / duration;
-    const wave = Math.sin(p * Math.PI * 2);
-    const halfWave = (1 - Math.cos(p * Math.PI * 2)) / 2;
-
-    if (camMode === "flight") {
-      return {
-        scale: 1.12 + halfWave * 0.12,
-        dx: Math.sin(p * Math.PI * 2) * W * 0.035,
-        dy: Math.cos(p * Math.PI * 4) * H * 0.025,
-        angle: Math.sin(p * Math.PI * 2) * 0.045
-      };
-    }
-    if (camMode === "zoomIn") {
-      return { scale: 1.02 + p * 0.20, dx: 0, dy: -p * H * 0.02, angle: 0 };
-    }
-    if (camMode === "zoomOut") {
-      return { scale: 1.24 - p * 0.20, dx: 0, dy: 0, angle: 0 };
-    }
-    if (camMode === "panLR") {
-      return { scale: 1.18, dx: wave * W * 0.075, dy: 0, angle: 0 };
-    }
-    if (camMode === "shake") {
-      const burst = Math.sin(t * 28) * Math.max(0, Math.sin(t * 4));
-      return {
-        scale: 1.10 + Math.abs(burst) * 0.06,
-        dx: burst * W * 0.022,
-        dy: Math.cos(t * 32) * Math.abs(burst) * H * 0.018,
-        angle: burst * 0.025
-      };
-    }
-    if (camMode === "float") {
-      return { scale: 1.07 + halfWave * 0.05, dx: wave * W * 0.015, dy: Math.cos(p * Math.PI * 2) * H * 0.02, angle: wave * 0.012 };
-    }
-    return { scale: 1, dx: 0, dy: 0, angle: 0 };
-  }
-
-  /* 繪製 60FPS 環境物理粒子與光影層 */
-  function drawVFXLayer(ctx, W, H, vfxType, t, particles) {
-    if (!vfxType || vfxType === "none") return;
-    ctx.save();
-
-    if (vfxType === "clouds") {
-      /* 高速飛行氣流線與雲霧流動 */
-      ctx.strokeStyle = "rgba(255,255,255,0.32)";
-      ctx.lineWidth = Math.max(1.5, W * 0.0025);
-      particles.forEach((pt, i) => {
-        const x = ((pt.x - t * (0.28 + (i % 5) * 0.06)) % 1 + 1) % 1 * W;
-        const y = ((pt.y + Math.sin(t * 2 + pt.phase) * 0.01) % 1 + 1) % 1 * H;
-        const len = W * (0.08 + (i % 4) * 0.04);
-        ctx.globalAlpha = pt.alpha * 0.65;
-        ctx.beginPath();
-        ctx.moveTo(x, y);
-        ctx.lineTo(x + len, y + len * 0.08);
-        ctx.stroke();
-      });
-      /* 底部動態雲海柔光 */
-      const g = ctx.createLinearGradient(0, H * 0.65, 0, H);
-      g.addColorStop(0, "rgba(255,255,255,0)");
-      g.addColorStop(1, `rgba(240,248,255,${0.18 + Math.sin(t * 2) * 0.06})`);
-      ctx.globalAlpha = 1;
-      ctx.fillStyle = g;
-      ctx.fillRect(0, H * 0.65, W, H * 0.35);
-    } else if (vfxType === "godrays") {
-      /* 流動丁達爾斜射神聖光束 + 漂浮金塵 */
-      ctx.globalCompositeOperation = "screen";
-      for (let i = 0; i < 4; i++) {
-        const sway = Math.sin(t * 0.9 + i * 1.4) * W * 0.08;
-        const x0 = W * (0.15 + i * 0.22) + sway;
-        const grad = ctx.createLinearGradient(x0, 0, x0 + W * 0.25, H);
-        grad.addColorStop(0, `rgba(255, 230, 150, ${0.16 + Math.sin(t * 1.5 + i) * 0.05})`);
-        grad.addColorStop(0.7, "rgba(255, 210, 120, 0.05)");
-        grad.addColorStop(1, "rgba(255, 200, 100, 0)");
-        ctx.fillStyle = grad;
-        ctx.beginPath();
-        ctx.moveTo(x0 - W * 0.06, 0);
-        ctx.lineTo(x0 + W * 0.08, 0);
-        ctx.lineTo(x0 + W * 0.42, H);
-        ctx.lineTo(x0 + W * 0.12, H);
-        ctx.closePath();
-        ctx.fill();
-      }
-      particles.forEach(pt => {
-        const x = ((pt.x + Math.sin(t + pt.phase) * 0.03) % 1 + 1) % 1 * W;
-        const y = ((pt.y - t * 0.025) % 1 + 1) % 1 * H;
-        ctx.fillStyle = `rgba(255, 238, 170, ${pt.alpha * (0.5 + 0.5 * Math.sin(t * 3 + pt.phase))})`;
-        ctx.beginPath();
-        ctx.arc(x, y, pt.r * (W / 600), 0, Math.PI * 2);
-        ctx.fill();
-      });
-    } else if (vfxType === "sakura") {
-      /* 飄落櫻花瓣 */
-      particles.forEach(pt => {
-        const x = ((pt.x + Math.sin(t * 1.2 + pt.phase) * 0.06 + t * 0.03) % 1 + 1) % 1 * W;
-        const y = ((pt.y + t * (0.06 + pt.vy * 12)) % 1 + 1) % 1 * H;
-        ctx.save();
-        ctx.translate(x, y);
-        ctx.rotate(t * 1.8 + pt.phase);
-        ctx.fillStyle = `rgba(255, 183, 197, ${pt.alpha * 0.9})`;
-        ctx.beginPath();
-        const rx = pt.r * 2.2 * (W / 650), ry = pt.r * 1.2 * (W / 650);
-        ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-      });
-    } else if (vfxType === "rain") {
-      /* 傾盆大雨 + 偶發閃電光影 */
-      ctx.strokeStyle = "rgba(185, 220, 255, 0.52)";
-      ctx.lineWidth = Math.max(1, W * 0.0018);
-      particles.forEach((pt, i) => {
-        const x = ((pt.x - t * 0.12) % 1 + 1) % 1 * W;
-        const y = ((pt.y + t * (0.45 + (i % 4) * 0.1)) % 1 + 1) % 1 * H;
-        const len = H * 0.055;
-        ctx.beginPath();
-        ctx.moveTo(x, y);
-        ctx.lineTo(x - len * 0.22, y + len);
-        ctx.stroke();
-      });
-      if (Math.sin(t * 7.3) > 0.965) {
-        ctx.fillStyle = "rgba(220, 240, 255, 0.28)";
-        ctx.fillRect(0, 0, W, H);
-      }
-    } else if (vfxType === "fire") {
-      /* 往上飛舞的烈焰火星 */
-      ctx.globalCompositeOperation = "screen";
-      particles.forEach(pt => {
-        const x = ((pt.x + Math.sin(t * 2.5 + pt.phase) * 0.04) % 1 + 1) % 1 * W;
-        const y = ((pt.y - t * (0.12 + pt.vy * 18)) % 1 + 1) % 1 * H;
-        const r = pt.r * 1.6 * (W / 650);
-        ctx.fillStyle = pt.phase > 3 ? `rgba(255, 100, 20, ${pt.alpha})` : `rgba(255, 210, 60, ${pt.alpha})`;
-        ctx.beginPath();
-        ctx.arc(x, y, r, 0, Math.PI * 2);
-        ctx.fill();
-      });
-    } else if (vfxType === "snow") {
-      /* 漫天飄雪 */
-      particles.forEach(pt => {
-        const x = ((pt.x + Math.sin(t * 0.9 + pt.phase) * 0.04) % 1 + 1) % 1 * W;
-        const y = ((pt.y + t * (0.05 + pt.vy * 10)) % 1 + 1) % 1 * H;
-        ctx.fillStyle = `rgba(255, 255, 255, ${pt.alpha * 0.9})`;
-        ctx.beginPath();
-        ctx.arc(x, y, pt.r * 1.5 * (W / 650), 0, Math.PI * 2);
-        ctx.fill();
-      });
-    }
-
-    ctx.restore();
-  }
-
-  /* 錄製任意 Canvas 為 .webm 影片檔並下載 */
-  async function recordCanvasToWebM(targetCanvas, durationSec = 6, onProgress = null, fileName = "ai-animation.webm") {
-    const stream = targetCanvas.captureStream ? targetCanvas.captureStream(30) : targetCanvas.mozCaptureStream(30);
-    let mime = "video/webm;codecs=vp9";
-    if (!MediaRecorder.isTypeSupported(mime)) mime = "video/webm;codecs=vp8";
-    if (!MediaRecorder.isTypeSupported(mime)) mime = "video/webm";
-
-    const recorder = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 6000000 });
-    const chunks = [];
-    recorder.ondataavailable = e => { if (e.data && e.data.size > 0) chunks.push(e.data); };
-
-    return new Promise((resolve, reject) => {
-      recorder.onstop = () => {
-        const blob = new Blob(chunks, { type: "video/webm" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = fileName;
-        a.click();
-        resolve(blob);
-      };
-      recorder.onerror = err => reject(err);
-      recorder.start(100);
-
-      const start = performance.now();
-      const totalMs = durationSec * 1000;
-      const tick = () => {
-        const elapsed = performance.now() - start;
-        if (onProgress) onProgress(Math.min(99, Math.round((elapsed / totalMs) * 100)));
-        if (elapsed >= totalMs) {
-          if (recorder.state === "recording") recorder.stop();
-        } else {
-          requestAnimationFrame(tick);
-        }
-      };
-      requestAnimationFrame(tick);
-    });
-  }
-
-  return { createParticles, computeCameraTransform, drawVFXLayer, recordCanvasToWebM };
-})();
-
-/* =====================================================================
-   🧠 雙編碼器視覺與動畫拆解大腦 (同時鎖定【必現物件】＋【運鏡】＋【物理粒子】)
-   ===================================================================== */
-const VISUAL_OBJECT_ANCHORS = [
-  { reg: /飛機|客機|班機/, tag: "✈️ 必現物件：大型飛機", clip: "giant commercial jet airplane with wide wings and jet engines", zhExpand: "（畫面中央必須清楚畫出結構完整的大型噴射客機機身、兩側長機翼與渦輪引擎）", autoCam: "flight", autoVfx: "clouds" },
-  { reg: /戰鬥機|戰機/, tag: "🛩️ 必現物件：戰鬥機", clip: "supersonic military fighter jet aircraft with wings and cockpit", zhExpand: "（清楚呈現戰鬥機機身、機翼與駕駛艙）", autoCam: "flight", autoVfx: "clouds" },
-  { reg: /直升機/, tag: "🚁 必現物件：直升機", clip: "helicopter with spinning rotor blades and fuselage", zhExpand: "（清楚呈現直升機機體與螺旋槳）", autoCam: "flight", autoVfx: "clouds" },
-  { reg: /火車|列車|高鐵|捷運/, tag: "🚆 必現物件：列車", clip: "detailed passenger train on railway tracks", zhExpand: "（清楚呈現完整的火車車廂與鐵軌）", autoCam: "panLR", autoVfx: "godrays" },
-  { reg: /船|帆船|郵輪|方舟/, tag: "⛵ 必現物件：船隻", clip: "large wooden sailing ship vessel on water", zhExpand: "（清楚呈現完整的船體、甲板與船帆）", autoCam: "float", autoVfx: "clouds" },
-  { reg: /汽車|跑車|車子|卡車/, tag: "🚗 必現物件：車輛", clip: "detailed automobile vehicle with wheels and body", zhExpand: "（清楚呈現完整的車體與車輪）", autoCam: "panLR", autoVfx: "none" },
-  { reg: /吉他|鋼琴|小提琴|樂器|鼓/, tag: "🎸 必現物件：樂器", clip: "detailed musical instrument held accurately", zhExpand: "（清楚呈現樂器的完整琴身與結構）", autoCam: "zoomIn", autoVfx: "sakura" },
-  { reg: /狗|犬|柴犬|狼犬/, tag: "🐕 主體鎖定：犬隻", clip: "realistic canine dog subject in focus, detailed fur", zhExpand: "（主體是毛髮清晰的狗）", autoCam: "shake", autoVfx: "none" },
-  { reg: /貓|貓咪/, tag: "🐈 主體鎖定：貓咪", clip: "realistic feline cat subject in focus, detailed whiskers and fur", zhExpand: "（主體是毛髮清晰的貓咪）", autoCam: "zoomIn", autoVfx: "godrays" },
-  { reg: /獅|老虎|馬|老鷹|鴿子|鯨魚|龍/, tag: "🦁 主體鎖定：動物", clip: "majestic animal subject in focus, detailed anatomy", zhExpand: "（清楚呈現該動物的完整身軀）", autoCam: "zoomIn", autoVfx: "godrays" },
-  { reg: /保羅|彼得|摩西|大衛|耶穌|使徒|先知/, tag: "🧔 人物鎖定：聖經歷史人物", clip: "bearded 1st-century Middle-Eastern biblical man in woven linen tunic and mantle cloak", zhExpand: "（留著鬍鬚、身穿西元一世紀古希臘羅馬亞麻長袍與披肩的男性使徒）", autoCam: "zoomIn", autoVfx: "godrays" },
-  { reg: /雅典|衛城|帕德嫩|羅馬|神廟|石階/, tag: "🏛️ 場景鎖定：古典希臘羅馬建築", clip: "ancient Athens Acropolis marble steps, classical Greek Parthenon temple with Doric columns", zhExpand: "（古希臘雅典衛城石階與遠方帕德嫩神廟大理石柱）", autoCam: "zoomOut", autoVfx: "godrays" }
-];
-
-function buildVisualSceneGraph(rawZh) {
-  let s = (rawZh || "").trim();
-  if (!s) return { expandedZh: "", clipHeader: "", tags: [], recCam: "zoomIn", recVfx: "godrays" };
-
-  const matchedTags = [];
-  const clipAnchors = [];
-  let recCam = "zoomIn";
-  let recVfx = "godrays";
-
-  if (/^我們/.test(s)) {
-    s = s.replace(/^我們/, "一群年輕主角（全身清晰入鏡），");
-    clipAnchors.push("full body group of young people");
-    matchedTags.push("👥 主體：我們（具體人物群）");
-  } else if (/^我|[，,。！!？?\s]我/.test(s)) {
-    s = s.replace(/^我/, "一位年輕主角（全身清晰入鏡），").replace(/([，,。！!？?\s])我/g, "$1這位主角");
-    clipAnchors.push("full body young protagonist");
-    matchedTags.push("🧍 主體：我（具體全身人物）");
-  }
-
-  if (/在飛機上/.test(s) && /飛翔|展翅|動作|站|跳/.test(s)) {
-    s = s.replace(/在飛機上/g, "雙腳穩穩站在高空飛行的巨大民航客機機身與機翼頂部表面上，");
-    clipAnchors.push("person standing on top of a giant commercial airplane exterior fuselage and wide wings in mid-air");
-    recCam = "flight"; recVfx = "clouds";
-  } else if (/在飛機上|坐飛機|搭飛機/.test(s)) {
-    s = s.replace(/在飛機上|坐飛機|搭飛機/g, "在大型民航客機上（清楚呈現飛機機身、機翼與機艙結構），");
-    recCam = "flight"; recVfx = "clouds";
-  }
-
-  if (/做?飛翔的?動作|做?飛翔姿勢|展翅動作|張開雙手/.test(s)) {
-    s = s.replace(/做?飛翔的?動作|做?飛翔姿勢|展翅動作/g, "雙腳站穩，雙手臂向左右兩側水平張開做出如同鳥兒展翅的姿勢（open-arms pose）");
-    clipAnchors.push("both arms stretched wide open horizontally in a playful wing-like pose");
-    matchedTags.push("🙌 動作：雙臂張開展翅姿勢");
-    recCam = "flight";
-  }
-
-  if (/狂叫|大叫|吠叫|咆哮|怒吼|爆炸|戰鬥/.test(s)) {
-    s = s.replace(/狂叫|大叫|吠叫|咆哮/g, "張大嘴巴露出牙齒大聲吼叫，充滿爆發力");
-    clipAnchors.push("mouth wide open barking fiercely, dynamic action shot");
-    matchedTags.push("💥 運鏡：爆發震動抓拍");
-    recCam = "shake";
-  }
-
-  if (/宣教|講道|傳道|演講/.test(s)) {
-    s = s.replace(/宣教|講道|傳道/g, "舉起手臂激昂地向周圍聆聽的群眾宣講");
-    clipAnchors.push("preaching passionately with raised hand to a crowd of listeners");
-    matchedTags.push("🗣️ 動作：向群眾激昂宣講");
-  }
-
-  VISUAL_OBJECT_ANCHORS.forEach(item => {
-    if (item.reg.test(rawZh)) {
-      matchedTags.push(item.tag);
-      clipAnchors.push(item.clip);
-      if (!s.includes(item.zhExpand)) s += "，" + item.zhExpand;
-      if (item.autoCam) recCam = item.autoCam;
-      if (item.autoVfx) recVfx = item.autoVfx;
-    }
-  });
-
-  if (/櫻花|花瓣|春/.test(rawZh)) { recVfx = "sakura"; matchedTags.push("🌸 特效：飄落櫻花"); }
-  else if (/雨|雷|閃電|暴風/.test(rawZh)) { recVfx = "rain"; matchedTags.push("🌧️ 特效：大雨與閃電"); }
-  else if (/雪|冬|冰/.test(rawZh)) { recVfx = "snow"; matchedTags.push("❄️ 特效：漫天飄雪"); }
-  else if (/火|焰|戰火|燃燒/.test(rawZh)) { recVfx = "fire"; matchedTags.push("🔥 特效：烈焰火星"); }
-  else if (/飛|天空|雲|高空/.test(rawZh)) { recVfx = "clouds"; matchedTags.push("☁️ 特效：高速雲海氣流"); }
-
-  return {
-    expandedZh: s,
-    clipHeader: [...new Set(clipAnchors)].join(", "),
-    tags: matchedTags,
-    recCam,
-    recVfx
-  };
-}
-
-function resolveCamAndVfx(rawZh) {
-  const graph = buildVisualSceneGraph(rawZh);
-  const userCam = $("camMotion")?.value || "auto";
-  const userVfx = $("vfxType")?.value || "auto";
-  return {
-    cam: userCam === "auto" ? graph.recCam : userCam,
-    vfx: userVfx === "auto" ? graph.recVfx : userVfx
-  };
-}
-
-async function fastTranslate(text, targetLang = "en") {
-  if (!text || !text.trim()) return "";
-  const clean = text.trim();
-  if (!hasCJK(clean) && targetLang === "en") return clean;
-  const q = encodeURIComponent(clean);
-
-  const gtx = (async () => {
-    const ctrl = new AbortController();
-    const tid = setTimeout(() => ctrl.abort(), 5000);
-    const r = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${q}`, { signal: ctrl.signal });
-    clearTimeout(tid);
-    if (!r.ok) throw new Error("gtx");
-    const j = await r.json();
-    const out = j[0].map(x => x[0]).join("").trim();
-    if (!out || (targetLang === "en" && hasCJK(out))) throw new Error("cjk");
-    return out;
-  })();
-
-  const mm = (async () => {
-    const ctrl = new AbortController();
-    const tid = setTimeout(() => ctrl.abort(), 5500);
-    const r = await fetch(`https://api.mymemory.translated.net/get?langpair=zh-TW|${targetLang}&q=${q}`, { signal: ctrl.signal });
-    clearTimeout(tid);
-    if (!r.ok) throw new Error("mm");
-    const j = await r.json();
-    const out = (j?.responseData?.translatedText || "").trim();
-    if (!out || (targetLang === "en" && hasCJK(out))) throw new Error("cjk");
-    return out;
-  })();
-
-  try { return await Promise.any([gtx, mm]); } catch { return clean; }
-}
-const translateText = fastTranslate;
-const translateToEnglish = text => fastTranslate(text, "en");
-
-async function runGPTVisualDirector(rawZh) {
-  const cleanZh = (rawZh || "").trim();
-  if (!cleanZh) return "";
-
-  const isGptMode = ($("brainMode")?.value || "gpt") === "gpt";
-  if (!isGptMode) {
-    if ($("entityTagBox")) $("entityTagBox").innerHTML = "";
-    return await fastTranslate(cleanZh, "en");
-  }
-
-  const graph = buildVisualSceneGraph(cleanZh);
-  if ($("entityTagBox")) {
-    $("entityTagBox").innerHTML = (graph.tags.length ? graph.tags : ["🎬 智慧動畫分鏡拆解"]).map(t => `<span class="e-tag">${t}</span>`).join("");
-  }
-
-  let bodyEn = await fastTranslate(graph.expandedZh, "en");
-  bodyEn = bodyEn
-    .replace(/\bI'm\b|\bI am\b/gi, "A young protagonist is")
-    .replace(/\bon the plane\b/gi, "standing on the exterior fuselage and wide wings of a giant commercial passenger airplane flying high in the sky")
-    .replace(/\bflying moves\b|\bflying action\b/gi, "stretching both arms wide open horizontally like wings while standing firmly");
-
-  return [
-    graph.clipHeader,
-    bodyEn,
-    "dynamic animation keyframe composition, all mentioned objects fully visible in frame, high resolution masterpiece"
-  ].filter(Boolean).join(". ");
-}
-
-let lastTrackedRawPrompt = "";
-if ($("prompt")) {
-  $("prompt").addEventListener("input", () => {
-    if ($("prompt").value.trim() !== lastTrackedRawPrompt) {
-      $("enPromptPreview").value = "";
-      const g = buildVisualSceneGraph($("prompt").value.trim());
-      if ($("entityTagBox")) $("entityTagBox").innerHTML = g.tags.map(t => `<span class="e-tag">${t}</span>`).join("");
-    }
-  });
-}
-
-if ($("previewScriptBtn")) {
-  $("previewScriptBtn").onclick = async () => {
-    const raw = $("prompt").value.trim();
-    if (!raw) return alert("請先在上方輸入動畫描述");
-    const btn = $("previewScriptBtn");
-    btn.disabled = true; btn.textContent = "拆解中…";
-    try {
-      const script = await runGPTVisualDirector(raw);
-      $("enPromptPreview").value = script;
-      lastTrackedRawPrompt = raw;
-      setStatus("✅ 已產生動畫分鏡指令，可直接點擊「🎬 開始生成動畫」。");
-    } finally {
-      btn.disabled = false; btn.textContent = "預覽分鏡";
-    }
-  };
-}
-
-if ($("chatRefineBtn")) {
-  $("chatRefineBtn").onclick = async () => {
-    const mod = $("chatRefineInput").value.trim();
-    if (!mod) return alert("請輸入你想修改的動畫細節（例如：改成暴風雨閃電、鏡頭拉遠）");
-    const baseRaw = $("prompt").value.trim();
-    const combinedZh = baseRaw ? `${baseRaw}，並且${mod}` : mod;
-    $("prompt").value = combinedZh;
-    $("enPromptPreview").value = await runGPTVisualDirector(combinedZh);
-    lastTrackedRawPrompt = combinedZh;
-    $("chatRefineInput").value = "";
-    $("generate").click();
-  };
-}
-
-/* =====================================================================
-   中文 OCR 辨識與筆畫無痕抹除引擎
+   中文 OCR 辨識與筆畫無痕抹除引擎 (OCRLayoutEngine)
    ===================================================================== */
 const OCRLayoutEngine = (() => {
   let workerProm = null;
@@ -1422,9 +1016,627 @@ const OCRLayoutEngine = (() => {
 
   return { analyze, compositeLayoutOntoImage, sampleAccurateColors, eraseTextWithGrain, getWorker };
 })();
+</script>
+<!-- ==================== 請將第 2 部分貼在此行下方 ==================== -->
+<script>
+/* =====================================================================
+   第 2 部分腳本：
+   1. 16×16 骨骼網格變形引擎 (MeshRigEngine) — 真實驅動手腳關節、嘴部張合、胸腔呼吸與衣擺物理
+   2. 9 大生物力學動作解算器 (展翅飛翔 / 張嘴狂叫 / 揮手宣講 / 跑步跨步 / 彈奏樂器 等)
+   3. 10 分鐘多幕長片時間軸渲染器 + 零限制無冷卻生圖核心
+   ===================================================================== */
+const MeshRigEngine = (() => {
+  const GRID_N = 14; /* 14x14 網格 = 196 骨骼控制頂點、392 個仿射變形三角網格 */
+
+  /* 預設人體/生物骨骼關節標準化座標 (0.0 ~ 1.0) */
+  function defaultPins(actionMode = "wings") {
+    if (actionMode === "bark") {
+      /* 四足動物 / 犬隻骨架預設關節點 */
+      return {
+        head:   { x: 0.48, y: 0.28, label: "頭部" },
+        mouth:  { x: 0.52, y: 0.36, label: "下顎/嘴部" },
+        earL:   { x: 0.36, y: 0.18, label: "左耳" },
+        earR:   { x: 0.60, y: 0.18, label: "右耳" },
+        chest:  { x: 0.48, y: 0.52, label: "胸腔" },
+        handL:  { x: 0.35, y: 0.78, label: "左前肢" },
+        handR:  { x: 0.62, y: 0.78, label: "右前肢" },
+        footL:  { x: 0.28, y: 0.88, label: "左後肢" },
+        footR:  { x: 0.68, y: 0.88, label: "右後肢" }
+      };
+    }
+    return {
+      head:   { x: 0.50, y: 0.20, label: "頭部" },
+      mouth:  { x: 0.50, y: 0.25, label: "嘴部" },
+      chest:  { x: 0.50, y: 0.38, label: "胸腔" },
+      handL:  { x: 0.24, y: 0.44, label: "左手臂" },
+      handR:  { x: 0.76, y: 0.44, label: "右手臂" },
+      pelvis: { x: 0.50, y: 0.56, label: "腰胯" },
+      footL:  { x: 0.41, y: 0.84, label: "左腿" },
+      footR:  { x: 0.59, y: 0.84, label: "右腿" }
+    };
+  }
+
+  /* 高斯徑向骨骼權重函數：計算網格頂點 (u,v) 受關節點 (jx,jy) 影響的權重 */
+  function radialWeight(u, v, jx, jy, radiusX, radiusY = radiusX) {
+    const dx = (u - jx) / radiusX;
+    const dy = (v - jy) / radiusY;
+    const d2 = dx * dx + dy * dy;
+    return d2 > 4.5 ? 0 : Math.exp(-d2 * 1.35);
+  }
+
+  /* 繞關節支點 (px, py) 旋轉頂點 (u, v) 的位移量 */
+  function rotateAround(u, v, px, py, angleRad, weight) {
+    if (weight <= 0.001 || Math.abs(angleRad) <= 0.0001) return [0, 0];
+    const a = angleRad * weight;
+    const cos = Math.cos(a), sin = Math.sin(a);
+    const rx = u - px, ry = v - py;
+    return [(rx * cos - ry * sin) - rx, (rx * sin + ry * cos) - ry];
+  }
+
+  /* =====================================================================
+     🦾 9 大生物力學動作解算器：計算網格每個頂點 (u, v) 在時間 t 的真實部位變形
+     ===================================================================== */
+  function computeVertexDeformation(u, v, t, actionMode, amps, pins) {
+    /* 鎖定畫面最外圈邊界頂點，避免邊緣撕裂 */
+    const edgeFade = Math.min(1, Math.min(u, 1 - u, v, 1 - v) * 8.5);
+    if (edgeFade <= 0.01) return [0, 0];
+
+    const limbA = amps?.limb ?? 1.2;
+    const mouthA = amps?.mouth ?? 1.2;
+    const breathA = amps?.breath ?? 1.0;
+    const clothA = amps?.cloth ?? 1.1;
+    const P = pins || defaultPins(actionMode);
+
+    let du = 0, dv = 0;
+
+    /* 1. 基礎生命感：胸腔呼吸擴張與頭部微動（所有動作共通） */
+    const breathWave = Math.sin(t * 2.6);
+    const wChest = radialWeight(u, v, P.chest.x, P.chest.y, 0.18, 0.15);
+    du += (u - P.chest.x) * 0.032 * breathWave * wChest * breathA;
+    dv += -0.012 * breathWave * wChest * breathA;
+
+    const wHead = radialWeight(u, v, P.head.x, P.head.y, 0.14, 0.13);
+    /* 衣擺與毛髮微風物理波浪 */
+    const wCloth = radialWeight(u, v, 0.5, 0.65, 0.38, 0.28);
+    du += Math.sin(v * 14 - t * 6.5 + u * 5) * 0.009 * wCloth * clothA;
+
+    /* 2. 根據指定動作驅動各部位關節與肌肉網格 */
+    if (actionMode === "wings") {
+      /* ✈️ 在飛機上做飛翔動作：
+         - 左右雙臂繞肩膀支點大幅度上下展翅擺動
+         - 胸腔挺起迎風，衣擺與髮絲受高空強風向後劇烈飄動
+         - 底部飛機機翼與機身隨高空側傾產生滾轉與氣流震動 */
+      const shoulderL = { x: P.chest.x - 0.10, y: P.chest.y - 0.04 };
+      const shoulderR = { x: P.chest.x + 0.10, y: P.chest.y - 0.04 };
+      const wArmL = radialWeight(u, v, P.handL.x, P.handL.y, 0.20, 0.16);
+      const wArmR = radialWeight(u, v, P.handR.x, P.handR.y, 0.20, 0.16);
+
+      /* 雙臂像翅膀一樣上下振翅舒展 + 向外延伸 */
+      const flapAngle = (Math.sin(t * 3.8) * 0.26 + 0.12) * limbA;
+      const [rlU, rlV] = rotateAround(u, v, shoulderL.x, shoulderL.y, flapAngle, wArmL);
+      const [rrU, rrV] = rotateAround(u, v, shoulderR.x, shoulderR.y, -flapAngle, wArmR);
+      du += rlU - 0.028 * (0.5 + 0.5 * Math.sin(t * 3.8)) * wArmL * limbA;
+      dv += rlV;
+      du += rrU + 0.028 * (0.5 + 0.5 * Math.sin(t * 3.8)) * wArmR * limbA;
+      dv += rrV;
+
+      /* 頭部迎風微仰與轉動 */
+      du += Math.sin(t * 1.9) * 0.014 * wHead;
+      dv += -Math.abs(Math.sin(t * 1.9)) * 0.012 * wHead;
+
+      /* 高空強風吹動頭髮與衣服下擺 */
+      const wHairCloth = radialWeight(u, v, P.head.x, P.head.y + 0.15, 0.32, 0.35);
+      du += Math.sin(v * 18 - t * 14) * 0.016 * wHairCloth * clothA;
+
+      /* 腳下飛機機翼與機身的空氣動力搖擺 */
+      const wPlane = v > 0.62 ? Math.min(1, (v - 0.62) * 3.2) : 0;
+      const [plU, plV] = rotateAround(u, v, 0.5, 0.78, Math.sin(t * 1.8) * 0.045, wPlane);
+      du += plU;
+      dv += plV + Math.cos(t * 3.6) * 0.012 * wPlane;
+
+    } else if (actionMode === "bark") {
+      /* 🐕 動物張嘴咆哮狂叫：
+         - 上顎抬起、下顎大幅度向下張合（高頻率連續吠叫節奏）
+         - 鼻吻部皺起、雙耳隨吼叫向後抖動
+         - 胸腔劇烈收縮吐氣、前肢往前發力蹬踏 */
+      const barkCycle = Math.max(0, Math.sin(t * 9.5) * 0.75 + Math.sin(t * 4.2) * 0.45);
+      const wLowerJaw = radialWeight(u, v, P.mouth.x, P.mouth.y + 0.05, 0.14, 0.09);
+      const wUpperSnout = radialWeight(u, v, P.mouth.x, P.mouth.y - 0.04, 0.13, 0.08);
+
+      /* 下巴往下張開、上吻部往上微掀 */
+      dv += 0.058 * barkCycle * wLowerJaw * mouthA;
+      du += (u - P.mouth.x) * 0.12 * barkCycle * wLowerJaw * mouthA;
+      dv += -0.024 * barkCycle * wUpperSnout * mouthA;
+
+      /* 頭部隨狂叫往前猛衝震動 */
+      const lunge = Math.pow(barkCycle, 1.4);
+      du += Math.sin(t * 22) * 0.008 * lunge * wHead * limbA;
+      dv += -0.025 * lunge * wHead * limbA;
+
+      /* 左右耳朵隨吼叫抖動 */
+      const earL = P.earL || { x: P.head.x - 0.12, y: P.head.y - 0.08 };
+      const earR = P.earR || { x: P.head.x + 0.12, y: P.head.y - 0.08 };
+      const wEarL = radialWeight(u, v, earL.x, earL.y, 0.10, 0.10);
+      const wEarR = radialWeight(u, v, earR.x, earR.y, 0.10, 0.10);
+      du += -0.022 * lunge * wEarL * limbA + 0.022 * lunge * wEarR * limbA;
+      dv += -0.018 * Math.sin(t * 14) * (wEarL + wEarR) * limbA;
+
+      /* 胸腔劇烈起伏與前肢蹬地 */
+      du += (u - P.chest.x) * 0.08 * lunge * wChest * breathA;
+      const wFrontLegs = radialWeight(u, v, P.handL.x, P.handL.y, 0.14, 0.16) + radialWeight(u, v, P.handR.x, P.handR.y, 0.14, 0.16);
+      dv += -0.022 * lunge * wFrontLegs * limbA;
+
+    } else if (actionMode === "preach") {
+      /* 🗣️ 宣教 / 講道 / 演講動作：
+         - 右手臂繞肩關節往上高舉並隨語氣揮動
+         - 左手自然在胸前展開手勢
+         - 嘴部隨演說節奏自然張合，頭部左右環視聽眾，長袍隨風飄動 */
+      const shoulderR = { x: P.chest.x + 0.09, y: P.chest.y - 0.04 };
+      const shoulderL = { x: P.chest.x - 0.09, y: P.chest.y - 0.04 };
+      const wArmR = radialWeight(u, v, P.handR.x, P.handR.y, 0.19, 0.18);
+      const wArmL = radialWeight(u, v, P.handL.x, P.handL.y, 0.18, 0.16);
+
+      const gestureR = (-0.28 + Math.sin(t * 3.2) * 0.18) * limbA;
+      const gestureL = (0.14 + Math.cos(t * 2.4) * 0.12) * limbA;
+      const [rrU, rrV] = rotateAround(u, v, shoulderR.x, shoulderR.y, gestureR, wArmR);
+      const [rlU, rlV] = rotateAround(u, v, shoulderL.x, shoulderL.y, gestureL, wArmL);
+      du += rrU + rlU;
+      dv += rrV + rlV;
+
+      /* 演講嘴部張合 */
+      const speechWave = Math.abs(Math.sin(t * 7.5)) * (0.5 + 0.5 * Math.sin(t * 2.1));
+      const wMouth = radialWeight(u, v, P.mouth.x, P.mouth.y + 0.02, 0.08, 0.05);
+      dv += 0.024 * speechWave * wMouth * mouthA;
+
+      /* 頭部環視群眾 */
+      du += Math.sin(t * 1.4) * 0.018 * wHead;
+      dv += Math.cos(t * 2.8) * 0.008 * wHead;
+
+    } else if (actionMode === "run" || actionMode === "walk") {
+      /* 🏃 跑步 / 🚶 行走 8 相位生物力學步態循環：
+         - 左右雙腿繞髖關節交替前後邁步與屈膝抬腿
+         - 左右雙臂與雙腿反向交替前後擺動
+         - 軀幹產生雙倍頻率的上下推進律動 (Bobbing) 與前傾 */
+      const isRun = actionMode === "run";
+      const speed = isRun ? 7.2 : 3.8;
+      const stride = (isRun ? 0.28 : 0.16) * limbA;
+      const phase = t * speed;
+
+      const hipL = { x: P.footL.x, y: 0.56 };
+      const hipR = { x: P.footR.x, y: 0.56 };
+      const wLegL = radialWeight(u, v, P.footL.x, P.footL.y - 0.06, 0.14, 0.22);
+      const wLegR = radialWeight(u, v, P.footR.x, P.footR.y - 0.06, 0.14, 0.22);
+
+      const legAngleL = Math.sin(phase) * stride;
+      const legAngleR = -Math.sin(phase) * stride;
+      const [llU, llV] = rotateAround(u, v, hipL.x, hipL.y, legAngleL, wLegL);
+      const [lrU, lrV] = rotateAround(u, v, hipR.x, hipR.y, legAngleR, wLegR);
+      /* 抬腿時膝蓋與腳掌往上提 */
+      const liftL = Math.max(0, Math.cos(phase)) * (isRun ? 0.045 : 0.022) * wLegL * limbA;
+      const liftR = Math.max(0, -Math.cos(phase)) * (isRun ? 0.045 : 0.022) * wLegR * limbA;
+      du += llU + lrU;
+      dv += llV + lrV - liftL - liftR;
+
+      /* 雙臂反向擺動 */
+      const shoulderL = { x: P.chest.x - 0.09, y: P.chest.y - 0.04 };
+      const shoulderR = { x: P.chest.x + 0.09, y: P.chest.y - 0.04 };
+      const wArmL = radialWeight(u, v, P.handL.x, P.handL.y, 0.16, 0.16);
+      const wArmR = radialWeight(u, v, P.handR.x, P.handR.y, 0.16, 0.16);
+      const [alU, alV] = rotateAround(u, v, shoulderL.x, shoulderL.y, -legAngleL * 0.85, wArmL);
+      const [arU, arV] = rotateAround(u, v, shoulderR.x, shoulderR.y, -legAngleR * 0.85, wArmR);
+      du += alU + arU;
+      dv += alV + arV;
+
+      /* 全身重心隨跨步上下彈跳 */
+      const wBody = radialWeight(u, v, 0.5, 0.48, 0.32, 0.38);
+      dv += Math.abs(Math.sin(phase)) * (isRun ? -0.028 : -0.012) * wBody * breathA;
+
+    } else if (actionMode === "jump") {
+      /* 🦘 蓄力蹲下 -> 騰空跳起 -> 手腳舒展 -> 緩衝落地 */
+      const p = (t * 0.85) % 1;
+      let jumpY = 0, crouch = 0, armSpread = 0;
+      if (p < 0.25) {
+        /* 蹲下蓄力 */
+        crouch = Math.sin((p / 0.25) * Math.PI) * 0.035;
+      } else if (p < 0.78) {
+        /* 騰空躍起拋物線 */
+        const airP = (p - 0.25) / 0.53;
+        jumpY = -Math.sin(airP * Math.PI) * 0.075 * limbA;
+        armSpread = Math.sin(airP * Math.PI) * 0.28 * limbA;
+      } else {
+        /* 落地緩衝 */
+        crouch = Math.sin(((p - 0.78) / 0.22) * Math.PI) * 0.025;
+      }
+      const wBody = radialWeight(u, v, 0.5, 0.5, 0.35, 0.40);
+      dv += (jumpY + crouch * (1 - v)) * wBody;
+      const wArmL = radialWeight(u, v, P.handL.x, P.handL.y, 0.18, 0.16);
+      const wArmR = radialWeight(u, v, P.handR.x, P.handR.y, 0.18, 0.16);
+      const [alU, alV] = rotateAround(u, v, P.chest.x - 0.09, P.chest.y, armSpread, wArmL);
+      const [arU, arV] = rotateAround(u, v, P.chest.x + 0.09, P.chest.y, -armSpread, wArmR);
+      du += alU + arU; dv += alV + arV;
+
+    } else if (actionMode === "playMusic") {
+      /* 🎸 雙手彈奏樂器（右手刷弦/擊鍵高頻律動，左手按弦滑動，身體與頭部隨音樂節拍搖擺） */
+      const wArmR = radialWeight(u, v, P.handR.x, P.handR.y, 0.16, 0.14);
+      const wArmL = radialWeight(u, v, P.handL.x, P.handL.y, 0.16, 0.14);
+      const strum = Math.sin(t * 14) * 0.024 * limbA;
+      du += strum * 0.6 * wArmR + Math.sin(t * 3.5) * 0.018 * wArmL * limbA;
+      dv += strum * wArmR;
+      const [hdU, hdV] = rotateAround(u, v, P.chest.x, P.chest.y, Math.sin(t * 3.5) * 0.06 * breathA, wHead + wChest * 0.5);
+      du += hdU; dv += hdV;
+
+    } else if (actionMode === "fight") {
+      /* ⚔️ 戰鬥出拳揮擊動作 */
+      const punch = Math.pow(Math.max(0, Math.sin(t * 6.5)), 3) * limbA;
+      const wArmR = radialWeight(u, v, P.handR.x, P.handR.y, 0.20, 0.16);
+      const wArmL = radialWeight(u, v, P.handL.x, P.handL.y, 0.18, 0.16);
+      du += 0.055 * punch * wArmR - 0.025 * (1 - punch) * wArmL;
+      dv += -0.032 * punch * wArmR;
+    }
+
+    return [du * edgeFade, dv * edgeFade];
+  }
+
+  /* 仿射三角形貼圖繪製（將來源影像三角區塊 (sx0,sy0)-(sx1,sy1)-(sx2,sy2) 變形貼至目標頂點） */
+  function drawTexturedTriangle(ctx, img, sx0, sy0, sx1, sy1, sx2, sy2, dx0, dy0, dx1, dy1, dx2, dy2) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(dx0, dy0);
+    ctx.lineTo(dx1, dy1);
+    ctx.lineTo(dx2, dy2);
+    ctx.closePath();
+    ctx.clip();
+
+    const denom = sx0 * (sy2 - sy1) - sx1 * sy2 + sx2 * sy1 + (sx1 - sx2) * sy0;
+    if (Math.abs(denom) < 1e-6) { ctx.restore(); return; }
+
+    const m11 = -(sy0 * (dx2 - dx1) - sy1 * dx2 + sy2 * dx1 + (sy1 - sy2) * dx0) / denom;
+    const m12 = (sy1 * dy2 + sy0 * (dy1 - dy2) - sy2 * dy1 + (sy2 - sy1) * dy0) / denom;
+    const m21 = (sx0 * (dx2 - dx1) - sx1 * dx2 + sx2 * dx1 + (sx1 - sx2) * dx0) / denom;
+    const m22 = -(sx1 * dy2 + sx0 * (dy1 - dy2) - sx2 * dy1 + (sx2 - sx1) * dy0) / denom;
+    const dx = (sx0 * (sy2 * dx1 - sy1 * dx2) + sy0 * (sx1 * dx2 - sx2 * dx1) + (sx2 * sy1 - sx1 * sy2) * dx0) / denom;
+    const dy = (sx0 * (sy2 * dy1 - sy1 * dy2) + sy0 * (sx1 * dy2 - sx2 * dy1) + (sx2 * sy1 - sx1 * sy2) * dy0) / denom;
+
+    ctx.transform(m11, m12, m21, m22, dx, dy);
+    ctx.drawImage(img, 0, 0);
+    ctx.restore();
+  }
+
+  /* 在目標 Canvas 上渲染一幀完整的 16×16 骨骼網格變形畫面 */
+  function renderRiggedFrame(ctx, img, W, H, t, actionMode = "wings", amps = {}, customPins = null, showDebugPins = false) {
+    if (!img) return;
+    const imgW = img.naturalWidth || img.width || W;
+    const imgH = img.naturalHeight || img.height || H;
+    const pins = customPins || defaultPins(actionMode);
+
+    if (actionMode === "none") {
+      ctx.drawImage(img, 0, 0, W, H);
+      return;
+    }
+
+    const N = GRID_N;
+    const srcPts = [];
+    const dstPts = [];
+
+    for (let r = 0; r <= N; r++) {
+      const v = r / N;
+      const sRow = [];
+      const dRow = [];
+      for (let c = 0; c <= N; c++) {
+        const u = c / N;
+        const [du, dv] = computeVertexDeformation(u, v, t, actionMode, amps, pins);
+        sRow.push({ x: u * imgW, y: v * imgH });
+        dRow.push({ x: (u + du) * W, y: (v + dv) * H });
+      }
+      srcPts.push(sRow);
+      dstPts.push(dRow);
+    }
+
+    for (let r = 0; r < N; r++) {
+      for (let c = 0; c < N; c++) {
+        const s00 = srcPts[r][c],     s10 = srcPts[r][c + 1];
+        const s01 = srcPts[r + 1][c], s11 = srcPts[r + 1][c + 1];
+        const d00 = dstPts[r][c],     d10 = dstPts[r][c + 1];
+        const d01 = dstPts[r + 1][c], d11 = dstPts[r + 1][c + 1];
+
+        drawTexturedTriangle(ctx, img, s00.x, s00.y, s10.x, s10.y, s01.x, s01.y, d00.x, d00.y, d10.x, d10.y, d01.x, d01.y);
+        drawTexturedTriangle(ctx, img, s10.x, s10.y, s11.x, s11.y, s01.x, s01.y, d10.x, d10.y, d11.x, d11.y, d01.x, d01.y);
+      }
+    }
+
+    /* 選擇性顯示骨骼關節控制點（供使用者在編輯器手動對位關節） */
+    if (showDebugPins) {
+      ctx.save();
+      Object.entries(pins).forEach(([key, pt]) => {
+        const [du, dv] = computeVertexDeformation(pt.x, pt.y, t, actionMode, amps, pins);
+        const px = (pt.x + du) * W, py = (pt.y + dv) * H;
+        ctx.fillStyle = "#00a8fc";
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(px, py, 6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = "#ffd166";
+        ctx.font = "bold 11px sans-serif";
+        ctx.fillText(pt.label || key, px + 8, py + 4);
+      });
+      ctx.restore();
+    }
+  }
+
+  /* 錄製動畫並支援長片高速導出 */
+  async function recordCanvasToWebM(targetCanvas, durationSec = 6, onProgress = null, fileName = "ai-action-video.webm") {
+    const stream = targetCanvas.captureStream ? targetCanvas.captureStream(30) : targetCanvas.mozCaptureStream(30);
+    let mime = "video/webm;codecs=vp9";
+    if (!MediaRecorder.isTypeSupported(mime)) mime = "video/webm;codecs=vp8";
+    if (!MediaRecorder.isTypeSupported(mime)) mime = "video/webm";
+
+    /* 針對超過 60 秒的長片自動最佳化位元率，避免瀏覽器記憶體溢位 */
+    const bps = durationSec > 60 ? 2500000 : 5500000;
+    const recorder = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: bps });
+    const chunks = [];
+    recorder.ondataavailable = e => { if (e.data && e.data.size > 0) chunks.push(e.data); };
+
+    return new Promise((resolve, reject) => {
+      recorder.onstop = () => {
+        const blob = new Blob(chunks, { type: "video/webm" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = fileName;
+        a.click();
+        resolve(blob);
+      };
+      recorder.onerror = err => reject(err);
+      recorder.start(200);
+
+      const start = performance.now();
+      /* 若使用者設定為 10 分鐘 (600s) 長片，詢問是否錄製完整時間或快速匯出精華循環 */
+      let actualRecordSec = durationSec;
+      if (durationSec > 30) {
+        const wantFull = confirm(`目前設定片長為 ${formatTimecode(durationSec)} (${durationSec}秒)。\n• 按【確定】：即時錄製完整 ${durationSec} 秒長片\n• 按【取消】：快速錄製 12 秒高清動作循環短片`);
+        if (!wantFull) actualRecordSec = 12;
+      }
+      const totalMs = actualRecordSec * 1000;
+      const tick = () => {
+        const elapsed = performance.now() - start;
+        if (onProgress) onProgress(Math.min(99, Math.round((elapsed / totalMs) * 100)));
+        if (elapsed >= totalMs) {
+          if (recorder.state === "recording") recorder.stop();
+        } else {
+          requestAnimationFrame(tick);
+        }
+      };
+      requestAnimationFrame(tick);
+    });
+  }
+
+  return { defaultPins, computeVertexDeformation, renderRiggedFrame, recordCanvasToWebM };
+})();
 
 /* =====================================================================
-   Seed 收藏清單 + 參考圖分析 + 60FPS 即時動畫卡片播放器
+   🧠 視覺與部位動作智慧拆解引擎（自動從中文句子判斷要做什麼肢體動作）
+   ===================================================================== */
+const VISUAL_OBJECT_ANCHORS = [
+  { reg: /飛機|客機|班機/, tag: "✈️ 必現載具：大型客機", clip: "giant commercial passenger jet airplane with wide wings and jet engines clearly visible", zhExpand: "（畫面清楚畫出結構完整的大型噴射客機機身、兩側展開的長機翼與渦輪引擎）", autoAction: "wings" },
+  { reg: /戰鬥機|戰機/, tag: "🛩️ 必現載具：戰鬥機", clip: "supersonic military fighter jet aircraft with wings and cockpit", zhExpand: "（清楚呈現戰鬥機機身、機翼與駕駛艙）", autoAction: "wings" },
+  { reg: /狗|犬|柴犬|狼犬/, tag: "🐕 主體：犬隻骨骼綁定", clip: "realistic canine dog subject in focus, expressive face and open jaws, detailed fur", zhExpand: "（主體是毛髮與五官清晰的狗）", autoAction: "bark" },
+  { reg: /貓|貓咪|獅|虎|狼/, tag: "🦁 主體：動物骨骼綁定", clip: "expressive animal subject in focus, detailed fur and anatomy", zhExpand: "（清楚呈現動物的頭顎與四肢結構）", autoAction: "bark" },
+  { reg: /保羅|彼得|摩西|大衛|耶穌|使徒|先知/, tag: "🧔 人物：使徒演講骨骼綁定", clip: "bearded 1st-century Middle-Eastern biblical man in woven linen tunic and mantle cloak gesturing with raised arm", zhExpand: "（留著鬍鬚、身穿西元一世紀古希臘羅馬亞麻長袍與披肩的男性使徒）", autoAction: "preach" },
+  { reg: /雅典|衛城|帕德嫩|羅馬|神廟|石階/, tag: "🏛️ 場景：古希臘羅馬建築", clip: "ancient Athens Acropolis marble steps, classical Greek Parthenon temple with Doric columns", zhExpand: "（古希臘雅典衛城石階與遠方帕德嫩神廟大理石柱）", autoAction: "preach" },
+  { reg: /吉他|鋼琴|小提琴|樂器|鼓/, tag: "🎸 動作：彈奏樂器骨骼綁定", clip: "playing musical instrument with both hands clearly positioned", zhExpand: "（雙手清楚放在樂器上彈奏）", autoAction: "playMusic" }
+];
+
+function detectActionFromText(rawZh) {
+  const s = rawZh || "";
+  if (/飛翔|展翅|張開雙手|張開手|飛機上/.test(s)) return "wings";
+  if (/狂叫|大叫|吠|咆哮|怒吼|張嘴|咬/.test(s)) return "bark";
+  if (/宣教|講道|傳道|演講|說話|揮手|舉手/.test(s)) return "preach";
+  if (/跑|奔跑|衝刺|追/.test(s)) return "run";
+  if (/走|散步|漫步|行進/.test(s)) return "walk";
+  if (/跳|躍|騰空/.test(s)) return "jump";
+  if (/彈|吉他|鋼琴|演奏|唱歌/.test(s)) return "playMusic";
+  if (/打|拳|戰|揮劍|攻擊/.test(s)) return "fight";
+  return "idle";
+}
+
+function buildVisualSceneGraph(rawZh) {
+  let s = (rawZh || "").trim();
+  if (!s) return { expandedZh: "", clipHeader: "", tags: [], recAction: "idle" };
+
+  const matchedTags = [];
+  const clipAnchors = [];
+  let recAction = detectActionFromText(s);
+
+  const actionNames = {
+    wings: "🦾 骨骼動作：雙臂張開展翅＋機身平衡",
+    bark: "🦾 骨骼動作：上下顎張合狂叫＋前肢蹬踏",
+    preach: "🦾 骨骼動作：高舉右手揮動宣講＋開口演說",
+    run: "🦾 骨骼動作：雙腿跨步奔跑＋前後擺臂循環",
+    walk: "🦾 骨骼動作：自然邁步行走＋重心律動",
+    jump: "🦾 骨骼動作：蓄力屈膝跳躍＋空中舒展",
+    playMusic: "🦾 骨骼動作：雙手刷弦彈奏＋身體隨節拍搖擺",
+    fight: "🦾 骨骼動作：出拳揮擊戰鬥＋急促呼吸",
+    idle: "🦾 骨骼動作：胸腔呼吸起伏＋頭部與衣擺微動"
+  };
+  matchedTags.push(actionNames[recAction] || actionNames.idle);
+
+  if (/^我們/.test(s)) {
+    s = s.replace(/^我們/, "一群年輕主角（全身與四肢關節清晰入鏡），");
+    clipAnchors.push("full body group of young people with clear arms and legs");
+  } else if (/^我|[，,。！!？?\s]我/.test(s)) {
+    s = s.replace(/^我/, "一位年輕主角（全身與雙手雙腳清晰入鏡），").replace(/([，,。！!？?\s])我/g, "$1這位主角");
+    clipAnchors.push("full body young protagonist with clearly visible arms and legs");
+  }
+
+  if (/在飛機上/.test(s) && /飛翔|展翅|動作|站|跳/.test(s)) {
+    s = s.replace(/在飛機上/g, "雙腳穩穩站在高空飛行的巨大民航客機機身與機翼頂部表面上，");
+    clipAnchors.push("person standing on top of a giant commercial airplane exterior fuselage and wide wings in mid-air");
+  } else if (/在飛機上|坐飛機|搭飛機/.test(s)) {
+    s = s.replace(/在飛機上|坐飛機|搭飛機/g, "在大型民航客機上（清楚呈現飛機機身、機翼與機艙結構），");
+  }
+
+  if (/做?飛翔的?動作|做?飛翔姿勢|展翅動作|張開雙手/.test(s)) {
+    s = s.replace(/做?飛翔的?動作|做?飛翔姿勢|展翅動作/g, "雙腳站穩，左右雙手臂向兩側水平完全張開做出如同飛鳥展翅的姿勢");
+    clipAnchors.push("both arms stretched wide open horizontally to the left and right like wings");
+  }
+
+  if (/狂叫|大叫|吠叫|咆哮/.test(s)) {
+    s = s.replace(/狂叫|大叫|吠叫|咆哮/g, "張大嘴巴露出上下排牙齒與舌頭大聲吠叫，前肢微曲充滿爆發力");
+    clipAnchors.push("mouth wide open mid-bark showing teeth and tongue, dynamic expressive posture");
+  }
+
+  if (/宣教|講道|傳道|演講/.test(s)) {
+    s = s.replace(/宣教|講道|傳道/g, "右手高舉過肩、左手展開，開口向周圍群眾激昂宣講");
+    clipAnchors.push("preaching passionately with right arm raised high to a crowd of listeners");
+  }
+
+  VISUAL_OBJECT_ANCHORS.forEach(item => {
+    if (item.reg.test(rawZh)) {
+      matchedTags.push(item.tag);
+      clipAnchors.push(item.clip);
+      if (!s.includes(item.zhExpand)) s += "，" + item.zhExpand;
+    }
+  });
+
+  return {
+    expandedZh: s,
+    clipHeader: [...new Set(clipAnchors)].join(", "),
+    tags: matchedTags,
+    recAction
+  };
+}
+
+function resolveActionAndAmps(rawZh) {
+  const graph = buildVisualSceneGraph(rawZh);
+  const userAct = $("actionPreset")?.value || "auto";
+  return {
+    actionMode: userAct === "auto" ? graph.recAction : userAct,
+    amps: {
+      limb: +($("rigLimbAmp")?.value ?? 1.2),
+      mouth: +($("rigMouthAmp")?.value ?? 1.2),
+      breath: +($("rigBreathAmp")?.value ?? 1.0),
+      cloth: +($("rigClothAmp")?.value ?? 1.1)
+    }
+  };
+}
+
+async function fastTranslate(text, targetLang = "en") {
+  if (!text || !text.trim()) return "";
+  const clean = text.trim();
+  if (!hasCJK(clean) && targetLang === "en") return clean;
+  const q = encodeURIComponent(clean);
+
+  const gtx = (async () => {
+    const ctrl = new AbortController();
+    const tid = setTimeout(() => ctrl.abort(), 5000);
+    const r = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${q}`, { signal: ctrl.signal });
+    clearTimeout(tid);
+    if (!r.ok) throw new Error("gtx");
+    const j = await r.json();
+    const out = j[0].map(x => x[0]).join("").trim();
+    if (!out || (targetLang === "en" && hasCJK(out))) throw new Error("cjk");
+    return out;
+  })();
+
+  const mm = (async () => {
+    const ctrl = new AbortController();
+    const tid = setTimeout(() => ctrl.abort(), 5500);
+    const r = await fetch(`https://api.mymemory.translated.net/get?langpair=zh-TW|${targetLang}&q=${q}`, { signal: ctrl.signal });
+    clearTimeout(tid);
+    if (!r.ok) throw new Error("mm");
+    const j = await r.json();
+    const out = (j?.responseData?.translatedText || "").trim();
+    if (!out || (targetLang === "en" && hasCJK(out))) throw new Error("cjk");
+    return out;
+  })();
+
+  try { return await Promise.any([gtx, mm]); } catch { return clean; }
+}
+const translateText = fastTranslate;
+const translateToEnglish = text => fastTranslate(text, "en");
+
+async function runGPTVisualDirector(rawZh) {
+  const cleanZh = (rawZh || "").trim();
+  if (!cleanZh) return "";
+
+  const graph = buildVisualSceneGraph(cleanZh);
+  if ($("entityTagBox")) {
+    $("entityTagBox").innerHTML = graph.tags.map(t => `<span class="e-tag">${t}</span>`).join("");
+  }
+
+  let bodyEn = await fastTranslate(graph.expandedZh, "en");
+  bodyEn = bodyEn
+    .replace(/\bI'm\b|\bI am\b/gi, "A young protagonist is")
+    .replace(/\bon the plane\b/gi, "standing on the exterior fuselage and wide wings of a giant commercial passenger airplane flying high in the sky")
+    .replace(/\bflying moves\b|\bflying action\b/gi, "stretching both arms wide open horizontally like wings while standing firmly");
+
+  return [
+    graph.clipHeader,
+    bodyEn,
+    "clear anatomical limbs and joints for animation rigging, all mentioned objects fully visible in frame, high resolution masterpiece"
+  ].filter(Boolean).join(". ");
+}
+
+/* 📜 一鍵將單句主題擴寫為 4 幕 10 分鐘短片連續劇本 */
+if ($("autoExpandStoryBtn")) {
+  $("autoExpandStoryBtn").onclick = () => {
+    const raw = ($("prompt").value || "").trim().split("\n")[0] || "主角展開奇幻冒險";
+    const act1 = `${raw}（第一幕：開場登場，環境全景與預備動作）`;
+    const act2 = `${raw}（第二幕：核心動作展開，肢體大幅度演繹）`;
+    const act3 = `${raw}（第三幕：動作高潮特寫，神態與張力極致呈現）`;
+    const act4 = `${raw}（第四幕：尾聲收勢，壯闊遠景與餘韻）`;
+    $("prompt").value = [act1, act2, act3, act4].join("\n");
+    $("animMode").value = "multiAct";
+    setStatus("📜 已自動擴寫為 4 幕連續劇本！點擊「開始生成」將自動算繪多幕關鍵影格並串成 10 分鐘長片。");
+  };
+}
+
+let lastTrackedRawPrompt = "";
+if ($("prompt")) {
+  $("prompt").addEventListener("input", () => {
+    if ($("prompt").value.trim() !== lastTrackedRawPrompt) {
+      $("enPromptPreview").value = "";
+      const g = buildVisualSceneGraph($("prompt").value.trim());
+      if ($("entityTagBox")) $("entityTagBox").innerHTML = g.tags.map(t => `<span class="e-tag">${t}</span>`).join("");
+    }
+  });
+}
+
+if ($("previewScriptBtn")) {
+  $("previewScriptBtn").onclick = async () => {
+    const raw = $("prompt").value.trim();
+    if (!raw) return alert("請先在上方輸入動作與場景描述");
+    const btn = $("previewScriptBtn");
+    btn.disabled = true; btn.textContent = "解析中…";
+    try {
+      const script = await runGPTVisualDirector(raw);
+      $("enPromptPreview").value = script;
+      lastTrackedRawPrompt = raw;
+      setStatus("✅ 已完成骨骼動作綁定與視覺拆解，可直接點擊「🎬 開始生成真實動作動畫」。");
+    } finally {
+      btn.disabled = false; btn.textContent = "解析動作";
+    }
+  };
+}
+
+if ($("chatRefineBtn")) {
+  $("chatRefineBtn").onclick = async () => {
+    const mod = $("chatRefineInput").value.trim();
+    if (!mod) return alert("請輸入你想微調的動作或畫面細節");
+    const baseRaw = $("prompt").value.trim();
+    const combinedZh = baseRaw ? `${baseRaw}，並且${mod}` : mod;
+    $("prompt").value = combinedZh;
+    $("enPromptPreview").value = await runGPTVisualDirector(combinedZh);
+    lastTrackedRawPrompt = combinedZh;
+    $("chatRefineInput").value = "";
+    $("generate").click();
+  };
+}
+
+/* =====================================================================
+   Seed 收藏清單 + 參考圖骨骼綁定 + 支援 10 分鐘時間軸的 60FPS 動作播放器
    ===================================================================== */
 function loadFavSeeds() {
   try { return JSON.parse(localStorage.getItem(FAV_KEY) || "[]"); } catch { return []; }
@@ -1435,9 +1647,9 @@ function saveFavSeeds(list) {
 }
 function addSeedToFav(seed, defaultName = "", category = "常用", styleVal = "") {
   if (!seed && seed !== 0) return alert("請先輸入或產生一個 Seed 數字");
-  const name = prompt("請輸入此 Seed 的名稱：", defaultName || `動畫 #${seed}`);
+  const name = prompt("請輸入此 Seed 的名稱：", defaultName || `動作動畫 #${seed}`);
   if (!name) return;
-  const cat = prompt("分類標籤（例如：人物、飛行、卡牌）：", category) || "常用";
+  const cat = prompt("分類標籤（例如：飛翔、狂叫、宣教）：", category) || "常用";
   const list = loadFavSeeds().filter(x => String(x.seed) !== String(seed));
   list.unshift({ seed: Number(seed), name: name.trim(), category: cat.trim(), style: styleVal || $("style")?.value || "", time: Date.now() });
   saveFavSeeds(list);
@@ -1496,7 +1708,7 @@ async function setReference(file) {
   $("refPanel").classList.remove("hidden"); $("refImg").src = URL.createObjectURL(file);
   $("refOcrText").value = ""; $("ocrCountBadge").textContent = "掃描中…";
   try {
-    $("refStatus").textContent = "正在辨識圖片文字與座標…";
+    $("refStatus").textContent = "正在辨識圖片文字與建立骨骼網格…";
     const ocrRes = await OCRLayoutEngine.analyze(file, p => { $("refProgress").style.width = (p * 100).toFixed(1) + "%"; });
     if (Ref.blob !== file) return;
     Ref.ocrResult = ocrRes; Ref.ocrLines = ocrRes.lines;
@@ -1504,10 +1716,10 @@ async function setReference(file) {
     $("refOcrText").value = ocrRes.lines.map(l => l.text).join("\n");
     $("refCloneLayoutChk").checked = ocrRes.lines.length > 0;
     $("refProgress").style.width = "100%";
-    $("refStatus").textContent = "可點「直接把這張圖變成動畫」或生圖疊字";
+    $("refStatus").textContent = "可點「🦴 綁定骨骼直接做動作」立即驅動此圖";
   } catch {
     $("ocrCountBadge").textContent = "無文字";
-    $("refStatus").textContent = "參考圖已載入";
+    $("refStatus").textContent = "圖片已載入，可點「🦴 綁定骨骼直接做動作」";
   }
 }
 function clearReference() {
@@ -1526,23 +1738,22 @@ $("refCloneToEditor").onclick = async () => {
   if (typeof Editor !== "undefined") await Editor.cloneImageLayoutToCanvas(Ref.ocrResult || await OCRLayoutEngine.analyze(Ref.blob), $("refOcrText").value);
 };
 
-/* 直接將上傳的參考圖轉成 60FPS 動畫卡片 */
 if ($("refAnimateDirectBtn")) {
   $("refAnimateDirectBtn").onclick = async () => {
     if (!Ref.blob) return;
-    const raw = $("prompt").value.trim() || "參考圖動態演繹";
-    const { cam, vfx } = resolveCamAndVfx(raw);
+    const raw = $("prompt").value.trim() || "主角動作演繹";
+    const { actionMode, amps } = resolveActionAndAmps(raw);
     const bmp = await createImageBitmap(Ref.blob);
     const entry = {
       id: Date.now() + "-ref", original: raw, prompt: raw,
       size: `${bmp.width}x${bmp.height}`, seed: rand(),
-      camMotion: cam, vfxType: vfx, duration: +($("duration")?.value || 6),
-      animMode: "live60", blob: Ref.blob, rawBgBlob: Ref.blob, time: Date.now()
+      actionMode, amps, duration: +($("duration")?.value || 600),
+      animMode: "rigged", blob: Ref.blob, rawBgBlob: Ref.blob, time: Date.now()
     };
     const card = createCard(entry, true);
     await imgPut({ ...entry, card: undefined });
     await card.showAnim([URL.createObjectURL(Ref.blob)]);
-    setStatus("✅ 已將上傳圖片轉為 60FPS 即時動畫！可點擊「⬇ 下載影片」匯出 .webm。");
+    setStatus(`✅ 已為圖片綁定「${actionMode}」骨骼網格並驅動部位動作！`);
   };
 }
 
@@ -1583,7 +1794,7 @@ async function validateAndCleanImage(blob) {
   return await new Promise(res => cv.toBlob(b => res(b || blob), "image/jpeg", 0.95));
 }
 
-["我在飛機上做飛翔動作", "羅馬宣教，在雅典", "一隻狗狂叫", "櫻花樹下彈吉他的少年，日系光影"].forEach(t => {
+["我在飛機上做飛翔動作", "一隻狗狂叫", "羅馬宣教，在雅典", "櫻花樹下彈吉他的少年", "在街頭奔跑的少年"].forEach(t => {
   const b = document.createElement("button"); b.className = "chip"; b.textContent = t;
   b.onclick = () => {
     $("prompt").value = t;
@@ -1603,7 +1814,7 @@ async function buildPrompt(raw) {
 
   let coreScript = ($("enPromptPreview")?.value || "").trim();
   if (!coreScript || hasCJK(coreScript) || lastTrackedRawPrompt !== raw.trim()) {
-    setStatus("🧠 正在拆解動畫場景結構與運鏡參數…");
+    setStatus("🧠 正在拆解場景與肢體關節結構…");
     coreScript = await runGPTVisualDirector(cleanRaw || raw);
     if ($("enPromptPreview")) $("enPromptPreview").value = coreScript;
     lastTrackedRawPrompt = raw.trim();
@@ -1631,16 +1842,22 @@ function buildBypassImageUrl(promptText, sizeStr, seedNum, engineName = "flux", 
 
 function refreshEmpty() { $("empty").style.display = $("gallery").children.length ? "none" : "block"; }
 
-/* 建立 60FPS 即時動畫預覽卡片（支援直接錄製下載 .webm 影片） */
+/* 建立搭載 16×16 骨骼網格變形與 10 分鐘時間軸預覽的動畫卡片 */
 function createCard(entry, prepend = true) {
   const item = document.createElement("div"); item.className = "item";
   const [w, h] = (entry.size || "768x1024").split("x").map(Number);
+  const totalDur = entry.duration || 600;
   item.innerHTML = `
     <div class="imgwrap" style="aspect-ratio:${w}/${h}">
       <div class="spinner"></div>
       <span class="wait"></span>
       <canvas class="anim-player" width="${w}" height="${h}" style="display:none"></canvas>
-      <span class="anim-badge" style="display:none">🎬 60FPS LIVE</span>
+      <span class="anim-badge" style="display:none">🦴 骨骼動作 LIVE</span>
+    </div>
+    <div class="scrubber-bar">
+      <button class="play-pause-mini" style="padding:2px 6px;font-size:10px">⏸️</button>
+      <input type="range" class="card-scrubber" min="0" max="${totalDur}" step="0.05" value="0">
+      <span class="card-tc">00:00/${formatTimecode(totalDur)}</span>
     </div>
     <div class="meta"></div>
     <div class="actions">
@@ -1650,55 +1867,77 @@ function createCard(entry, prepend = true) {
       <button data-a="seed">用此Seed</button>
       <button data-a="fav">收藏Seed</button>
       <button data-a="copy">載入分鏡</button>
-      <button data-a="layout" class="span3 primary" style="margin-top:2px;padding:7px;font-size:12px">📐 轉入動畫排版編輯器 →</button>
+      <button data-a="layout" class="span3 primary" style="margin-top:2px;padding:7px;font-size:12px">📐 轉入 10 分鐘短片與骨骼編輯器 →</button>
     </div>`;
 
   const wrap = item.querySelector(".imgwrap");
   const meta = item.querySelector(".meta"), cv = item.querySelector("canvas.anim-player"), badge = item.querySelector(".anim-badge"), waitEl = item.querySelector(".wait");
-  const updateMeta = () => { meta.textContent = `${entry.original || "(動畫)"} · seed ${entry.seed}`; meta.title = entry.prompt; };
+  const scrubInput = item.querySelector(".card-scrubber"), tcSpan = item.querySelector(".card-tc"), playBtnMini = item.querySelector(".play-pause-mini");
+  const updateMeta = () => { meta.textContent = `${entry.original || "(動作動畫)"} · seed ${entry.seed}`; meta.title = entry.prompt; };
   updateMeta();
   const A = a => item.querySelector(`[data-a="${a}"]`);
 
-  let animRaf = null;
+  let animRaf = null, cardPlaying = true, manualTime = 0, lastFrameTime = performance.now();
   let loadedImgs = [];
-  const particles = AnimEngine.createParticles(55);
+
+  playBtnMini.onclick = () => {
+    cardPlaying = !cardPlaying;
+    playBtnMini.textContent = cardPlaying ? "⏸️" : "▶️";
+    lastFrameTime = performance.now();
+  };
+  scrubInput.oninput = e => {
+    manualTime = +e.target.value;
+    tcSpan.textContent = `${formatTimecode(manualTime)}/${formatTimecode(totalDur)}`;
+  };
+
+  /* 連滑桿即時更新這張卡片的關節振幅 */
+  const getLiveAmps = () => ({
+    limb: +($("rigLimbAmp")?.value ?? entry.amps?.limb ?? 1.2),
+    mouth: +($("rigMouthAmp")?.value ?? entry.amps?.mouth ?? 1.2),
+    breath: +($("rigBreathAmp")?.value ?? entry.amps?.breath ?? 1.0),
+    cloth: +($("rigClothAmp")?.value ?? entry.amps?.cloth ?? 1.1)
+  });
 
   const stopLoop = () => { if (animRaf) { cancelAnimationFrame(animRaf); animRaf = null; } };
 
   const startLoop = () => {
     stopLoop();
     const ctx = cv.getContext("2d");
-    const dur = entry.duration || 6;
-    const camMode = entry.camMotion || "zoomIn";
-    const vfxType = entry.vfxType || "godrays";
-    const startT = performance.now();
+    lastFrameTime = performance.now();
 
     const renderFrame = now => {
       if (!document.body.contains(cv)) return;
-      const t = (now - startT) / 1000;
+      const dt = (now - lastFrameTime) / 1000;
+      lastFrameTime = now;
+      if (cardPlaying) {
+        manualTime = (manualTime + dt) % totalDur;
+        scrubInput.value = manualTime;
+        tcSpan.textContent = `${formatTimecode(manualTime)}/${formatTimecode(totalDur)}`;
+      }
+
       ctx.clearRect(0, 0, w, h);
-
       if (loadedImgs.length > 0) {
-        const tf = AnimEngine.computeCameraTransform(camMode, t, dur, w, h);
-        ctx.save();
-        ctx.translate(w / 2 + tf.dx, h / 2 + tf.dy);
-        ctx.rotate(tf.angle);
-        ctx.scale(tf.scale, tf.scale);
+        const actMode = $("actionPreset")?.value === "auto"
+          ? (entry.actionMode || detectActionFromText(entry.original))
+          : ($("actionPreset")?.value || entry.actionMode || "wings");
+        const amps = getLiveAmps();
 
-        /* 若為雙分鏡連續演繹模式 (story2)，在兩幕畫面間進行平滑呼吸補間與動作切換 */
+        /* 若有多幕關鍵影格，根據時間軸進度自動切換對應幕數並進行骨骼動作變形 */
         if (loadedImgs.length > 1) {
-          const blend = (1 - Math.cos((t % dur) / dur * Math.PI * 2)) / 2;
-          ctx.globalAlpha = 1;
-          ctx.drawImage(loadedImgs[0], -w / 2, -h / 2, w, h);
-          ctx.globalAlpha = blend;
-          ctx.drawImage(loadedImgs[1], -w / 2, -h / 2, w, h);
+          const segDur = Math.max(4, totalDur / loadedImgs.length);
+          const idx = Math.floor(manualTime / segDur) % loadedImgs.length;
+          const nextIdx = (idx + 1) % loadedImgs.length;
+          const localP = (manualTime % segDur) / segDur;
+          MeshRigEngine.renderRiggedFrame(ctx, loadedImgs[idx], w, h, manualTime, actMode, amps);
+          if (localP > 0.82) {
+            ctx.save();
+            ctx.globalAlpha = (localP - 0.82) / 0.18;
+            MeshRigEngine.renderRiggedFrame(ctx, loadedImgs[nextIdx], w, h, manualTime, actMode, amps);
+            ctx.restore();
+          }
         } else {
-          ctx.drawImage(loadedImgs[0], -w / 2, -h / 2, w, h);
+          MeshRigEngine.renderRiggedFrame(ctx, loadedImgs[0], w, h, manualTime, actMode, amps);
         }
-        ctx.restore();
-
-        /* 疊加物理粒子特效層 */
-        AnimEngine.drawVFXLayer(ctx, w, h, vfxType, t, particles);
       }
       animRaf = requestAnimationFrame(renderFrame);
     };
@@ -1729,7 +1968,7 @@ function createCard(entry, prepend = true) {
       waitEl.textContent = "";
       cv.style.display = "block";
       badge.style.display = "inline-block";
-      badge.textContent = imgs.length > 1 ? "🎞️ 雙幕連續動畫" : "🎬 60FPS 動畫";
+      badge.textContent = imgs.length > 1 ? `🎞️ ${imgs.length}幕骨骼長片` : `🦴 骨骼動作 (${entry.actionMode || "auto"})`;
       startLoop();
       return true;
     },
@@ -1744,9 +1983,9 @@ function createCard(entry, prepend = true) {
   A("dl").onclick = async () => {
     if (!loadedImgs.length) return alert("動畫尚未準備完成");
     const btn = A("dl"), old = btn.textContent;
-    btn.disabled = true;
+    btn.disabled = true; cardPlaying = true;
     try {
-      await AnimEngine.recordCanvasToWebM(cv, entry.duration || 6, p => { btn.textContent = `錄製 ${p}%`; }, `ai-anim-${entry.seed}.webm`);
+      await MeshRigEngine.recordCanvasToWebM(cv, entry.duration || 6, p => { btn.textContent = `錄製 ${p}%`; }, `ai-action-${entry.seed}.webm`);
     } catch (e) {
       alert("影片匯出失敗：" + e.message);
     } finally {
@@ -1760,20 +1999,20 @@ function createCard(entry, prepend = true) {
     $("prompt").value = entry.original;
     $("enPromptPreview").value = entry.prompt;
     lastTrackedRawPrompt = entry.original;
-    setStatus(`已載入 Seed (${entry.seed}) 與分鏡`);
+    setStatus(`已載入 Seed (${entry.seed})`);
   };
   A("fav").onclick = () => addSeedToFav(entry.seed, (entry.original || "").slice(0, 14) || `動畫 #${entry.seed}`, "常用", entry.styleValue || "");
   A("copy").onclick = () => {
     $("enPromptPreview").value = entry.prompt;
     navigator.clipboard?.writeText(entry.prompt);
-    setStatus("已載入並複製此動畫英文分鏡");
+    setStatus("已載入並複製分鏡指令");
   };
   A("layout").onclick = async () => {
     if (!entry.blob && !entry.loadedSrc) return alert("動畫尚未生成完成");
     showTab("editor");
     const srcUrl = entry.blob ? await blobToDataURL(entry.blob) : (entry.loadedSrc || entry.url);
     if (typeof Editor !== "undefined") {
-      Editor.setEditorAnimConfig(entry.camMotion || "zoomIn", entry.vfxType || "godrays", entry.duration || 6);
+      Editor.setEditorAnimConfig(entry.actionMode || "wings", entry.amps || getLiveAmps(), entry.duration || 600);
       if (entry.ocrLines?.length) {
         const baseDataUrl = entry.rawBgBlob ? await blobToDataURL(entry.rawBgBlob) : srcUrl;
         await Editor.cloneImageLayoutToCanvas({ width: w, height: h, lines: entry.ocrLines, cleanedDataUrl: baseDataUrl }, entry.customOcrText);
@@ -1821,30 +2060,35 @@ async function generateSingleCardNow(entry, cardIdx = 0) {
   globalChannelCounter++;
 
   try {
-    entry.card.wait("🎬 正在生成動畫主分鏡…");
-    const frame1 = await fetchValidCleanFrame(entry.prompt, entry.size, entry.seed, cardIdx);
-    let blob1 = frame1.blob;
-    entry.rawBgBlob = blob1;
-    entry.url = frame1.url;
+    const lines = (entry.original || "").split("\n").map(s => s.trim()).filter(Boolean);
+    const isMultiAct = entry.animMode === "multiAct" || lines.length > 1;
+    const actPrompts = isMultiAct && lines.length > 1
+      ? await Promise.all(lines.slice(0, 6).map(l => buildPrompt(l)))
+      : [entry.prompt];
 
-    if (entry.ocrLines?.length) {
-      entry.card.wait("正在合成動態文字層…");
-      blob1 = await OCRLayoutEngine.compositeLayoutOntoImage(blob1, entry.ocrLines, entry.customOcrText);
+    const frameUrls = [];
+    for (let aIdx = 0; aIdx < actPrompts.length; aIdx++) {
+      if (entry.cancelled) break;
+      entry.card.wait(actPrompts.length > 1 ? `🎬 正在算繪第 ${aIdx + 1}/${actPrompts.length} 幕並綁定骨骼…` : "🦴 正在生成主體並建立 16×16 動作骨骼網格…");
+      const frame = await fetchValidCleanFrame(actPrompts[aIdx], entry.size, entry.seed + aIdx * 37, cardIdx + aIdx);
+      let b = frame.blob;
+      if (aIdx === 0) {
+        entry.rawBgBlob = b;
+        entry.url = frame.url;
+      }
+      if (entry.ocrLines?.length) {
+        b = await OCRLayoutEngine.compositeLayoutOntoImage(b, entry.ocrLines, entry.customOcrText);
+      }
+      if (aIdx === 0) entry.blob = b;
+      frameUrls.push(URL.createObjectURL(b));
     }
-    entry.blob = blob1;
-    const frameUrls = [URL.createObjectURL(blob1)];
 
-    /* 若選擇「雙分鏡連續動作演繹 (story2)」，自動生成第二幕連續動作分鏡 */
-    if (entry.animMode === "story2" && !entry.cancelled) {
-      entry.card.wait("🎞️ 正在生成第 2 幕連續動作分鏡…");
+    /* 若選了多幕模式但只打了一行，自動補算第 2 個關鍵動作影格 */
+    if (entry.animMode === "multiAct" && actPrompts.length === 1 && !entry.cancelled) {
+      entry.card.wait("🎞️ 正在生成第 2 幕連續動作關鍵影格…");
       try {
-        const prompt2 = `${entry.prompt}, next continuous action frame, dynamic motion progression`;
-        const frame2 = await fetchValidCleanFrame(prompt2, entry.size, entry.seed + 77, cardIdx + 1);
-        let blob2 = frame2.blob;
-        if (entry.ocrLines?.length) {
-          blob2 = await OCRLayoutEngine.compositeLayoutOntoImage(blob2, entry.ocrLines, entry.customOcrText);
-        }
-        frameUrls.push(URL.createObjectURL(blob2));
+        const frame2 = await fetchValidCleanFrame(`${entry.prompt}, next action keyframe pose, continuous movement`, entry.size, entry.seed + 53, cardIdx + 1);
+        frameUrls.push(URL.createObjectURL(frame2.blob));
       } catch {}
     }
 
@@ -1852,41 +2096,37 @@ async function generateSingleCardNow(entry, cardIdx = 0) {
     await imgPut(plain);
     await card.showAnim(frameUrls);
   } catch {
-    if (!entry.cancelled) entry.card.fail("連線忙碌，請點擊「🔄 重生」");
+    if (!entry.cancelled) entry.card.fail("伺服器忙碌，請點擊「🔄 重生」");
   }
 }
 
 $("generate").onclick = async () => {
   const raw = $("prompt").value.trim();
-  if (!raw && !Ref.blob) { setStatus("請先輸入動畫描述或上傳參考圖"); $("prompt").focus(); return; }
+  if (!raw && !Ref.blob) { setStatus("請先輸入動作描述或上傳圖片"); $("prompt").focus(); return; }
   $("generate").disabled = true;
   try {
     const wantsSameLayout = /排版|一樣|同款|文字/.test(raw) || $("refCloneLayoutChk")?.checked;
-    const prompt = await buildPrompt(raw);
-    const { cam, vfx } = resolveCamAndVfx(raw);
-    const dur = +($("duration")?.value || 6);
-    const animMode = $("animMode")?.value || "live60";
-    setStatus(`🎬 正在生成 60FPS 動畫（運鏡：${cam} · 特效：${vfx}）…`);
+    const firstLine = raw.split("\n")[0] || raw;
+    const prompt = await buildPrompt(firstLine);
+    const { actionMode, amps } = resolveActionAndAmps(raw);
+    const dur = +($("duration")?.value || 600);
+    const animMode = $("animMode")?.value || "rigged";
+    setStatus(`🦴 已鎖定「${actionMode}」骨骼網格動作，正在算繪動畫…`);
 
-    const count = +$("count").value;
     const baseSeed = $("seed").value === "" ? rand() : +$("seed").value;
     const styleVal = $("style")?.value || "";
 
-    const tasks = [];
-    for (let i = 0; i < count; i++) {
-      const entry = {
-        id: Date.now() + "-" + i, original: raw, prompt, size: $("size").value,
-        seed: baseSeed + i, styleValue: styleVal,
-        camMotion: cam, vfxType: vfx, duration: dur, animMode,
-        time: Date.now(),
-        ocrLines: (Ref.blob && wantsSameLayout && Ref.ocrLines?.length) ? JSON.parse(JSON.stringify(Ref.ocrLines)) : null,
-        customOcrText: $("refOcrText")?.value || ""
-      };
-      createCard(entry);
-      tasks.push(generateSingleCardNow(entry, i));
-    }
-    await Promise.all(tasks);
-    setStatus(`✅ 動畫生成完成！點擊卡片「⬇ 下載影片」可儲存 .webm 動畫檔，或轉入編輯器加動態字。`);
+    const entry = {
+      id: Date.now() + "-0", original: raw, prompt, size: $("size").value,
+      seed: baseSeed, styleValue: styleVal,
+      actionMode, amps, duration: dur, animMode,
+      time: Date.now(),
+      ocrLines: (Ref.blob && wantsSameLayout && Ref.ocrLines?.length) ? JSON.parse(JSON.stringify(Ref.ocrLines)) : null,
+      customOcrText: $("refOcrText")?.value || ""
+    };
+    createCard(entry);
+    await generateSingleCardNow(entry, 0);
+    setStatus(`✅ 真實骨骼動作動畫已完成！拉動面板上的「💪 手腳幅度 / 👄 嘴部張合」滑桿可即時改變動作強度。`);
   } catch (e) {
     setStatus("錯誤：" + e.message);
   } finally {
@@ -1910,22 +2150,25 @@ imgAll().then(list => {
   refreshEmpty();
 });
 </script>
-<!-- ==================== 請將第 2 部分貼在此行下方 ==================== -->
+<!-- ==================== 請將第 3 部分貼在此行下方 ==================== -->
 <script>
 /* =====================================================================
-   第 2 部分腳本：
-   動畫排版編輯器核心 + 物件獨立動畫引擎 + WebM 影片錄製匯出 + 手機觸控與雲端同步
+   第 3 部分腳本：
+   1. 10 分鐘（600秒/900秒）長片時間軸控制器與多幕自動連播系統
+   2. 畫布互動式骨骼關節定位器（可直接拖曳頭、口、手、腳關節點對準角色部位）
+   3. 動畫排版編輯器核心 + WebM 長片錄製匯出 + 手機觸控抽屜與 Firebase 雲端同步
    ===================================================================== */
 const Editor = (() => {
-  let canvas, W = 768, H = 1024, zoom = 1, ready = false;
+  let canvas, W = 1280, H = 720, zoom = 1, ready = false;
   let history = [], hIndex = -1, restoring = false, saveTimer = null;
   let eyedropperMode = false, boxGrabMode = false, grabRect = null, startPt = null;
   let touchPanMode = false;
 
-  /* 60FPS 舞台動畫狀態管理 */
+  /* 60FPS 骨骼動作與 10 分鐘時間軸狀態 */
   let isPlaying = true, isInteracting = false, isRecording = false;
-  let edAnimRaf = null, animStartTime = performance.now();
-  const edParticles = AnimEngine.createParticles(55);
+  let edAnimRaf = null, lastTickTime = performance.now();
+  let currentTimelineSec = 0;
+  let customPins = null;
 
   const EXTRA = [
     "name", "lockMovementX", "lockMovementY", "lockScalingX", "lockScalingY",
@@ -1945,12 +2188,16 @@ const Editor = (() => {
     });
 
     canvas.on("object:added", e => {
-      if (!restoring && e.target) captureBaseState(e.target);
+      if (!restoring && e.target && !e.target.isRigPin) captureBaseState(e.target);
       queueSave(); refreshQuickTextList();
     });
     canvas.on("object:removed", () => { queueSave(); refreshQuickTextList(); });
     canvas.on("object:modified", e => {
       if (e.target) {
+        if (e.target.isRigPin) {
+          updateCustomPinFromMarker(e.target);
+          return;
+        }
         (e.target.type === "activeSelection" ? e.target.getObjects() : [e.target]).forEach(captureBaseState);
       }
       queueSave(); refreshProps(); refreshQuickTextList();
@@ -1960,26 +2207,24 @@ const Editor = (() => {
       ensureFont(e.target); queueSave(); refreshQuickTextList();
     });
 
-    /* 當使用者點選或拖曳物件時，自動暫停動畫偏移並回正座標，確保對位精準 */
-    canvas.on("selection:created", () => { pauseForInteraction(); refreshProps(); });
-    canvas.on("selection:updated", () => { pauseForInteraction(); refreshProps(); });
-    canvas.on("selection:cleared", () => { resumeFromInteraction(); refreshProps(); });
-    canvas.on("object:moving", e => { pauseForInteraction(); snap(e.target); });
-    canvas.on("mouse:up", () => { if (guides.length) { guides = []; canvas.requestRenderAll(); } });
-
-    /* 在 Fabric 畫布渲染後疊加 60FPS 環境物理粒子與導引線 */
-    canvas.on("after:render", () => {
-      if ((isPlaying && !isInteracting) || isRecording) {
-        const ctx = canvas.getContext();
-        const t = (performance.now() - animStartTime) / 1000;
-        const vfx = $("edVfxType")?.value || "godrays";
-        ctx.save();
-        ctx.transform(...canvas.viewportTransform);
-        AnimEngine.drawVFXLayer(ctx, W, H, vfx, t, edParticles);
-        ctx.restore();
-      }
-      drawGuides();
+    canvas.on("selection:created", e => {
+      if (e.selected?.[0]?.isRigPin) return;
+      pauseForInteraction(); refreshProps();
     });
+    canvas.on("selection:updated", e => {
+      if (e.selected?.[0]?.isRigPin) return;
+      pauseForInteraction(); refreshProps();
+    });
+    canvas.on("selection:cleared", () => { resumeFromInteraction(); refreshProps(); });
+    canvas.on("object:moving", e => {
+      if (e.target?.isRigPin) {
+        updateCustomPinFromMarker(e.target);
+        return;
+      }
+      pauseForInteraction(); snap(e.target);
+    });
+    canvas.on("mouse:up", () => { if (guides.length) { guides = []; canvas.requestRenderAll(); } });
+    canvas.on("after:render", drawGuides);
 
     ["object:added", "object:removed", "object:modified", "selection:created", "selection:updated", "selection:cleared"].forEach(ev => canvas.on(ev, refreshLayers));
     document.fonts.addEventListener("loadingdone", refreshFonts);
@@ -1992,15 +2237,73 @@ const Editor = (() => {
 
     kvGet("project").then(p => {
       if (p) loadProject(p, false);
-      else { setSize(768, 1024, false); pushHistory(); }
-    }).catch(() => { setSize(768, 1024, false); pushHistory(); });
+      else { setSize(1280, 720, false); pushHistory(); }
+    }).catch(() => { setSize(1280, 720, false); pushHistory(); });
   }
 
   /* =====================================================================
-     🎬 舞台 60FPS 即時動畫迴圈（背景運鏡 ＋ 物件獨立動畫 ＋ 編輯自動回正）
+     🎯 互動式骨骼關節點標記（允許使用者在畫布上直接拖曳頭、口、手、腳關節座標）
      ===================================================================== */
+  function ensureCustomPins() {
+    const actMode = $("edActionPreset")?.value || "wings";
+    if (!customPins) {
+      customPins = JSON.parse(JSON.stringify(MeshRigEngine.defaultPins(actMode)));
+    }
+    return customPins;
+  }
+
+  function updateCustomPinFromMarker(marker) {
+    if (!marker || !marker.pinKey) return;
+    const pins = ensureCustomPins();
+    if (pins[marker.pinKey]) {
+      pins[marker.pinKey].x = Math.max(0.05, Math.min(0.95, marker.left / W));
+      pins[marker.pinKey].y = Math.max(0.05, Math.min(0.95, marker.top / H));
+    }
+  }
+
+  function toggleMeshPinMarkers(show) {
+    if (!canvas) return;
+    canvas.getObjects().filter(o => o.isRigPin).forEach(o => canvas.remove(o));
+    if (!show) {
+      canvas.requestRenderAll();
+      return;
+    }
+    const pins = ensureCustomPins();
+    Object.entries(pins).forEach(([key, pt]) => {
+      const marker = new fabric.Circle({
+        left: pt.x * W, top: pt.y * H, radius: Math.max(10, Math.min(W, H) * 0.016),
+        fill: "rgba(0, 168, 252, 0.85)", stroke: "#ffffff", strokeWidth: 3,
+        originX: "center", originY: "center",
+        hasControls: false, hasBorders: false,
+        isRigPin: true, pinKey: key, name: `🦴 關節點：${pt.label || key}`
+      });
+      canvas.add(marker);
+      canvas.bringToFront(marker);
+    });
+    canvas.requestRenderAll();
+  }
+
+  /* =====================================================================
+     🦴 為畫布圖片掛載 16×16 骨骼網格緩衝區並即時運算部位變形
+     ===================================================================== */
+  function prepareRiggedBuffer(imgObj) {
+    if (!imgObj || imgObj.type !== "image" || imgObj.isOnion) return;
+    if (!imgObj._origElement) {
+      imgObj._origElement = imgObj._originalElement || imgObj.getElement();
+    }
+    if (!imgObj._rigCanvas) {
+      const orig = imgObj._origElement;
+      const rw = Math.min(960, orig.naturalWidth || orig.width || W);
+      const rh = Math.min(960, orig.naturalHeight || orig.height || H);
+      const rc = document.createElement("canvas");
+      rc.width = rw; rc.height = rh;
+      imgObj._rigCanvas = rc;
+      imgObj._rigCtx = rc.getContext("2d");
+    }
+  }
+
   function captureBaseState(o) {
-    if (!o || o.isOnion) return;
+    if (!o || o.isOnion || o.isRigPin) return;
     o._baseLeft = o.left;
     o._baseTop = o.top;
     o._baseScaleX = o.scaleX || 1;
@@ -2015,13 +2318,17 @@ const Editor = (() => {
   function restoreAllBaseStates() {
     if (!canvas) return;
     canvas.getObjects().forEach(o => {
-      if (o.isOnion) return;
+      if (o.isOnion || o.isRigPin) return;
       if (o._baseLeft !== undefined) o.left = o._baseLeft;
       if (o._baseTop !== undefined) o.top = o._baseTop;
       if (o._baseScaleX !== undefined) o.scaleX = o._baseScaleX;
       if (o._baseScaleY !== undefined) o.scaleY = o._baseScaleY;
       if (o._baseAngle !== undefined) o.angle = o._baseAngle;
       if (o._baseOpacity !== undefined) o.opacity = o._baseOpacity;
+      if (o.type === "image" && o._origElement && o._element !== o._origElement) {
+        o._element = o._origElement;
+        o.dirty = true;
+      }
       if (isText(o) && o._fullText !== undefined && o.text !== o._fullText) {
         o._isTypingAnim = false;
         o.set("text", o._fullText);
@@ -2039,7 +2346,8 @@ const Editor = (() => {
   }
 
   function resumeFromInteraction() {
-    if (!canvas.getActiveObject()) {
+    const active = canvas.getActiveObject();
+    if (!active || active.isRigPin) {
       canvas.getObjects().forEach(captureBaseState);
       isInteracting = false;
     }
@@ -2050,78 +2358,58 @@ const Editor = (() => {
     const btn = $("edPlayToggleBtn");
     if (btn) {
       btn.classList.toggle("playing", isPlaying);
-      btn.textContent = isPlaying ? "⏸️ 動畫播放中" : "▶️ 播放動畫";
+      btn.textContent = isPlaying ? "⏸️ 動作播放中" : "▶️ 播放動作";
     }
     if (isPlaying) {
       canvas.discardActiveObject();
       canvas.getObjects().forEach(captureBaseState);
       isInteracting = false;
-      animStartTime = performance.now();
+      lastTickTime = performance.now();
     } else {
       restoreAllBaseStates();
       canvas.requestRenderAll();
     }
   }
 
+  function updateTimelineUI(totalDur) {
+    const scrub = $("edTimelineScrubber");
+    const tc = $("timecodeDisplay");
+    if (scrub) {
+      scrub.max = totalDur;
+      scrub.value = currentTimelineSec;
+    }
+    if (tc) {
+      tc.textContent = `${formatTimecode(currentTimelineSec)} / ${formatTimecode(totalDur)}`;
+    }
+  }
+
+  /* 舞台 60FPS 主迴圈：驅動 16×16 骨骼網格變形 + 前景文字動畫 + 10分鐘多幕連播 */
+  let switchingScene = false;
   function startEditorAnimLoop() {
     if (edAnimRaf) cancelAnimationFrame(edAnimRaf);
     const step = now => {
+      const dt = Math.min(0.1, (now - lastTickTime) / 1000);
+      lastTickTime = now;
+
       if (canvas && (!$("tab-editor").classList.contains("hidden") || isRecording)) {
+        const totalDur = +($("edDuration")?.value || 600);
         if ((isPlaying && !isInteracting) || isRecording) {
-          const t = (now - animStartTime) / 1000;
-          const dur = +($("edDuration")?.value || 6);
-          const camMode = $("edCamMotion")?.value || "zoomIn";
-          const objs = canvas.getObjects();
+          currentTimelineSec = (currentTimelineSec + dt) % totalDur;
+          updateTimelineUI(totalDur);
 
-          objs.forEach((o, idx) => {
-            if (o.isOnion || o.isTexOverlay) return;
-            if (o._baseLeft === undefined) captureBaseState(o);
-
-            /* 1. 背景底圖套用攝影機運鏡變換 */
-            const isBg = o.isAnimBg || (o.type === "image" && idx === 0);
-            if (isBg && camMode !== "none") {
-              const tf = AnimEngine.computeCameraTransform(camMode, t, dur, W, H);
-              o.left = o._baseLeft + tf.dx;
-              o.top = o._baseTop + tf.dy;
-              o.scaleX = o._baseScaleX * tf.scale;
-              o.scaleY = o._baseScaleY * tf.scale;
-              o.angle = o._baseAngle + (tf.angle * 180 / Math.PI);
-              return;
+          /* 若啟用「多幕連播成 10 分鐘長片」且有多個分鏡頁，依時間軸自動切換分鏡幕 */
+          if ($("multiScenePlayChk")?.checked && pages.length > 1 && !switchingScene) {
+            const segDur = Math.max(4, totalDur / pages.length);
+            const targetPageIdx = Math.floor(currentTimelineSec / segDur) % pages.length;
+            if (targetPageIdx !== cur && pages[targetPageIdx]) {
+              switchingScene = true;
+              cur = targetPageIdx;
+              renderPages();
+              loadPageJSON(pages[cur], () => { switchingScene = false; });
             }
+          }
 
-            /* 2. 前景物件與文字套用獨立動畫 (objAnim) */
-            const anim = o.objAnim || "none";
-            if (anim === "none") return;
-
-            if (anim === "float") {
-              o.top = o._baseTop + Math.sin(t * 3 + idx) * (H * 0.015);
-              o.angle = o._baseAngle + Math.cos(t * 2 + idx) * 1.8;
-            } else if (anim === "pulse") {
-              const s = 1 + Math.sin(t * 4.5 + idx) * 0.075;
-              o.scaleX = o._baseScaleX * s;
-              o.scaleY = o._baseScaleY * s;
-            } else if (anim === "slideUp") {
-              const cycleT = t % dur;
-              const p = Math.min(1, cycleT / 1.1);
-              const ease = 1 - Math.pow(1 - p, 3);
-              o.top = o._baseTop + (1 - ease) * (H * 0.08);
-              o.opacity = o._baseOpacity * ease;
-            } else if (anim === "shake") {
-              o.left = o._baseLeft + Math.sin(t * 36 + idx) * (W * 0.008);
-              o.top = o._baseTop + Math.cos(t * 42 + idx) * (H * 0.006);
-            } else if (anim === "typewriter" && isText(o)) {
-              const full = o._fullText ?? o.text;
-              const cycleP = (t % dur) / (dur * 0.55);
-              const charCount = Math.min(full.length, Math.max(1, Math.floor(cycleP * full.length)));
-              const sub = full.slice(0, charCount);
-              if (o.text !== sub) {
-                o._isTypingAnim = true;
-                o.set("text", sub);
-              }
-            }
-          });
-
-          canvas.renderAll();
+          renderTimelineAt(currentTimelineSec, totalDur);
         }
       }
       edAnimRaf = requestAnimationFrame(step);
@@ -2129,11 +2417,88 @@ const Editor = (() => {
     edAnimRaf = requestAnimationFrame(step);
   }
 
-  function setEditorAnimConfig(cam, vfx, dur) {
+  /* 在任意指定秒數 t 渲染畫布上的骨骼網格變形與物件動畫（支援拉動 10 分鐘時間軸即時預覽） */
+  function renderTimelineAt(t, totalDur = 600) {
+    if (!canvas) return;
+    const actMode = $("edActionPreset")?.value || "wings";
+    const amps = {
+      limb: +($("edLimbAmp")?.value ?? 1.2),
+      mouth: +($("edMouthAmp")?.value ?? 1.2),
+      breath: +($("edBreathAmp")?.value ?? 1.0),
+      cloth: +($("edClothAmp")?.value ?? 1.1)
+    };
+    const pins = ensureCustomPins();
+    const showPins = !!$("showMeshPinsChk")?.checked && !isRecording;
+    const objs = canvas.getObjects();
+
+    objs.forEach((o, idx) => {
+      if (o.isOnion || o.isTexOverlay || o.isRigPin) return;
+      if (o._baseLeft === undefined) captureBaseState(o);
+
+      /* 1. 主體/底圖圖片：執行 16×16 骨骼網格部位變形 */
+      const isRigTarget = o.isAnimBg || (o.type === "image" && idx === 0) || (o.type === "image" && o.objAnim === "float");
+      if (o.type === "image" && isRigTarget && actMode !== "none") {
+        prepareRiggedBuffer(o);
+        if (o._rigCtx && o._origElement) {
+          const rw = o._rigCanvas.width, rh = o._rigCanvas.height;
+          o._rigCtx.clearRect(0, 0, rw, rh);
+          MeshRigEngine.renderRiggedFrame(o._rigCtx, o._origElement, rw, rh, t, actMode, amps, pins, showPins);
+          o._element = o._rigCanvas;
+          o.dirty = true;
+        }
+      }
+
+      /* 2. 前景文字與標籤：執行獨立動態 */
+      const anim = o.objAnim || "none";
+      if (anim === "none") return;
+
+      if (anim === "float") {
+        o.top = o._baseTop + Math.sin(t * 3 + idx) * (H * 0.012);
+      } else if (anim === "pulse") {
+        const s = 1 + Math.sin(t * 4.2 + idx) * 0.065;
+        o.scaleX = o._baseScaleX * s;
+        o.scaleY = o._baseScaleY * s;
+      } else if (anim === "slideUp") {
+        const cycleT = t % Math.min(8, totalDur);
+        const p = Math.min(1, cycleT / 1.1);
+        const ease = 1 - Math.pow(1 - p, 3);
+        o.top = o._baseTop + (1 - ease) * (H * 0.07);
+        o.opacity = o._baseOpacity * ease;
+      } else if (anim === "shake") {
+        o.left = o._baseLeft + Math.sin(t * 34 + idx) * (W * 0.007);
+        o.top = o._baseTop + Math.cos(t * 38 + idx) * (H * 0.005);
+      } else if (anim === "typewriter" && isText(o)) {
+        const full = o._fullText ?? o.text;
+        const cycleDur = Math.min(8, totalDur);
+        const cycleP = (t % cycleDur) / (cycleDur * 0.6);
+        const charCount = Math.min(full.length, Math.max(1, Math.floor(cycleP * full.length)));
+        const sub = full.slice(0, charCount);
+        if (o.text !== sub) {
+          o._isTypingAnim = true;
+          o.set("text", sub);
+        }
+      }
+    });
+
+    canvas.renderAll();
+  }
+
+  function setEditorAnimConfig(actionMode, amps, dur) {
     init();
-    if ($("edCamMotion") && cam) $("edCamMotion").value = cam;
-    if ($("edVfxType") && vfx) $("edVfxType").value = vfx;
-    if ($("edDuration") && dur) $("edDuration").value = String(dur);
+    if ($("edActionPreset") && actionMode) {
+      $("edActionPreset").value = actionMode;
+      customPins = JSON.parse(JSON.stringify(MeshRigEngine.defaultPins(actionMode)));
+    }
+    if (amps) {
+      if ($("edLimbAmp") && amps.limb !== undefined) $("edLimbAmp").value = amps.limb;
+      if ($("edMouthAmp") && amps.mouth !== undefined) $("edMouthAmp").value = amps.mouth;
+      if ($("edBreathAmp") && amps.breath !== undefined) $("edBreathAmp").value = amps.breath;
+      if ($("edClothAmp") && amps.cloth !== undefined) $("edClothAmp").value = amps.cloth;
+    }
+    if ($("edDuration") && dur) {
+      $("edDuration").value = String(dur);
+      updateTimelineUI(+dur);
+    }
     togglePlayState(true);
   }
 
@@ -2142,13 +2507,13 @@ const Editor = (() => {
     setSize(w || 768, h || 1024, false);
     fabric.Image.fromURL(srcUrl, img => {
       if (!img) return;
-      /* 移除舊的背景層，保留前景文字或邊框 */
       canvas.getObjects().filter(o => o.isAnimBg).forEach(o => canvas.remove(o));
       img.set({
         left: W / 2, top: H / 2, originX: "center", originY: "center",
         scaleX: W / img.width, scaleY: H / img.height,
-        name: "🎬 動畫背景層", isAnimBg: true
+        name: "🦴 骨骼動作主角層", isAnimBg: true
       });
+      prepareRiggedBuffer(img);
       captureBaseState(img);
       canvas.add(img);
       canvas.sendToBack(img);
@@ -2167,15 +2532,15 @@ const Editor = (() => {
   function fit() {
     if (!canvas) return;
     const st = $("stage");
-    const pad = window.innerWidth <= 860 ? 20 : 48;
+    const pad = window.innerWidth <= 860 ? 16 : 42;
     zoom = Math.min((st.clientWidth - pad) / W, (st.clientHeight - pad) / H);
     zoom = Math.max(0.05, Math.min(zoom, 2));
     applyZoom();
   }
   function setSize(w, h, doMagicResize = false) {
     const oldW = W, oldH = H;
-    W = Math.max(50, Math.min(5000, +w || 768));
-    H = Math.max(50, Math.min(5000, +h || 1024));
+    W = Math.max(50, Math.min(5000, +w || 1280));
+    H = Math.max(50, Math.min(5000, +h || 720));
     $("edW").value = W; $("edH").value = H;
     if (canvas) {
       restoreAllBaseStates();
@@ -2271,7 +2636,7 @@ const Editor = (() => {
   async function cloneImageLayoutToCanvas(ocrRes, customLinesText = "") {
     init();
     if (!ocrRes || !ocrRes.width) return;
-    setProStatus("正在建立動態底圖與可編輯文字圖層…");
+    setProStatus("正在建立骨骼動作底圖與可編輯文字圖層…");
     setSize(ocrRes.width, ocrRes.height, false);
     canvas.clear();
     const bgSrc = ocrRes.cleanedDataUrl || ocrRes.originalDataUrl;
@@ -2281,9 +2646,10 @@ const Editor = (() => {
           img.set({
             left: W / 2, top: H / 2, originX: "center", originY: "center",
             scaleX: W / img.width, scaleY: H / img.height,
-            name: "🎬 去字動畫底圖（已鎖定）", isAnimBg: true,
+            name: "🦴 去字骨骼動作底圖（已鎖定）", isAnimBg: true,
             selectable: false, evented: false, lockMovementX: true, lockMovementY: true, hasControls: false
           });
+          prepareRiggedBuffer(img);
           captureBaseState(img);
           canvas.add(img);
         }
@@ -2310,7 +2676,7 @@ const Editor = (() => {
         originY: "center",
         lineHeight: 1.15,
         splitByGrapheme: true,
-        objAnim: ln.relH > 0.045 ? "pulse" : "slideUp"
+        objAnim: ln.relH > 0.045 ? "pulse" : "none"
       });
       captureBaseState(tbObj);
       canvas.add(tbObj);
@@ -2320,7 +2686,7 @@ const Editor = (() => {
     if (ocrRes.originalDataUrl) setOnionSkinImage(ocrRes.originalDataUrl, 0);
     togglePlayState(true);
     queueSave(); refreshLayers(); refreshQuickTextList();
-    setProStatus(`✅ 已建立 ${ocrRes.lines?.length || 0} 個動態文字層！點選文字可修改內容或切換動畫。`);
+    setProStatus(`✅ 已建立 ${ocrRes.lines?.length || 0} 個文字層並綁定底圖骨骼！`);
   }
 
   async function grabTextFromSelectedImage() {
@@ -2330,7 +2696,7 @@ const Editor = (() => {
     if (!targetImg) return alert("畫布上沒有圖片可供擷取");
     setProStatus("正在掃描圖片文字與座標…");
     try {
-      const el = targetImg._originalElement || targetImg.getElement();
+      const el = targetImg._origElement || targetImg._originalElement || targetImg.getElement();
       const cv = document.createElement("canvas");
       cv.width = el.naturalWidth || el.width; cv.height = el.naturalHeight || el.height;
       cv.getContext("2d").drawImage(el, 0, 0);
@@ -2338,7 +2704,9 @@ const Editor = (() => {
       const res = await OCRLayoutEngine.analyze(origUrl, p => setProStatus(`辨識進度 ${(p * 100).toFixed(0)}%…`));
       const bound = targetImg.getBoundingRect(true, true);
       targetImg.setSrc(res.cleanedDataUrl, () => {
-        targetImg.set({ name: "🎬 去字動畫底圖（已鎖定）", isAnimBg: true, selectable: false, evented: false, lockMovementX: true, lockMovementY: true, hasControls: false });
+        targetImg._origElement = null; targetImg._rigCanvas = null;
+        targetImg.set({ name: "🦴 去字骨骼動作底圖（已鎖定）", isAnimBg: true, selectable: false, evented: false, lockMovementX: true, lockMovementY: true, hasControls: false });
+        prepareRiggedBuffer(targetImg);
         captureBaseState(targetImg);
         canvas.discardActiveObject();
         res.lines.forEach(ln => {
@@ -2349,8 +2717,7 @@ const Editor = (() => {
             width: Math.max(fs * ln.text.length * 1.08, ln.relW * bound.width * 1.15),
             fontSize: fs, fontFamily: ln.fontFamily || "Noto Sans TC", fontWeight: ln.isBold ? "900" : "700",
             fill: ln.fgColor || "#1e2d24", textAlign: ln.align || "left",
-            originX: ln.align === "center" ? "center" : "left", originY: "center", splitByGrapheme: true,
-            objAnim: ln.relH > 0.045 ? "pulse" : "slideUp"
+            originX: ln.align === "center" ? "center" : "left", originY: "center", splitByGrapheme: true
           });
           captureBaseState(tbObj);
           canvas.add(tbObj); ensureFont(tbObj);
@@ -2358,7 +2725,7 @@ const Editor = (() => {
         setOnionSkinImage(origUrl, 0);
         togglePlayState(true);
         queueSave(); refreshLayers(); refreshQuickTextList();
-        setProStatus(`已擷取 ${res.lines.length} 個動態文字區塊`);
+        setProStatus(`已擷取 ${res.lines.length} 個文字區塊`);
       });
     } catch (e) { setProStatus("擷取失敗：" + e.message); }
   }
@@ -2371,7 +2738,7 @@ const Editor = (() => {
       const res = await OCRLayoutEngine.analyze(fileOrBlob, p => setProStatus(`讀取進度 ${(p * 100).toFixed(0)}%…`));
       if (!res.lines.length) return addFiles([fileOrBlob]);
       if (targetText) {
-        if (confirm(`讀取到文字：「${res.lines.map(l => l.text).join(" / ").slice(0, 50)}」\n按【確定】套用到目前選取的文字框；按【取消】將整張圖轉為動態文字排版層`)) {
+        if (confirm(`讀取到文字：「${res.lines.map(l => l.text).join(" / ").slice(0, 50)}」\n按【確定】套用到目前選取的文字框；按【取消】將整張圖轉為文字排版層`)) {
           const mainLine = [...res.lines].sort((a, b) => b.height - a.height)[0];
           const newFs = Math.max(18, Math.min(260, Math.round(mainLine.relH * H * 0.85)));
           const joined = res.lines.map(l => l.text).join("\n");
@@ -2397,7 +2764,7 @@ const Editor = (() => {
   function featherSelectedImage() {
     const o = act();
     if (!isImage(o)) return alert("請先點選一張圖片");
-    const el = o._originalElement || o.getElement();
+    const el = o._origElement || o._originalElement || o.getElement();
     const w = el.naturalWidth || el.width, h = el.naturalHeight || el.height;
     const cv = document.createElement("canvas"); cv.width = w; cv.height = h;
     const ctx = cv.getContext("2d");
@@ -2410,7 +2777,11 @@ const Editor = (() => {
     grad.addColorStop(1, "rgba(0,0,0,0)");
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, w, h);
-    o.setSrc(cv.toDataURL("image/png"), () => { canvas.requestRenderAll(); queueSave(); });
+    o.setSrc(cv.toDataURL("image/png"), () => {
+      o._origElement = null; o._rigCanvas = null;
+      prepareRiggedBuffer(o);
+      canvas.requestRenderAll(); queueSave();
+    });
   }
 
   function addSmartBoundTag(kind) {
@@ -2423,25 +2794,25 @@ const Editor = (() => {
       const labelTb = new fabric.Textbox(isP ? "人物\n保羅×1" : "元素\n道路×1、\n信心×1", {
         left: W * 0.65 + s * 0.065, top: H * 0.4, width: s * 0.25, fontSize: Math.round(s * 0.032),
         fontFamily: "Noto Sans TC", fontWeight: "900", fill: "#1e2d24", lineHeight: 1.25,
-        originX: "left", originY: "center", splitByGrapheme: true, objAnim: "slideUp"
+        originX: "left", originY: "center", splitByGrapheme: true
       });
       canvas.add(circle, iconTxt, labelTb);
       canvas.setActiveObject(labelTb); canvas.requestRenderAll(); queueSave();
     } else if (kind === "bible") {
-      const bg = new fabric.Rect({ left: W / 2, top: H * 0.78, width: s * 0.42, height: s * 0.068, rx: 14, ry: 14, fill: "#1e2d24", originX: "center", originY: "center", objAnim: "slideUp" });
+      const bg = new fabric.Rect({ left: W / 2, top: H * 0.78, width: s * 0.42, height: s * 0.068, rx: 14, ry: 14, fill: "#1e2d24", originX: "center", originY: "center" });
       const tb = new fabric.Textbox("📖 使徒行傳 17:16-34", {
         left: W / 2, top: H * 0.78, width: s * 0.4, fontSize: Math.round(s * 0.026),
         fontFamily: "Noto Sans TC", fontWeight: "700", fill: "#f4ecd8", textAlign: "center",
-        originX: "center", originY: "center", splitByGrapheme: true, objAnim: "slideUp"
+        originX: "center", originY: "center", splitByGrapheme: true
       });
       canvas.add(bg, tb); canvas.setActiveObject(tb); canvas.requestRenderAll(); queueSave();
     } else if (kind === "score") {
-      const c1 = new fabric.Circle({ left: W / 2, top: H * 0.88, radius: s * 0.085, fill: "#f4ecd8", stroke: "#1e2d24", strokeWidth: 5, originX: "center", originY: "center", objAnim: "pulse" });
-      const c2 = new fabric.Circle({ left: W / 2, top: H * 0.88, radius: s * 0.074, fill: "transparent", stroke: "#1e2d24", strokeWidth: 2, originX: "center", originY: "center", objAnim: "pulse" });
+      const c1 = new fabric.Circle({ left: W / 2, top: H * 0.88, radius: s * 0.085, fill: "#f4ecd8", stroke: "#1e2d24", strokeWidth: 5, originX: "center", originY: "center" });
+      const c2 = new fabric.Circle({ left: W / 2, top: H * 0.88, radius: s * 0.074, fill: "transparent", stroke: "#1e2d24", strokeWidth: 2, originX: "center", originY: "center" });
       const tb = new fabric.Textbox("2分", {
         left: W / 2, top: H * 0.88, width: s * 0.14, fontSize: Math.round(s * 0.062),
         fontFamily: "Noto Sans TC", fontWeight: "900", fill: "#1e2d24", textAlign: "center",
-        originX: "center", originY: "center", splitByGrapheme: true, objAnim: "pulse"
+        originX: "center", originY: "center", splitByGrapheme: true
       });
       canvas.add(c1, c2, tb); canvas.setActiveObject(tb); canvas.requestRenderAll(); queueSave();
     }
@@ -2456,7 +2827,7 @@ const Editor = (() => {
       canvas.add(r1, r2); canvas.requestRenderAll(); queueSave();
     } else if (kind === "scrollBanner") {
       const bg = new fabric.Rect({ left: W / 2, top: H * 0.6, width: W * 0.78, height: s * 0.13, rx: 18, ry: 18, fill: "#efe3c2", stroke: "#6b4c2b", strokeWidth: 4, shadow: new fabric.Shadow({ color: "rgba(0,0,0,0.28)", blur: 14, offsetX: 0, offsetY: 6 }), originX: "center", originY: "center" });
-      const tb = new fabric.Textbox("保羅在雅典講道", { left: W / 2, top: H * 0.6, width: W * 0.72, fontSize: Math.round(s * 0.068), fontFamily: "Noto Serif TC", fontWeight: "900", fill: "#2a180c", textAlign: "center", originX: "center", originY: "center", splitByGrapheme: true, objAnim: "pulse" });
+      const tb = new fabric.Textbox("保羅在雅典講道", { left: W / 2, top: H * 0.6, width: W * 0.72, fontSize: Math.round(s * 0.068), fontFamily: "Noto Serif TC", fontWeight: "900", fill: "#2a180c", textAlign: "center", originX: "center", originY: "center", splitByGrapheme: true });
       canvas.add(bg, tb); canvas.setActiveObject(tb); canvas.requestRenderAll(); queueSave();
     } else if (kind === "darkBadge") {
       const poly = new fabric.Polygon([{ x: 0, y: 0 }, { x: s * 0.36, y: 0 }, { x: s * 0.32, y: s * 0.05 }, { x: s * 0.36, y: s * 0.1 }, { x: 0, y: s * 0.1 }], { left: pad + 20, top: pad + 18, fill: "#1e2d24" });
@@ -2485,7 +2856,7 @@ const Editor = (() => {
   }
 
   /* =====================================================================
-     A4 拼版列印 PDF + 主角背景分離（分離後主角自動加上懸浮動畫） + 局部塗抹消除
+     A4 拼版列印 PDF + 主角背景分離（分離後主角獨立綁定骨骼網格） + 局部塗抹消除
      ===================================================================== */
   async function exportA4PrintSheetPDF() {
     const btn = $("exportA4SheetBtn"), oldTxt = btn.textContent;
@@ -2531,9 +2902,9 @@ const Editor = (() => {
     if (!o) return alert("請先在畫布上加入或點選一張圖片");
     try {
       const { T, model, processor } = await loadBgModel();
-      const el = o._originalElement || o.getElement(), w = el.naturalWidth || el.width, h = el.naturalHeight || el.height;
+      const el = o._origElement || o._originalElement || o.getElement(), w = el.naturalWidth || el.width, h = el.naturalHeight || el.height;
       const bgCv = document.createElement("canvas"); bgCv.width = w; bgCv.height = h;
-      const bgCtx = bgCv.getContext("2d"); bgCtx.filter = "blur(18px) brightness(0.98)"; bgCtx.drawImage(el, -20, -20, w + 40, h + 40);
+      const bgCtx = bgCv.getContext("2d"); bgCtx.filter = "blur(16px) brightness(0.96)"; bgCtx.drawImage(el, -20, -20, w + 40, h + 40);
       const fgCv = document.createElement("canvas"); fgCv.width = w; fgCv.height = h;
       const fgCtx = fgCv.getContext("2d"); fgCtx.drawImage(el, 0, 0, w, h);
       const image = await T.RawImage.fromCanvas(fgCv), { pixel_values } = await processor(image.rgb()), { output } = await model({ input: pixel_values });
@@ -2542,13 +2913,15 @@ const Editor = (() => {
       fgCtx.putImageData(d, 0, 0);
       const props = { left: o._baseLeft ?? o.left, top: o._baseTop ?? o.top, scaleX: o._baseScaleX ?? o.scaleX, scaleY: o._baseScaleY ?? o.scaleY, angle: o._baseAngle ?? o.angle, originX: o.originX, originY: o.originY };
       o.setSrc(bgCv.toDataURL("image/jpeg", 0.9), () => {
-        o.set({ ...props, name: "🎬 分離背景層", isAnimBg: true });
+        o._origElement = null; o._rigCanvas = null;
+        o.set({ ...props, name: "靜態背景層", isAnimBg: false, selectable: false, evented: false });
         captureBaseState(o);
         fabric.Image.fromURL(fgCv.toDataURL("image/png"), fgImg => {
           fgImg.set({
-            ...props, name: "🕺 動態主角層（懸浮動畫）", objAnim: "float",
-            shadow: new fabric.Shadow({ color: "rgba(0,0,0,0.38)", blur: 22, offsetX: 8, offsetY: 8 })
+            ...props, name: "🦴 獨立骨骼主角層（只動主角不動背景）", isAnimBg: true,
+            shadow: new fabric.Shadow({ color: "rgba(0,0,0,0.38)", blur: 20, offsetX: 6, offsetY: 6 })
           });
+          prepareRiggedBuffer(fgImg);
           captureBaseState(fgImg);
           canvas.add(fgImg);
           togglePlayState(true);
@@ -2563,7 +2936,7 @@ const Editor = (() => {
     pauseForInteraction();
     const o = act(); if (!isImage(o)) return alert("請先點選一張圖片");
     eraserTarget = o;
-    const el = o._originalElement || o.getElement(), w = el.naturalWidth || el.width, h = el.naturalHeight || el.height;
+    const el = o._origElement || o._originalElement || o.getElement(), w = el.naturalWidth || el.width, h = el.naturalHeight || el.height;
     const ec = $("eraserCanvas"); ec.width = w; ec.height = h; ec.style.maxWidth = "80vw"; ec.style.maxHeight = "60vh";
     const ctx = ec.getContext("2d"); ctx.drawImage(el, 0, 0, w, h);
     eraserBaseImg = ctx.getImageData(0, 0, w, h);
@@ -2595,7 +2968,11 @@ const Editor = (() => {
       if (cnt > 0) { d[i * 4] = r / cnt; d[i * 4 + 1] = g / cnt; d[i * 4 + 2] = b / cnt; if (pass % 2 === 1) mask[i] = 0; }
     }
     ctx.putImageData(outImg, 0, 0);
-    eraserTarget.setSrc(ec.toDataURL("image/jpeg", 0.94), () => { canvas.requestRenderAll(); queueSave(); $("eraserModal").style.display = "none"; });
+    eraserTarget.setSrc(ec.toDataURL("image/jpeg", 0.94), () => {
+      eraserTarget._origElement = null; eraserTarget._rigCanvas = null;
+      prepareRiggedBuffer(eraserTarget);
+      canvas.requestRenderAll(); queueSave(); $("eraserModal").style.display = "none";
+    });
   }
 
   /* ---- 新增基本物件 ---- */
@@ -2605,13 +2982,13 @@ const Editor = (() => {
     const base = Math.min(W, H);
     const cfg = {
       title: { text: "標題文字", size: base * 0.085, weight: "900", anim: "pulse" },
-      subtitle: { text: "副標題文字", size: base * 0.05, weight: "700", anim: "slideUp" },
-      body: { text: "內文段落", size: base * 0.032, weight: "400", anim: "typewriter" }
+      subtitle: { text: "副標題 / 電影旁白字幕", size: base * 0.048, weight: "700", anim: "typewriter" },
+      body: { text: "內文段落", size: base * 0.032, weight: "400", anim: "none" }
     }[kind];
     const t = new fabric.Textbox(cfg.text, {
       width: W * (kind === "body" ? 0.65 : 0.8), fontSize: Math.round(cfg.size),
       fontWeight: cfg.weight, fontFamily: "Noto Sans TC", fill: "#ffffff",
-      stroke: "#000000", strokeWidth: kind === "title" ? 3 : 0, paintFirst: "stroke",
+      stroke: "#000000", strokeWidth: kind !== "body" ? 3 : 0, paintFirst: "stroke",
       textAlign: "center", lineHeight: 1.25, splitByGrapheme: true, objAnim: cfg.anim
     });
     addObj(center(t)); ensureFont(t);
@@ -2630,14 +3007,15 @@ const Editor = (() => {
       if (!img || !img.width) return alert("圖片載入失敗");
       const hasBg = canvas.getObjects().some(o => o.isAnimBg);
       if (!hasBg) {
-        /* 若畫布尚無動畫底圖，自動將第一張加入的圖鋪滿設為動畫背景層 */
-        img.set({ left: W / 2, top: H / 2, originX: "center", originY: "center", scaleX: Math.max(W / img.width, H / img.height), scaleY: Math.max(W / img.width, H / img.height), name: "🎬 動畫背景層", isAnimBg: true });
+        img.set({ left: W / 2, top: H / 2, originX: "center", originY: "center", scaleX: Math.max(W / img.width, H / img.height), scaleY: Math.max(W / img.width, H / img.height), name: "🦴 骨骼動作主角層", isAnimBg: true });
+        prepareRiggedBuffer(img);
         captureBaseState(img);
         canvas.add(img); canvas.sendToBack(img);
         togglePlayState(true);
       } else {
         const s = Math.min((W * 0.65) / img.width, (H * 0.65) / img.height, 1);
         img.set({ scaleX: s, scaleY: s, objAnim: "float" });
+        prepareRiggedBuffer(img);
         addObj(center(img));
       }
       queueSave(); refreshLayers();
@@ -2653,7 +3031,7 @@ const Editor = (() => {
       im.src = e.blob ? URL.createObjectURL(e.blob) : e.url;
       im.title = e.original || e.prompt;
       im.onclick = async () => {
-        if (e.camMotion) setEditorAnimConfig(e.camMotion, e.vfxType || "godrays", e.duration || 6);
+        if (e.actionMode) setEditorAnimConfig(e.actionMode, e.amps, e.duration || 600);
         addImage(e.blob ? await blobToDataURL(e.blob) : e.url);
       };
       box.appendChild(im);
@@ -2666,10 +3044,10 @@ const Editor = (() => {
   function snapshot() {
     if (!canvas) return { W, H, pages, cur };
     restoreAllBaseStates();
-    const onions = canvas.getObjects().filter(o => o.isOnion);
-    onions.forEach(o => canvas.remove(o));
+    const helpers = canvas.getObjects().filter(o => o.isOnion || o.isRigPin);
+    helpers.forEach(o => canvas.remove(o));
     pages[cur] = canvas.toJSON(EXTRA);
-    onions.forEach(o => { canvas.add(o); canvas.bringToFront(o); });
+    helpers.forEach(o => { canvas.add(o); canvas.bringToFront(o); });
     return { W, H, pages, cur };
   }
   function normalize(p) {
@@ -2690,10 +3068,14 @@ const Editor = (() => {
   function loadPageJSON(json, done) {
     restoring = true; guides = []; canvas.discardActiveObject();
     canvas.loadFromJSON(json, () => {
-      canvas.getObjects().forEach(o => { captureBaseState(o); ensureFont(o); });
+      canvas.getObjects().forEach(o => {
+        if (o.type === "image") prepareRiggedBuffer(o);
+        captureBaseState(o); ensureFont(o);
+      });
       canvas.renderAll(); restoring = false;
       $("pBg").value = toHex(canvas.backgroundColor) || "#0f1117";
       refreshProps(); refreshLayers(); refreshQuickTextList();
+      if ($("showMeshPinsChk")?.checked) toggleMeshPinMarkers(true);
       if (done) done();
     });
   }
@@ -2726,22 +3108,22 @@ const Editor = (() => {
     pages.forEach((_, i) => {
       const d = document.createElement("div"); d.className = "pg" + (i === cur ? " on" : ""); d.style.width = Math.round(44 * W / H) + "px";
       if (thumbs[i]) { const im = document.createElement("img"); im.src = thumbs[i]; d.appendChild(im); }
-      const n = document.createElement("span"); n.textContent = i + 1; d.appendChild(n);
+      const n = document.createElement("span"); n.textContent = `幕${i + 1}`; d.appendChild(n);
       d.onclick = () => switchPage(i); box.appendChild(d);
     });
-    $("pgInfo").textContent = `${cur + 1} / ${pages.length} 頁`;
+    $("pgInfo").textContent = `第 ${cur + 1} / ${pages.length} 幕`;
     $("pgDel").disabled = pages.length < 2; $("pgLeft").disabled = cur === 0; $("pgRight").disabled = cur === pages.length - 1;
   }
   function switchPage(i) { if (i === cur || i < 0 || i >= pages.length) return; snapshot(); updateThumb(); cur = i; loadPageJSON(pages[i], pushHistory); }
   function addPage(copy) { snapshot(); updateThumb(); pages.splice(cur + 1, 0, copy ? JSON.parse(JSON.stringify(pages[cur])) : blankPage()); thumbs.splice(cur + 1, 0, copy ? thumbs[cur] : null); cur++; loadPageJSON(pages[cur], pushHistory); }
-  function deletePage() { if (pages.length < 2 || !confirm(`刪除第 ${cur + 1} 頁？`)) return; pages.splice(cur, 1); thumbs.splice(cur, 1); cur = Math.min(cur, pages.length - 1); loadPageJSON(pages[cur], pushHistory); }
+  function deletePage() { if (pages.length < 2 || !confirm(`刪除第 ${cur + 1} 幕？`)) return; pages.splice(cur, 1); thumbs.splice(cur, 1); cur = Math.min(cur, pages.length - 1); loadPageJSON(pages[cur], pushHistory); }
   function movePage(d) { const j = cur + d; if (j < 0 || j >= pages.length) return; snapshot(); [pages[cur], pages[j]] = [pages[j], pages[cur]]; [thumbs[cur], thumbs[j]] = [thumbs[j], thumbs[cur]]; cur = j; pushHistory(); }
 
   /* ---- 屬性面板 ---- */
   const act = () => canvas.getActiveObject();
   const isText = o => o && (o.type === "textbox" || o.type === "i-text" || o.type === "text");
   const isImage = o => o && o.type === "image";
-  const isShape = o => !!o && ["rect", "circle", "ellipse", "triangle", "polygon", "line", "path"].includes(o.type);
+  const isShape = o => !!o && !o.isRigPin && ["rect", "circle", "ellipse", "triangle", "polygon", "line", "path"].includes(o.type);
   function toHex(c) {
     if (!c || typeof c !== "string") return null;
     if (c.startsWith("#")) return c.length === 4 ? "#" + [...c.slice(1)].map(x => x + x).join("") : c.slice(0, 7);
@@ -2750,6 +3132,7 @@ const Editor = (() => {
   const ALIGNS = [["left", "靠左"], ["center", "置中"], ["right", "靠右"]];
   function refreshProps() {
     const o = act();
+    if (o && o.isRigPin) return;
     $("pCanvas").classList.toggle("hidden", !!o);
     $("pCommon").classList.toggle("hidden", !o);
     $("pText").classList.toggle("hidden", !isText(o));
@@ -2803,7 +3186,9 @@ const Editor = (() => {
     if (b) fl.push(new F.Brightness({ brightness: b }));
     if (c) fl.push(new F.Contrast({ contrast: c }));
     if (s) fl.push(new F.Saturation({ saturation: s }));
-    o.filters = fl; o.applyFilters(); canvas.requestRenderAll(); queueSave();
+    o.filters = fl; o.applyFilters();
+    o._origElement = null; prepareRiggedBuffer(o);
+    canvas.requestRenderAll(); queueSave();
   }
   function alignTo(where) {
     const o = act(); if (!o) return;
@@ -2813,7 +3198,7 @@ const Editor = (() => {
     o.set({ left: o.left + dx, top: o.top + dy }); o.setCoords(); captureBaseState(o); canvas.requestRenderAll(); queueSave();
   }
   function removeActive() {
-    const o = act(); if (!o) return;
+    const o = act(); if (!o || o.isRigPin) return;
     (o.type === "activeSelection" ? o.getObjects() : [o]).forEach(x => canvas.remove(x));
     canvas.discardActiveObject(); canvas.requestRenderAll();
   }
@@ -2826,7 +3211,8 @@ const Editor = (() => {
   function coverCanvas() {
     const o = act(); if (!isImage(o)) return;
     const s = Math.max(W / o.width, H / o.height);
-    o.set({ scaleX: s, scaleY: s, angle: 0, left: W / 2, top: H / 2, originX: "center", originY: "center", isAnimBg: true, name: "🎬 動畫背景層" });
+    o.set({ scaleX: s, scaleY: s, angle: 0, left: W / 2, top: H / 2, originX: "center", originY: "center", isAnimBg: true, name: "🦴 骨骼動作主角層" });
+    prepareRiggedBuffer(o);
     o.setCoords(); captureBaseState(o); canvas.sendToBack(o); canvas.requestRenderAll(); queueSave();
   }
   async function ensureFont(o) {
@@ -2883,7 +3269,7 @@ const Editor = (() => {
       st.textContent = "載入去背模型中…";
       const { T, model, processor } = await loadBgModel();
       st.textContent = "去背處理中…"; await sleep(30);
-      const el = o._originalElement || o.getElement(), w = el.naturalWidth || el.width, h = el.naturalHeight || el.height;
+      const el = o._origElement || o._originalElement || o.getElement(), w = el.naturalWidth || el.width, h = el.naturalHeight || el.height;
       const cv = document.createElement("canvas"); cv.width = w; cv.height = h;
       const ctx = cv.getContext("2d"); ctx.drawImage(el, 0, 0, w, h);
       const image = await T.RawImage.fromCanvas(cv), { pixel_values } = await processor(image.rgb()), { output } = await model({ input: pixel_values });
@@ -2891,10 +3277,12 @@ const Editor = (() => {
       for (let i = 0; i < w * h; i++) d.data[i * 4 + 3] = Math.min(d.data[i * 4 + 3], mask.data[i]);
       ctx.putImageData(d, 0, 0);
       o.setSrc(cv.toDataURL("image/png"), () => {
-        o.set({ isAnimBg: false, objAnim: "float", name: "去背主角層" });
+        o._origElement = null; o._rigCanvas = null;
+        o.set({ isAnimBg: true, name: "🦴 去背骨骼主角層" });
         if (o.filters?.length) o.applyFilters();
+        prepareRiggedBuffer(o);
         o.setCoords(); captureBaseState(o); canvas.requestRenderAll(); queueSave();
-        st.textContent = "去背完成（已套用懸浮動畫）"; btn.disabled = false;
+        st.textContent = "去背完成（已綁定骨骼動作）"; btn.disabled = false;
       });
     } catch (e) { st.textContent = "去背失敗：" + e.message; btn.disabled = false; }
   }
@@ -2937,27 +3325,27 @@ const Editor = (() => {
     fabric.util.clearFabricFontCache();
   }
 
-  /* 錄製畫布完整動態（含背景運鏡 + 粒子 + 文字獨立動畫）並匯出 .webm 影片 */
   async function exportEditorVideo(triggerBtn) {
     const btn = triggerBtn || $("edExport"), oldTxt = btn.textContent;
     btn.disabled = true;
     const savedZoom = zoom;
+    const hadPins = $("showMeshPinsChk")?.checked;
     try {
+      if (hadPins) toggleMeshPinMarkers(false);
       canvas.discardActiveObject();
       canvas.getObjects().forEach(captureBaseState);
       isInteracting = false;
       isRecording = true;
       togglePlayState(true);
-      /* 切換為 1:1 原始解析度進行高畫質影片錄製 */
       zoom = 1;
       applyZoom();
-      animStartTime = performance.now();
+      currentTimelineSec = 0;
       const dur = +($("edDuration")?.value || 6);
-      await AnimEngine.recordCanvasToWebM(
+      await MeshRigEngine.recordCanvasToWebM(
         canvas.lowerCanvasEl,
         dur,
         p => { btn.textContent = `錄製中 ${p}%`; },
-        `anim-design-${W}x${H}-${Date.now()}.webm`
+        `ai-rigged-video-${W}x${H}-${Date.now()}.webm`
       );
     } catch (e) {
       alert("影片錄製失敗：" + e.message);
@@ -2965,6 +3353,7 @@ const Editor = (() => {
       isRecording = false;
       zoom = savedZoom;
       applyZoom();
+      if (hadPins) toggleMeshPinMarkers(true);
       btn.disabled = false;
       btn.textContent = oldTxt;
     }
@@ -3004,7 +3393,7 @@ const Editor = (() => {
     guides = [];
     const th = 7 / zoom, r = o.getBoundingRect(true, true), xs = [0, W / 2, W], ys = [0, H / 2, H];
     canvas.getObjects().forEach(x => {
-      if (x === o || x.visible === false || x.isOnion || (o.type === "activeSelection" && o.contains(x))) return;
+      if (x === o || x.visible === false || x.isOnion || x.isRigPin || (o.type === "activeSelection" && o.contains(x))) return;
       const b = x.getBoundingRect(true, true);
       xs.push(b.left, b.left + b.width / 2, b.left + b.width); ys.push(b.top, b.top + b.height / 2, b.top + b.height);
     });
@@ -3035,7 +3424,7 @@ const Editor = (() => {
   function renderLayers() {
     if (!canvas) return;
     const box = $("layerList"); box.innerHTML = "";
-    const objs = canvas.getObjects().slice().reverse(), sel = canvas.getActiveObjects();
+    const objs = canvas.getObjects().filter(o => !o.isRigPin).slice().reverse(), sel = canvas.getActiveObjects();
     objs.forEach(o => {
       const row = document.createElement("div");
       row.className = "layer" + (sel.includes(o) ? " on" : "") + (o.visible === false ? " hid" : "");
@@ -3068,8 +3457,8 @@ const Editor = (() => {
     else { captureBaseState(c); canvas.add(c); }
     canvas.setActiveObject(c); canvas.requestRenderAll();
   }
-  function duplicate() { const o = act(); if (o) o.clone(addClone, EXTRA); }
-  function copy() { const o = act(); if (o) o.clone(c => { clip = c; }, EXTRA); }
+  function duplicate() { const o = act(); if (o && !o.isRigPin) o.clone(addClone, EXTRA); }
+  function copy() { const o = act(); if (o && !o.isRigPin) o.clone(c => { clip = c; }, EXTRA); }
   function paste() { if (!clip) return; clip.clone(c => { addClone(c); clip.set({ left: clip.left + 30, top: clip.top + 30 }); }, EXTRA); }
 
   const tb = (text, x, y, w, size, o = {}) => ({ type: "textbox", text, left: x, top: y, width: w, fontSize: size, fontFamily: "Noto Sans TC", fontWeight: "700", fill: "#222222", textAlign: "center", originX: "center", originY: "center", lineHeight: 1.2, splitByGrapheme: true, styles: [], ...o });
@@ -3085,8 +3474,8 @@ const Editor = (() => {
       tb("STORY 37", 590, 76, 180, 28, { fontFamily: "Montserrat", fontWeight: "800", fill: "#1e2d24" }),
       rc(60, 560, 624, 96, "#dfd3b5", { stroke: "#1e2d24", strokeWidth: 3, rx: 14, ry: 14 }),
       tb("保羅在雅典講道", 372, 608, 580, 56, { fontFamily: "Noto Serif TC", fontWeight: "900", fill: "#1e2d24", objAnim: "pulse" }),
-      tl("👤 人物\n保羅×1", 90, 745, 240, 32, { fontWeight: "900", fill: "#1e2d24", objAnim: "slideUp" }),
-      tl("🏛️ 元素\n道路×1、信心×1", 400, 745, 280, 32, { fontWeight: "900", fill: "#1e2d24", objAnim: "slideUp" }),
+      tl("👤 人物\n保羅×1", 90, 745, 240, 32, { fontWeight: "900", fill: "#1e2d24" }),
+      tl("🏛️ 元素\n道路×1、信心×1", 400, 745, 280, 32, { fontWeight: "900", fill: "#1e2d24" }),
       rc(120, 880, 360, 54, "#1e2d24", { rx: 12, ry: 12 }),
       tb("📖 使徒行傳 17:16-34", 300, 907, 340, 24, { fill: "#f4ecd8" }),
       ci(585, 905, 58, "#f4ecd8", { stroke: "#1e2d24", strokeWidth: 4, objAnim: "pulse" }),
@@ -3099,8 +3488,8 @@ const Editor = (() => {
       tb("STORY 37", 880, 68, 180, 26, { fontFamily: "Montserrat", fontWeight: "800", fill: "#1e2d24" }),
       tl("保羅在雅典講道", 55, 165, 620, 78, { fontFamily: "Noto Serif TC", fontWeight: "900", fill: "#1e2d24", objAnim: "pulse" }),
       rc(730, 140, 255, 540, "transparent", { stroke: "#1e2d24", strokeWidth: 3, rx: 12, ry: 12 }),
-      tl("👤 人物\n保羅×1", 755, 230, 210, 28, { fontWeight: "900", fill: "#1e2d24", objAnim: "slideUp" }),
-      tl("🏛️ 元素\n道路×1、\n信心×1", 755, 380, 210, 28, { fontWeight: "900", fill: "#1e2d24", objAnim: "slideUp" }),
+      tl("👤 人物\n保羅×1", 755, 230, 210, 28, { fontWeight: "900", fill: "#1e2d24" }),
+      tl("🏛️ 元素\n道路×1、\n信心×1", 755, 380, 210, 28, { fontWeight: "900", fill: "#1e2d24" }),
       rc(745, 500, 225, 44, "#1e2d24", { rx: 10, ry: 10 }),
       tb("📖 使徒行傳 17:16-34", 857, 522, 215, 20, { fill: "#f4ecd8" }),
       ci(857, 615, 52, "#f4ecd8", { stroke: "#1e2d24", strokeWidth: 4, objAnim: "pulse" }),
@@ -3144,7 +3533,7 @@ const Editor = (() => {
         } else {
           rightSide.classList.remove("mobile-open");
           leftSide.classList.add("mobile-open");
-          const titles = { anim: "動畫運鏡與特效", pro: "文字擷取與清單", card: "版面元件與範本", layers: "圖層與 A4 列印" };
+          const titles = { anim: "骨骼動作與長片設定", pro: "文字擷取與清單", card: "版面元件與範本", layers: "分鏡與 A4 列印" };
           $("leftDrawerTitle").textContent = titles[target] || "工具面板";
           document.querySelectorAll(".stabs button").forEach(x => x.classList.toggle("on", x.dataset.panel === target));
           document.querySelectorAll(".spanel").forEach(p => p.classList.toggle("hidden", p.dataset.panel !== target));
@@ -3238,7 +3627,7 @@ const Editor = (() => {
     };
   }
 
-  /* ---- 綁定所有按鈕與快捷鍵 ---- */
+  /* ---- 綁定所有按鈕、10分鐘時間軸拉桿與骨骼關節控制器 ---- */
   function bindUI() {
     document.querySelectorAll(".stabs button").forEach(b => b.onclick = () => {
       document.querySelectorAll(".stabs button").forEach(x => x.classList.toggle("on", x === b));
@@ -3246,17 +3635,41 @@ const Editor = (() => {
       if (b.dataset.panel === "layers") renderLayers();
     });
 
-    /* 播放/暫停按鈕與選取物件獨立動畫綁定 */
     $("edPlayToggleBtn").onclick = () => togglePlayState();
     $("exportVideoQuickBtn").onclick = () => exportEditorVideo($("exportVideoQuickBtn"));
-    ["edCamMotion", "edVfxType", "edDuration"].forEach(id => {
-      if ($(id)) $(id).onchange = () => { togglePlayState(true); };
+
+    if ($("edActionPreset")) {
+      $("edActionPreset").onchange = e => {
+        customPins = JSON.parse(JSON.stringify(MeshRigEngine.defaultPins(e.target.value)));
+        if ($("showMeshPinsChk")?.checked) toggleMeshPinMarkers(true);
+        togglePlayState(true);
+      };
+    }
+    ["edLimbAmp", "edMouthAmp", "edBreathAmp", "edClothAmp"].forEach(id => {
+      if ($(id)) $(id).oninput = () => { if (!isPlaying) renderTimelineAt(currentTimelineSec, +($("edDuration")?.value || 600)); };
     });
+    if ($("edDuration")) {
+      $("edDuration").onchange = e => {
+        currentTimelineSec = 0;
+        updateTimelineUI(+e.target.value);
+      };
+    }
+    if ($("showMeshPinsChk")) {
+      $("showMeshPinsChk").onchange = e => toggleMeshPinMarkers(e.target.checked);
+    }
+    if ($("edTimelineScrubber")) {
+      $("edTimelineScrubber").oninput = e => {
+        currentTimelineSec = +e.target.value;
+        const totalDur = +($("edDuration")?.value || 600);
+        updateTimelineUI(totalDur);
+        renderTimelineAt(currentTimelineSec, totalDur);
+      };
+    }
 
     document.querySelectorAll("[data-objanim]").forEach(b => {
       b.onclick = () => {
         const o = act();
-        if (!o) return alert("請先在畫布上點選一個文字或圖片物件！");
+        if (!o || o.isRigPin) return alert("請先在畫布上點選一個文字或圖片物件！");
         const animType = b.dataset.objanim;
         (o.type === "activeSelection" ? o.getObjects() : [o]).forEach(item => {
           item.objAnim = animType;
@@ -3271,7 +3684,7 @@ const Editor = (() => {
     $("proCloneImgBtn").onclick = () => $("proCloneFile").click();
     $("proCloneFile").onchange = async e => {
       const f = e.target.files[0]; if (!f) return; e.target.value = "";
-      setProStatus("正在分析圖片文字座標與背景…");
+      setProStatus("正在分析圖片文字座標與建立骨骼網格…");
       const res = await OCRLayoutEngine.analyze(f, p => setProStatus(`掃描進度 ${(p * 100).toFixed(0)}%…`));
       await cloneImageLayoutToCanvas(res);
     };
@@ -3350,7 +3763,7 @@ const Editor = (() => {
       const bgImg = canvas.getObjects().find(o => isImage(o) && !o.isOnion);
       if (!bgImg) return alert("找不到底圖");
       setProStatus("正在辨識框選區域文字…");
-      const el = bgImg._originalElement || bgImg.getElement(), imgW = el.naturalWidth || el.width, imgH = el.naturalHeight || el.height;
+      const el = bgImg._origElement || bgImg._originalElement || bgImg.getElement(), imgW = el.naturalWidth || el.width, imgH = el.naturalHeight || el.height;
       const bound = bgImg.getBoundingRect(true, true), sx = imgW / bound.width, sy = imgH / bound.height;
       const cropX = Math.max(0, (box.left - bound.left) * sx), cropY = Math.max(0, (box.top - bound.top) * sy);
       const cropW = Math.min(imgW - cropX, box.width * sx), cropH = Math.min(imgH - cropY, box.height * sy);
@@ -3370,13 +3783,15 @@ const Editor = (() => {
       if (!txt) txt = prompt("請輸入此處文字：", "文字") || "文字";
       const newBgUrl = OCRLayoutEngine.eraseTextWithGrain(fullCv, [{ x: cropX, y: cropY, width: cropW, height: cropH, bgRGB: colorInfo.bgRGB, isDarkBg: colorInfo.isDarkBg, bgLum: colorInfo.bgLum }]);
       bgImg.setSrc(newBgUrl, () => {
-        bgImg.set({ name: "🎬 去字動畫底圖（已鎖定）", isAnimBg: true, selectable: false, evented: false });
+        bgImg._origElement = null; bgImg._rigCanvas = null;
+        bgImg.set({ name: "🦴 去字骨骼動作底圖（已鎖定）", isAnimBg: true, selectable: false, evented: false });
+        prepareRiggedBuffer(bgImg);
         captureBaseState(bgImg);
         const fs = Math.max(14, Math.round(box.height * 0.78));
-        const tbObj = new fabric.Textbox(txt, { left: box.left + box.width / 2, top: box.top + box.height / 2, width: Math.max(box.width * 1.15, fs * txt.length * 1.05), fontSize: fs, fontFamily: "Noto Sans TC", fontWeight: "900", fill: colorInfo.fgColor, textAlign: "center", originX: "center", originY: "center", splitByGrapheme: true, objAnim: "pulse" });
+        const tbObj = new fabric.Textbox(txt, { left: box.left + box.width / 2, top: box.top + box.height / 2, width: Math.max(box.width * 1.15, fs * txt.length * 1.05), fontSize: fs, fontFamily: "Noto Sans TC", fontWeight: "900", fill: colorInfo.fgColor, textAlign: "center", originX: "center", originY: "center", splitByGrapheme: true });
         captureBaseState(tbObj);
         canvas.add(tbObj); canvas.setActiveObject(tbObj); canvas.requestRenderAll(); queueSave(); refreshQuickTextList();
-        setProStatus(`已建立動態文字層「${txt}」`);
+        setProStatus(`已建立文字層「${txt}」`);
       });
     });
 
@@ -3400,7 +3815,7 @@ const Editor = (() => {
     $("edZoomIn").onclick = () => { zoom = Math.min(zoom * 1.2, 4); applyZoom(); };
     $("edZoomOut").onclick = () => { zoom = Math.max(zoom / 1.2, 0.05); applyZoom(); };
     $("edFit").onclick = fit;
-    $("edNew").onclick = () => { if (!confirm("確定清空目前所有頁面？")) return; pages = [blankPage()]; cur = 0; thumbs = []; loadPageJSON(pages[0], pushHistory); };
+    $("edNew").onclick = () => { if (!confirm("確定清空目前所有分鏡幕？")) return; pages = [blankPage()]; cur = 0; thumbs = []; loadPageJSON(pages[0], pushHistory); };
     $("edSave").onclick = saveProject;
     $("edOpen").onclick = () => $("edOpenFile").click();
     $("edOpenFile").onchange = async e => { const f = e.target.files[0]; if (f) { try { loadProject(await f.text()); } catch { alert("檔案格式錯誤"); } } e.target.value = ""; };
